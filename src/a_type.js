@@ -40,8 +40,6 @@ const __aaTypesAlias = {
     // "object"   : "o",
 }
 
-const _aaMaxMainWidth = 768
-
 
 class atype {
     // 缩短类型为1个字符
@@ -218,7 +216,7 @@ function func(...args) {
     if (typeof v === "function") {
         return v
     }
-    return C.VoidFunc    // 空函数，用这种写法
+    return nif  // 空函数，用这种写法
 }
 
 // 使用  f && f()   即可；或者  func(p,'func')()

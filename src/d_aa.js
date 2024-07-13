@@ -8,12 +8,18 @@ class Aa {
         this.env = new _aaEnv(_aaUri)
     }
 
+    /**
+     * URL
+     * @param url
+     * @param params
+     * @returns {_aaUrl}
+     */
     url(url = window.location.href, params = {}) {
         return new _aaUrl(url, params)
     }
 
     /**
-     *
+     * Fetch
      * @returns {_aaFetch}
      */
     fetch() {

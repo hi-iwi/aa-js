@@ -1,7 +1,6 @@
 const C = {
     HrefVoid: "javascript:;",
-    VoidFunc: () => void 0,    //  无论其他调用时， 对C.VoidFunc.bind(this) 与否，都不会改变这个地址。因此可以直接判断  f === C.VoidFunc
-
+ 
 
     // 9007199254740992 Number.MAX_SAFE_INTEGER
     Second: 1000,  // 1000ms
