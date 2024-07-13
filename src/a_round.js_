@@ -1,0 +1,89 @@
+class Round {
+    type = ''
+
+    /**
+     * @param {('floor'|'round'|'ceil'|'trim'|'reverse'|'up') }type
+     *    Floor        math.Floor  -> floor(0.1) =0; floor(-0.1) = -1
+     *    Round        math.Round
+     *    Ceil          math.Ceil
+     *    RoundTrim      negative ? math.Ceil : math.Floor  -> roundTrim(0.1)=0; roundTrim(-0.1) = 0
+     *    RoundReverse   negative ? 四入五舍 : 四舍五入
+     *    RoundUp        negative ? math.Floor : math.Ceil
+     */
+    constructor(type) {
+        this.type = type
+    }
+
+    //@param {('floor'|'round'|'ceil'|'trim'|'reverse'|'up') }type
+    to(type) {
+        this.type = type
+        return this
+    }
+
+    isFloor() {
+        return this.type === 'floor'
+    }
+
+    isCeil() {
+        return this.type === 'ceil'
+    }
+
+    isRound() {
+        return this.type === 'round'
+    }
+
+    isTrim() {
+        return this.type === 'trim'
+    }
+
+    isReverse() {
+        return this.type === 'reverse'
+    }
+
+    isUp() {
+        return this.type === 'up'
+    }
+
+    round(num) {
+        if (num === 0) {
+            return 0
+        }
+        if (num > 0) {
+            switch (this.type) {
+                case 'floor':
+                case 'trim':
+                    return Math.floor(num)
+                case 'round':
+                case 'reverse':
+                    return Math.round(num)
+                case 'ceil':
+                case 'up':
+                    return Math.ceil(num)
+            }
+            return num
+        }
+        switch (this.type) {
+            case 'floor':
+            case 'up':
+                return Math.floor(num)
+            case 'round':
+                return Math.round(num)
+            case 'reverse':
+                let x = Math.round(num)
+                if (x > num) {
+                    return x - 1
+                } else if (x < num) {
+                    return x + 1
+                } else {
+                    return x
+                }
+            case 'ceil':
+            case 'trim':
+                return Math.ceil(num)
+        }
+
+        return num
+
+    }
+
+}

@@ -84,7 +84,11 @@ class decimal {
      * @returns {number}
      */
     whole() {
-        return Math.floor(this.value / Math.pow(10, this.scale))
+        if (this.value === 0) {
+            return 0
+        }
+        let w = this.value / Math.pow(10, this.scale)
+        return this.value < 0 ? Math.ceil(w) : Math.floor(w)
     }
 
 
@@ -121,23 +125,40 @@ class decimal {
         return _aaMath.thousands(w, segmentSize, separator)
     }
 
+    static #mantissaOk(s, scale = 0, trimScale = false) {
+        if (trimScale || scale === 0) {
+            s = s.replace(/0+$/g, '')
+        } else if (len(s) < scale) {
+            s = s.padEnd(scale, '0')
+        }
+        if (s === "") {
+            return ["", false]
+        } else if (scale === 0 || len(s) <= scale) {
+            return ["." + s, false]
+        }
+        return [s, true]
+    }
+
     /**
      *
      * @param {number} scale    是否截断小数尾部0
      * @param {boolean} trimScale
-     * @param {('floor'|'round'|'ceil')} scaleRound   @warn 如果进一位到整数，则只保留.999...
+     * @param {('floor'|'round'|'ceil')} scaleRound   @warn 如果进位到整数，则只保留.999...；负数按正数部分round
      * @returns {string}
      */
     formatMantissa(scale = 0, trimScale = false, scaleRound = 'floor') {
         let s = String(Math.abs(this.value))
         let a = s.length - this.scale
         if (a > 0) {
-            s = s.substring(a)
+            s = s.substring(a) // 取小数部分
         }
-        s = s.replace(/0+$/g, '')
-        if (s === "" || scale === 0 || s.length === scale) {
-            return s === "" ? "" : "." + s
+        let ok = false;
+
+        [s, ok] = decimal.#mantissaOk(s, scale, trimScale)
+        if (!ok) {
+            return s
         }
+
         if (s.length > scale) {
             let g = scaleRound === 'ceil' || (scaleRound === 'round' && Number(s[scale]) > 4)   //  进位判断
             s = s.substring(0, scale)
@@ -148,14 +169,11 @@ class decimal {
                     s = String(n).substring(1)
                 }
             }
-            s = s.replace(/0+$/g, '')   // s 变化了，要重新来一次
-            if (s === "" || scale === 0 || s.length === scale) {
-                return s === "" ? "" : "." + s
+            // s 发生变化
+            [s, ok] = decimal.#mantissaOk(s, scale, trimScale)
+            if (!ok) {
+                return s
             }
-        }
-
-        if (!trimScale) {
-            s = s.padEnd(scale, '0')
         }
         return '.' + s
     }
@@ -170,7 +188,7 @@ class decimal {
             separator  : ",", // 整数部分分隔符，如英文每3位一个逗号；中文每4位一个空格等表示方法
             scale      : 0, // 保留小数位数，0则表示不限制
             trimScale  : false,  // 是否删除小数尾部无效的0
-            scaleRound : 'floor',  //('floor'|'round'|'ceil')   @warn 如果进一位到整数，则只保留.999...
+            scaleRound : 'floor',  //('floor'|'round'|'ceil')   @warn 如果进位到整数，则只保留.999...；负数按正数部分round
         }
         if (!style) {
             return t
@@ -190,6 +208,4 @@ class decimal {
         style = decimal.#newStyle(style)
         return this.formatWhole(style.segmentSize, style.separator) + this.formatMantissa(style.scale, style.trimScale, style.scaleRound)
     }
-
-
 }
