@@ -89,7 +89,6 @@ class _aaUrl {
         let authority = hierarchicalPart.substring(0, b)
         let path = hierarchicalPart.substring(b)
 
-
         let queries = new map();
         if (qs.length > 1) {
             let q = qs.split('&');
@@ -98,7 +97,7 @@ class _aaUrl {
                     continue;
                 }
                 let p = q[i].split('=');
-                queries.set(p[0], p.length > 1 ? aa.uri.decode(p[1]) : '')
+                queries.set(p[0], p.length > 1 ? _aaUri.decode(p[1]) : '')
             }
         }
         this.baseUrl = baseUrl   // ? 之前的部分

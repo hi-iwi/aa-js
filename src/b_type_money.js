@@ -2,9 +2,9 @@ class money extends decimal {
     /**
      *
      * @param {money|number|string} vv
-     * @param vk
+     * @param {string} [vk]
      */
-    constructor(vv, vk) {
+    constructor(vv, vk = void '') {
         super(vv, vk)
         this.type = "money"
         this.scaleMax = C.MoneyScale
@@ -12,4 +12,7 @@ class money extends decimal {
         this.rounder = Math.round
     }
 
+    toCent() {
+
+    }
 }

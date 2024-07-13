@@ -1,6 +1,6 @@
 const C = {
     HrefVoid: "javascript:;",
- 
+
 
     // 9007199254740992 Number.MAX_SAFE_INTEGER
     Second: 1000,  // 1000ms

@@ -15,9 +15,9 @@ class decimal {
     /**
      *
      * @param {money|number|string} vv
-     * @param {string} vk?
+     * @param {string} [vk]
      */
-    constructor(vv, vk = void 0) {
+    constructor(vv, vk = void '') {
         // 子类继承后，也能通过该判断。即子类 instance of 父类 也是true
         if (vv instanceof decimal) {
             return vv   // js constructor 可以返回
@@ -42,6 +42,7 @@ class decimal {
 
     setRounder(rounder) {
         this.rounder = rounder
+        return this
     }
 
     clone() {
@@ -50,18 +51,32 @@ class decimal {
 
     plus(n) {
         this.value = this.rounder(this.value + n)
+        return this
     }
 
     minus(n) {
         this.value = this.rounder(this.value - n)
+        return this
     }
 
     multiply(n) {
         this.value = this.rounder(this.value * n)
+        return this
     }
 
     div(n) {
         this.value = this.rounder(this.value / n)
+        return this
+    }
+
+    // 精度
+    precision() {
+        return String(Math.abs(this.value)).length
+    }
+
+    // 实数值
+    real() {
+        return this.value / Math.pow(10, this.scale)
     }
 
     /**
@@ -92,47 +107,89 @@ class decimal {
     }
 
 
-    // 精度
-    precision() {
-        return String(Math.abs(this.value)).length
-    }
-
     /**
      * 整数部分字符形式表示
-     * @param {number} n 每n位使用逗号隔开
+     * @param {number} segmentSize 整数部分每segmentSize位使用separator隔开
+     * @param {string} separator
      * @returns {string|number}
      */
-    formatWhole(n = 0) {
+    formatWhole(segmentSize = 0, separator = ',') {
         let w = this.whole()
-        if (!n) {
+        if (!segmentSize) {
             return String(w)
         }
-        return _aaMath.thousands(w, n, ',')
+        return _aaMath.thousands(w, segmentSize, separator)
     }
 
     /**
      *
-     * @param {number} padlen    是否截断小数尾部0
+     * @param {number} scale    是否截断小数尾部0
+     * @param {boolean} trimScale
+     * @param {('floor'|'round'|'ceil')} scaleRound   @warn 如果进一位到整数，则只保留.999...
      * @returns {string}
      */
-    formatMantissa(padlen = 0) {
+    formatMantissa(scale = 0, trimScale = false, scaleRound = 'floor') {
         let s = String(Math.abs(this.value))
         let a = s.length - this.scale
         if (a > 0) {
             s = s.substring(a)
         }
-        s = s.replace(/0+$/g, '').padEnd(padlen, '0')
-        return s === "" ? "" : ('.' + s)
+        s = s.replace(/0+$/g, '')
+        if (s === "" || scale === 0 || s.length === scale) {
+            return s === "" ? "" : "." + s
+        }
+        if (s.length > scale) {
+            let g = scaleRound === 'ceil' || (scaleRound === 'round' && Number(s[scale]) > 4)   //  进位判断
+            s = s.substring(0, scale)
+            if (g) {
+                // 0.999... 不用进位
+                if (!/^9+$/.test(s)) {
+                    let n = Number('1' + s) + 1
+                    s = String(n).substring(1)
+                }
+            }
+            s = s.replace(/0+$/g, '')   // s 变化了，要重新来一次
+            if (s === "" || scale === 0 || s.length === scale) {
+                return s === "" ? "" : "." + s
+            }
+        }
+
+        if (!trimScale) {
+            s = s.padEnd(scale, '0')
+        }
+        return '.' + s
     }
 
     /**
-     *
-     * @param {number} padlen
-     * @param n
+     * @param {number|{segmentSize?: number, scale?: number, separator?: string, trimScale?: boolean, scaleRound?: ("floor"|"round"|"ceil")}} [style]
+     * @returns {{segmentSize: number, scale: number, separator: string, trimScale: boolean, scaleRound: ('floor'|'round'|'ceil')}}
+     */
+    static #newStyle(style = void null) {
+        let t = {
+            segmentSize: 0,  // 整数部分每segmentSize位使用separator隔开
+            separator  : ",", // 整数部分分隔符，如英文每3位一个逗号；中文每4位一个空格等表示方法
+            scale      : 0, // 保留小数位数，0则表示不限制
+            trimScale  : false,  // 是否删除小数尾部无效的0
+            scaleRound : 'floor',  //('floor'|'round'|'ceil')   @warn 如果进一位到整数，则只保留.999...
+        }
+        if (!style) {
+            return t
+        }
+        if (typeof style === "number") {
+            t.scale = style
+            return t
+        }
+        return map.strictMerge(t, style)
+    }
+
+    /**
+     * @param {number|{segmentSize?: number, scale?: number, separator?: string, trimScale?: boolean, scaleRound?: ("floor"|"round"|"ceil")}} [style]
      * @returns {string}
      */
-    format(padlen = 0, n = 0) {
-        return this.formatWhole(n) + this.formatMantissa(padlen)
+    format(style = void null) {
+        style = decimal.#newStyle(style)
+        return this.formatWhole(style.segmentSize, style.separator) + this.formatMantissa(style.scale, style.trimScale, style.scaleRound)
     }
+
 
 }
