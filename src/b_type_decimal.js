@@ -139,6 +139,7 @@ class decimal {
         return [s, true]
     }
 
+
     /**
      *
      * @param {number} scale    是否截断小数尾部0

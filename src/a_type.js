@@ -1,17 +1,18 @@
 //  react state  数字 001231 === 1231 == 001231.000  这些数值都没有变化，state就不会触发
 
 /**
- *
- * @param {undefined|string|{[key:string]:*}} vv
- * @param vk
- * @param defaultV
+ * defined value
+ * @param {*} vv
+ * @param {string|number} [vk]
+ * @param {*} [defaultV]
  * @returns {null|*}
+ *
  */
-function definedValue(vv, vk, defaultV) {
+function defval(vv, vk, defaultV) {
     if (typeof vv === "undefined" || typeof defaultV === "undefined") {
         defaultV = null
     }
-    if (typeof vk === "undefined" || vk === null) {
+    if (!vk && vk !== 0) {
         return typeof vv === "undefined" || vv === null || vv === "" ? defaultV : vv
     }
 
@@ -22,35 +23,96 @@ function definedValue(vv, vk, defaultV) {
     return typeof vv === "undefined" || vv === null || vv === "" ? defaultV : vv
 }
 
-// 类型别名
-const __aaTypesAlias = {
-    // nil: "x",
-
-    array    : "a",
-    boolean  : "b",
-    data     : "d",
-    dom      : "h",
-    function : "f",
-    null     : "l",
-    number   : "n",
-    struct   : "m",
-    string   : "s",
-    undefined: "u",
-    regexp   : "r",
-    // "object"   : "o",
+/**
+ * Trim the tail
+ * @return {((x:number)=> number)}
+ */
+function RoundTrim() {
+    this.name = 'trim'
+    return v => v > 0 ? Math.floor(v) : Math.ceil(v)
 }
 
+/**
+ * @return {((x:number)=> number)}
+ */
+function RoundReverse() {
+    this.name = 'reverse'
+    return v => v > 0 ? Math.round(v) : -Math.round(-v)
+}
+
+/**
+ * Round away from the origin point
+ * @return {((x:number)=> number)}
+ */
+function RoundAway() {
+    this.name = 'away'
+    return v => v > 0 ? Math.ceil(v) : Math.floor(v)
+}
+
+/**
+ *
+ * @param {('round'|'ceil'|'floor'|'trim'|'reverse'|'away'|((x :number)=>number))} round
+ * @return {((x: number) => number)|(function(): function(*): number)|(function(*): *)|*}
+ */
+function Round(round) {
+    if (typeof round === "function") {
+        return round
+    }
+    switch (round) {
+        case 'floor':
+            return Math.floor
+        case 'round':
+            return Math.round
+        case 'ceil':
+            return Math.ceil
+        case 'trim':
+            return RoundTrim
+        case 'reverse':
+            return RoundReverse
+        case 'away':
+            return RoundAway
+    }
+    throw new ReferenceError('invalid Round type')
+}
 
 class atype {
+    static array = "array"
+    static boolean = "boolean"
+    static class = "class"
+    static date = "date"
+    static dom = "dom"
+    static function = "function"
+    static null = "null"
+    static number = "number"
+    static struct = "struct"
+    static string = "string"
+    static undefined = "undefined"
+    static regexp = "regexp"
+    // 类型别名
+    static alias = {
+        array    : "a",
+        boolean  : "b",
+        class    : "c",
+        date     : "d",
+        dom      : "h",
+        function : "f",
+        null     : "l",
+        number   : "n",
+        struct   : "m",
+        string   : "s",
+        undefined: "u",
+        regexp   : "r",
+    }
+
     // 缩短类型为1个字符
-    static alias(t) {
+    static aliasOf(t) {
         if (typeof t === "undefined") {
-            return __aaTypesAlias.undefined
+            return atype.alias.undefined
         }
         if (t === null) {
-            return __aaTypesAlias.null
+            return atype.alias.null
         }
-        return __aaTypesAlias.hasOwnProperty(t) ? __aaTypesAlias[t] : __aaTypesAlias.undefined
+        return atype.alias[t] ? atype.alias[t] : atype.alias.undefined
     }
 
     /*
@@ -74,22 +136,22 @@ class   // Returns function XXX()
     static of(v, ...args) {
         if (len(args) > 0) {
             if (typeof v !== "object" || v === null) {  // typeof null is object
-                return null
+                return atype.null
             }
             let k = args[0]
             if (!v.hasOwnProperty(k)) {
-                return "undefined"
+                return atype.undefined
             }
             v = v[k]
         }
         if (v === null) {
-            return null
+            return atype.null
         }
         if (Array.isArray(v)) {
-            return "array"
+            return atype.array
         }
         let t = typeof v
-        if (["boolean", "function", "number", "string", "undefined"].includes(t)) {
+        if ([atype.boolean, atype.function, atype.number, atype.string, atype.undefined].includes(t)) {
             return t
         }
 
@@ -100,39 +162,39 @@ class   // Returns function XXX()
         if (typ.length > 9) {
             // 使用 new Cls()
             if (typ.indexOf("_classcallcheck") > 0) {
-                return "class"
+                return atype.class
             }
             if (typ.substring(0, 4) === "html" || $(v).length > 0) {
-                typ = "dom"
+                typ = atype.dom
             }
         }
-        return typ === "object" ? "struct" : typ
+        return typ === "object" ? atype.struct : typ
     }
 
     // 对象 a={}   !a 为 false。。  a =={} 也是 false
-    static isEmpty(...args) {
-        let v = definedValue(...args)
+    static isEmpty(vv, vk) {
+        let v = defval(vv, vk)
         if (v === null) {// 不要用 AaLib.Type 判断是否 undefined
             return true
         }
 
         switch (atype.of(v)) {
-            case "array":
+            case atype.array:
                 return v.length === 0
-            case "boolean":
+            case atype.boolean:
                 return !v
-            case "date":
-            case "dom":
-            case "function":
+            case atype.date:
+            case atype.dom:
+            case atype.function:
                 return false
             case null:
                 return true
-            case "number":
+            case atype.number:
                 return v <= 0
-            case "struct":
+            case atype.struct:
                 v = Object.keys(v)
                 return v.length === 0
-            case "string":
+            case atype.string:
                 return v === ""
         }
         return !v
@@ -144,7 +206,7 @@ class   // Returns function XXX()
 
     // 必须是 > 0的数字，注意 bigint
     static isRealId(...args) {
-        let v = definedValue(...args)
+        let v = defval(...args)
         return v === null ? false : (uint64a(v) !== "0")
     }
 
@@ -153,11 +215,11 @@ class   // Returns function XXX()
     }
 
     static isArray(...args) {
-        return Array.isArray(definedValue(...args))
+        return Array.isArray(defval(...args))
     }
 
     static isBoolean(...args) {
-        return typeof definedValue(...args) === "boolean"
+        return typeof defval(...args) === "boolean"
     }
 
     // 仅为 {} 结构体；
@@ -176,15 +238,15 @@ class   // Returns function XXX()
     }
 
     static isFunction(...args) {
-        return typeof definedValue(...args) === "function"
+        return typeof defval(...args) === "function"
     }
 
     static isNumber(...args) {
-        return typeof definedValue(...args) === "number"
+        return typeof defval(...args) === "number"
     }
 
     static isString(...args) {
-        return typeof definedValue(...args) === "string"
+        return typeof defval(...args) === "string"
     }
 
     static isRegexp(...args) {
@@ -197,7 +259,7 @@ class   // Returns function XXX()
 
 // len(bool) len(number) 为 0，防止直接用 for( < len(x)) 导致异常
 function len(...args) {
-    let v = definedValue(...args)
+    let v = defval(...args)
     if (typeof v === "undefined" || v === null) {
         return 0
     }
@@ -212,7 +274,7 @@ function len(...args) {
 }
 
 function func(...args) {
-    let v = definedValue(...args)
+    let v = defval(...args)
     if (typeof v === "function") {
         return v
     }
@@ -227,16 +289,21 @@ function func(...args) {
 //     f(...args)
 // }
 
-function _inRange(x, min, max) {
+function _inRange(x, min, max, name) {
     if (x < min || x > max) {
-        console.warn(x + " is out of range [" + min + "," + max + "]")
-        return x < min ? min : max
+        if (!name) {
+            name = "[" + min + "," + max + "]"
+        }
+        let msg = x + " can't be converted to " + name
+        throw new RangeError(msg)
+        // console.warn(x + " is out of range [" + min + "," + max + "]")
+        // return x < min ? min : max
     }
     return x
 }
 
 function bool(...args) {
-    let v = definedValue(...args)
+    let v = defval(...args)
     if (v === null) {// 不要用 AaLib.Type 判断是否 undefined
         return false
     }
@@ -279,12 +346,12 @@ function not(...args) {
 }
 
 function nullable(...args) {
-    let v = definedValue(...args)
+    let v = defval(...args)
     return len(v) === 0 ? null : v
 }
 
 function string(...args) {
-    let v = definedValue(...args)
+    let v = defval(...args)
     if (v === null) {
         return ""
     }
@@ -298,7 +365,7 @@ function string(...args) {
 
 // js 数字全部是采用的双精度浮点数存储的。 js number 最大值是：9007199254740992
 function number(...args) {
-    return Number(definedValue(...args))
+    return Number(defval(...args))
 }
 
 function float64(...args) {
@@ -312,7 +379,7 @@ function float32(...args) {
 // int64 最大值：9223372036854775807  >  js number 最大值 9007199254740992
 function int64a(...args) {
     // int64 和 uint64 都用string类型
-    let v = definedValue(...args)
+    let v = defval(...args)
     return v === null ? "0" : v + ''
 }
 
@@ -327,45 +394,45 @@ function moneyOld(...args) {
 
 
 function int32(...args) {
-    return _inRange(intMax(...args), -2147483648, 2147483647)
+    return _inRange(intMax(...args), -2147483648, 2147483647, 'int32')
 }
 
 function int24(...args) {
-    return _inRange(intMax(...args), -8388608, 8388607)
+    return _inRange(intMax(...args), -8388608, 8388607, 'int24')
 }
 
 function int16(...args) {
-    return _inRange(intMax(...args), -32768, 32767)
+    return _inRange(intMax(...args), -32768, 32767, 'int16')
 }
 
 function int8(...args) {
-    return _inRange(intMax(...args), -128, 127)
+    return _inRange(intMax(...args), -128, 127, 'int8')
 }
 
 function uint64a(...args) {
     // int64 和 uint64 都用string类型
-    let v = definedValue(...args)
+    let v = defval(...args)
     return v === null ? "0" : (v + '')
 }
 
 function uint32(...args) {
-    return _inRange(intMax(...args), 0, 4294967295)
+    return _inRange(intMax(...args), 0, 4294967295, 'uint32')
 }
 
 function uint24(...args) {
-    return _inRange(intMax(...args), 0, 16777215)
+    return _inRange(intMax(...args), 0, 16777215, 'uint24')
 }
 
 function uint16(...args) {
-    return _inRange(intMax(...args), 0, 65535)
+    return _inRange(intMax(...args), 0, 65535, 'uint16')
 }
 
 function uint8(...args) {
-    return _inRange(intMax(...args), 0, 255)
+    return _inRange(intMax(...args), 0, 255, 'uint8')
 }
 
 function struct(...args) {
-    let v = definedValue(...args)
+    let v = defval(...args)
     if (v === null || typeof v !== "object") {
         return {}
     }
@@ -377,7 +444,7 @@ function struct(...args) {
 
 
 function array(...args) {
-    let v = definedValue(...args)
+    let v = defval(...args)
     if (v === null || typeof v !== "object") {
         return []
     }
@@ -386,29 +453,5 @@ function array(...args) {
     }
     // Object.values 可以转化：struct, array, string，其他都转为空数组；这种方法会重新开辟内存
     return [v]
-}
-
-function date(...args) {
-
-    let v = definedValue(...args)
-    if (v !== null) {
-        v = new Date(v)
-        if (v instanceof Date && !isNaN(v)) {
-            return v.Fmt()
-        }
-    }
-
-    return "0000-00-00"
-}
-
-function datetime(...args) {
-
-    let v = definedValue(...args)
-    v = new Date(v)
-    if (v instanceof Date && !isNaN(v)) {
-        return v.Format()
-    }
-
-    return "0000-00-00 00:00:00"
 }
 

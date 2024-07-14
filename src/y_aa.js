@@ -1,11 +1,19 @@
 class Aa {
-    constructor() {
-        // a_
-        this.uri = _aaUri
-        this.math = _aaMath
+    // a_
+    uri = _aaUri
+    math = _aaMath
+    // b_
+    env= new _aaEnv(_aaUri)
+    // c_
+    storage = new _aaStorage()
 
-        // b_
-        this.env = new _aaEnv(_aaUri)
+    constructor() {
+
+    }
+
+
+    date() {
+        return new _aaDate(...arguments)
     }
 
     /**
@@ -38,6 +46,11 @@ class Aa {
      */
     apollo(url, fingerprintGenerator, loginDataHandler, storageGetter, storageSetter) {
         return new _aaApollo(this.fetch(), url, fingerprintGenerator, loginDataHandler, storageGetter, storageSetter)
+    }
+
+
+    vuser() {
+
     }
 }
 

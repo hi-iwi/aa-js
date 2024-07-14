@@ -14,12 +14,12 @@ function log(...args) {
     }
 }
 
-function logc(msg, rgb, strong) {
+function logc(msg, rgb, strong = false) {
     let style = ''
     if (atype.notEmpty(rgb)) {
         style += 'color:' + rgb + ';'
     }
-    if (bool(strong)) {
+    if (strong) {
         style += 'font-weight:700;'
     }
     if (typeof msg === "object") {
