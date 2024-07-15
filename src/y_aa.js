@@ -1,8 +1,8 @@
 class Aa {
     // a_
     Date = _aaDate
-    Log = _aaLog   // for call static methods
-    log
+
+    // log   log 类是纯静态方法，全局直接使用
 
     URI = _aaURI
 
@@ -19,17 +19,9 @@ class Aa {
 
     constructor() {
         let dbg = this.#parseDebug()
-
         this.env = new _aaEnvironment(dbg)
-        this.log = new _aaLog(_aaURI, this.env)
         this.storage = new _aaStorage()
-
         this.fetch = new _aaFetch()
-
-    }
-
-    setDebug(debug = true) {
-        this.env.setDebug(debug)
     }
 
 
@@ -42,7 +34,7 @@ class Aa {
         return ["192.168.", "localhost"].includes(h)
     }
 
-    date(...args){
+    date(...args) {
         return new _aaDate(...args)
     }
 
@@ -63,7 +55,6 @@ class Aa {
     apollo(url, fingerprintGenerator, loginDataHandler, storageGetter, storageSetter) {
         return new _aaApollo(this.fetch, url, fingerprintGenerator, loginDataHandler, storageGetter, storageSetter)
     }
-
 
 
 }

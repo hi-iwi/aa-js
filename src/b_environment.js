@@ -1,16 +1,14 @@
+
+
 class _aaEnvironment {
     name = 'aa-environment'
-    debug = false  // {bool} 是否是debug状态
-    paramName = aparam.debug
-    _uri  // {typeof _aaUri}
 
 
-    constructor(debug = false) {
-        this.debug = debug
+    constructor() {
     }
 
     setDebug(debug = true) {
-        this.debug = debug
+        _aaDebugStatus = debug
     }
 
     isPC() {
@@ -34,13 +32,11 @@ class _aaEnvironment {
     }
 
     isSafari() {
-        let userAgent = window.navigator.userAgent
-        return /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
+         return /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
     }
 
     isIphone() {
-        let userAgent = window.navigator.userAgent
-        return /iPhone/i.test(window.navigator.userAgent)
+         return /iPhone/i.test(window.navigator.userAgent)
     }
 
     isIpad() {
@@ -48,7 +44,7 @@ class _aaEnvironment {
     }
 
     isAppleTouch() {
-        return aa.env.isIphone() || aa.env.isIpad()
+        return this.isIphone() || this.isIpad()
     }
 
 }

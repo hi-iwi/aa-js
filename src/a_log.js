@@ -26,73 +26,56 @@ class AaLoggerStyle {
     }
 }
 
-class _aaLog {
+class log {
     name = 'aa-log'
-    // @type {_aaUri}
-    _uri
-    // @type {_aaEnvironment}
-    _env
-    // @type {(s:string)=>void}
-    alertEffect
-    _breakpointIncr = 0
+
+      // @type {(s:string)=>void}
+    static alertEffect= s => console.log(s)
+    static _breakpointIncr = 0
 
 
 
-    /**
-     * @param {_aaURI} [uri]
-     * @param {_aaEnvironment} [env]
-     */
-    constructor(uri, env) {
-        this._uri = uri
-        this._env = env
-        this.alertEffect = s => console.log(s)
-    }
-
-    #isDebug() {
-        return this._env ? this._env.debug : false
-    }
 
     /**
      *
      * @param {(s:string)=>void} effect
      */
-    setAlertEffect(effect) {
-
-        this.alertEffect = effect
+    static setAlertEffect(effect) {
+        log.alertEffect = effect
     }
 
-    alert(...args) {
+    static alert(...args) {
         let s = ''
         for (let i = 0; i < args.length; i++) {
             s += args[i] + ' '
         }
-        this.alertEffect(s)
+        log.alertEffect(s)
     }
 
-    error(...args) {
-        this.print(new AaLoggerStyle("#f00", 700), '[error]', ...args)
+    static error(...args) {
+        log.print(new AaLoggerStyle("#f00", 700), '[error]', ...args)
     }
 
-    warn(...args) {
-        this.print(new AaLoggerStyle("#d5cc00", 700), '[warn]', ...args)
+    static warn(...args) {
+        log.print(new AaLoggerStyle("#d5cc00", 700), '[warn]', ...args)
     }
 
-    info(...args) {
-        this.print(new AaLoggerStyle("#6ece00"), '[info]', ...args)
+    static info(...args) {
+        log.print(new AaLoggerStyle("#6ece00"), '[info]', ...args)
     }
 
-    debug(...args) {
-        this.print(new AaLoggerStyle("#888"), '[debug]', ...args)
+    static debug(...args) {
+        log.print(new AaLoggerStyle("#888"), '[debug]', ...args)
     }
 
     // console.log with color
 
-    draw(rgb, ...args) {
-        this.print(new AaLoggerStyle(rgb), ...args)
+    static draw(rgb, ...args) {
+        log.print(new AaLoggerStyle(rgb), ...args)
     }
 
-    strong(...args) {
-        this.print(new AaLoggerStyle('#000', 700), ...args)
+    static strong(...args) {
+        log.print(new AaLoggerStyle('#000', 700), ...args)
     }
 
 
@@ -101,15 +84,16 @@ class _aaLog {
      * @param {AaLoggerStyle|*} style
      * @param args
      */
-    print(style, ...args) {
-        if (!this.#isDebug()) {
+    static print(style, ...args) {
+        if (!_aaIsDebug()) {
             return
         }
 
         let data = style instanceof AaLoggerStyle ? args : {style, ...args}
-        let alert = new this._uri().queryBool(aparam.alert)
+        let matches = window.location.search.match(new RegExp(aparam.alert + "=(\\w+)"))
+        let alert = bool(matches, 1)
         if (alert) {
-            this.alert(...data)
+            log.alert(...data)
             return
         }
 
@@ -136,11 +120,11 @@ class _aaLog {
         }
     }
 
-    breakpoint(...args) {
-        this._breakpointIncr++
+    static breakpoint(...args) {
+        log._breakpointIncr++
         // args 可能是 object
-        args.unshift("%c· brk " + this._breakpointIncr + '  ', 'color:#f00;font-weight:700;')
-        this.print(...args)
+        args.unshift("%c· brk " + log._breakpointIncr + '  ', 'color:#f00;font-weight:700;')
+        log.print(...args)
     }
 
 }

@@ -59,6 +59,7 @@ class XXX{
 
 * new atype()  type check
 * new map()
+* log.xx
 * type convert: cast (vv, vk) to such type
     * string()
     * number()

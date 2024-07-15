@@ -1,7 +1,8 @@
 class _aaDateString {
     name = 'aa-date-string'
-    timezoneOffset = _aaDateString.localTimezoneOffsetString
+    timezoneOffset
     value = ""
+    raw = ""
 
     static localTimezoneOffsetString = _aaDateString.parseTimezoneOffsetString()
 
@@ -36,16 +37,22 @@ class _aaDateString {
         return offset < 0 ? "+" + _aaDateString.formatTime(-offset) : "-" + _aaDateString.formatTime(offset)
     }
 
-    constructor(s, zone) {
-        if (!s) {
-            return
-        }
+    /**
+     *
+     * @param {string} s
+     * @param {string} [zone]
+     */
+    constructor(s, zone = _aaDateString.localTimezoneOffsetString) {
+        this.raw = s
         s = s.replace(' ', 'T')
         let reg = /[-+][01]\d:[0-5]\d$/
         let zm = s.match(reg)
         if (zm) {
             zone = zm[0]
             s = s.replace(reg, '')
+        }
+        if (!zone) {
+            zone = _aaDateString.localTimezoneOffsetString
         }
 
         if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\d{2}$/.test(s)) {
@@ -70,6 +77,34 @@ class _aaDateString {
     isMax() {
         let s = this.value.substring(0, 19)
         return s === "9999-12-31T23:59:59" || s === "9999-12-31T00:00:00"
+    }
+
+    year() {
+        return this.value.substring(0, 4)
+    }
+
+    month() {
+        return this.value.substring(5, 7)
+    }
+
+    day() {
+        return this.value.substring(8, 10)
+    }
+
+    hour() {
+        return this.value.substring(11, 13)
+    }
+
+    minute() {
+        return this.value.substring(14, 16)
+    }
+
+    second() {
+        return this.value.substring(17, 19)
+    }
+
+    millisecond() {
+        return this.value.substring(19)
     }
 
     toString() {
@@ -286,6 +321,7 @@ class _aaDate {
     name = 'aa-date'
     // @type Date
     date
+    rawString = ''
     // @type AaDateValidator
     validator = new _aaDateValidator("Invalid Date")
 
@@ -294,8 +330,24 @@ class _aaDate {
     timezoneOffset = _aaDateString.localTimezoneOffsetString
 
 
+    /**
+     * Extract the date string to YYYYMM style number
+     * @param {string} date
+     * @return number
+     */
+    static toYearMonthNumber(date) {
+        let ds = new _aaDateString(date)
+        return parseInt(ds.year() + '' + ds.month())
+    }
 
-
+    /**
+     * Compose Number(YYYYMM) to YYYY-MM string
+     * @param {number} num
+     * @return {string}
+     */
+    static toYearMonthString(num) {
+        return num / 100 + "-" + num % 100
+    }
 
 
     /**
@@ -317,8 +369,13 @@ class _aaDate {
     constructor(...args) {
         let l = args.length
         if (l === 0) {
-            return this.setDate(new Date())
+            this.reset(new Date())
+            return
         }
+        if (typeof args[0] === "undefined" || args[0] === null) {
+            args[0] = new Date()
+        }
+
         // parse zone
         if (l > 1 && args[l - 1] && typeof args[l - 1] === "string") {
             this.timezoneOffset = args[l - 1]
@@ -326,17 +383,20 @@ class _aaDate {
         }
         //  new _aaDate(year:number, month:number, day:number, hour?:number, minute?:number, second?:number, millisecond?:number, zone?:string)
         let arg = l === 1 ? args[0] : new Date(...args.slice(0, l))
-        this.setDate(arg)
+        this.reset(arg)
     }
 
     // @param {Date|string|number} date
-    setDate(date, strict = true) {
+    reset(date, strict = true) {
+        this.rawString = ''
+        this.resetPatter()
         let zone = this.timezoneOffset
         // timestamp
         if (typeof date === "number") {
-            console.log('%c' + "[warn] new _aaDate(timestamp * second)  ==> different with new Date(millisecond)", 'color:#aa0;font-weight:700;')
-            date = new Date(datex * C.Second)
+            date = new Date(datex)
         } else if (typeof date === "string") {
+            this.rawString = date
+            this.setPattern(date)
             let ds = new _aaDateString(date, this.timezoneOffset)
             if (ds.isZero(true)) {
                 this.date = new _aaDateZero()
@@ -361,15 +421,45 @@ class _aaDate {
         return this
     }
 
+    resetPatter() {
+        this.pattern = 'YYYY-MM-DD HH:II:SS'
+    }
+
+    /**
+     *
+     * @param pattern   YYYY-MM-DD HH:II:SS.sssZ  or  2024-07-15 00:00:00.000+08:00
+     * @return {_aaDate}
+     */
     setPattern(pattern) {
+        if (/\d/.test(pattern)) {
+            pattern = pattern.replace(/\+[01]\d:[0-5]\d/, 'Z')  // timezone
+
+            let m = pattern.match(/\.\d+/)
+            if (m) {
+                pattern = pattern.replace(m[0], m[0].replace(/\d/g, 's'))  // milliseconds
+            }
+            m = pattern.match(/\d{4}-[01]\d-[0-3]\d/)
+            if (m) {
+                pattern = pattern.replace(m[0], 'YYYY-MM-DD')
+            }
+            m = pattern.match(/[02]\d:[0-5]\d:[0-5]\d/)
+            if (m) {
+                pattern = pattern.replace(m[0], 'HH:II:SS')
+            }
+        }
         this.pattern = pattern
         return this
     }
 
     // 只保留特殊常用的函数，其他的如果需要用。就调用 xxx.date.xxxx 直接调用即可
-    toString() {
+    // @return {string}
+    toString(invalidString = void '') {
+        if (typeof invalidString !== "undefined" && !this.validator.isValid()) {
+            return invalidString
+        }
         return this.format(this.pattern)
     }
+
 
     // How many days in this month
     monthDays() {
@@ -394,22 +484,22 @@ class _aaDate {
         return this.format("HH:II:SS")
     }
 
-    // Gets the year
+    // Get the year
     year() {
         return this.date.getFullYear()
     }
 
-    // Gets the real month, starts from 1
+    // Get the real month, starts from 1
     month() {
         return this.date.getMonth() + 1    // Date.getMonth 从0 开始
     }
 
-    // Gets the day-of-the-month
+    // Get the day-of-the-month
     day() {
         return this.date.getDate()
     }
 
-    // @return {(1|2|3|4|5|6|7)} Gets the day of the week
+    // @return {(1|2|3|4|5|6|7)} Get the day of the week
     weekDay() {
         return this.date.getDay()
     }
@@ -451,16 +541,91 @@ class _aaDate {
     }
 
 
-    // Gets quarter-of-the-year
+    // Get quarter-of-the-year
     quarter() {
         return Math.floor((this.date.getMonth() + 3) / 3)
     }
 
-    // Gets week-of-the-year
+    // Get week-of-the-year
     weekOfYear() {
         let d1 = new Date(this.year(), 0, 1) // 当年1月1日
         let x = Math.round((this - d1) / C.Day);
         return Math.ceil((x + d1.getDay()) / 7)
+    }
+
+    getTimezoneOffset() {
+        return this.date.getTimezoneOffset()
+    }
+
+    setTime(time) {
+        return this.date.setTime(time)
+    }
+
+    setMilliseconds(ms) {
+        return this.date.setMilliseconds(ms)
+    }
+
+    /**
+     * set the seconds of the Date object using local time.
+     * @param {number} sec
+     * @param {number} [ms]
+     * @return {number}
+     */
+    setSeconds(sec, ms) {
+        return this.date.setSeconds(sec, ms)
+    }
+
+    /**
+     * set the minutes of the Date object using local time.
+     * @param {number} min
+     * @param {number} [sec]
+     * @param {number} [ms]
+     * @return {number}
+     */
+    setMinutes(min, sec, ms) {
+        return this.date.setMinutes(min, sec, ms)
+    }
+
+    /**
+     *
+     * @param {number} hours
+     * @param {number} [min]
+     * @param {number} [sec]
+     * @param {number} [ms]
+     * @returnn {number}
+     */
+    setHours(hours, min, sec, ms) {
+        return this.date.setHours(hours, min, sec, ms)
+    }
+
+    /**
+     * Set the numeric day-of-the-month value of the Date object using local time.
+     * @param {number} day
+     * @return {number}
+     */
+    setDate(day) {
+        return this.date.setDate(day)
+    }
+
+    /**
+     * Set the month value in the Date object using local time.
+     * @param {number} month
+     * @param {number} [day]
+     * @return {number}
+     */
+    setMonth(month, day) {
+        return this.date.setMonth(month, day)
+    }
+
+    /**
+     * Set the year of the Date object using local time.
+     * @param year
+     * @param {number} [month]
+     * @param {number} [day]
+     * @return {number}
+     */
+    setFullYear(year, month, day) {
+        return this.date.setFullYear(year, month, day)
     }
 
     // YYYY-MM-DD HH:II:SS   YYYY-MM-DD HH:II:SS.sss
@@ -512,9 +677,10 @@ class _aaDate {
     // Calculate date difference in days or business days between 2 dates.
     /**
      * 计算两个日期相隔： 年、月、日数
+     * @param {_aaDate|Date|string|number} [d1]  default to now, a.k.a. new Date()
      */
     diff(d1) {
-        return new _aaDateDifference(this.date, d1)
+        return new _aaDateDifference(this, d1)
     }
 
     // 用于json序列号
@@ -525,6 +691,7 @@ class _aaDate {
 
 
 class _aaDateDifference {
+    name = 'aa-date-difference'
     // differences in milliseconds
     diff
 
@@ -538,10 +705,13 @@ class _aaDateDifference {
 
 
     constructor(d0, d1) {
-        d1 = new _aaDate(d1)
-
-        this.diff = d1 - d0
-
+        d0 = d0 instanceof _aaDate ? d0 : new _aaDate(d0)
+        d1 = d1 instanceof _aaDate ? d1 : new _aaDate(d1)  // new _aaDate(undfined) equals to new _aaDate(new Date())
+        if (!d0.validator.isValid(true) || !d0.validator.isValid(true)) {
+            console.warn()
+            return
+        }
+        this.diff = d1.valueOf() - d0.valueOf()
         let yearsPart = d1.year() - d0.year()
         let monthsPart = d1.month() - d0.month()
         let daysPart = d1.day() - d0.day()

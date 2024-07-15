@@ -27,3 +27,19 @@ const aparam = {
 
     localAuthAt: "local_auth_at",
 }
+
+
+var _aaDebugStatus = void false  // 为了方便 log 类，debug状态一律用全局
+
+function _aaIsDebug() {
+    if (typeof _aaDebugStatus === "boolean") {
+        return _aaDebugStatus
+    }
+    let matches = window.location.search.match(new RegExp(aparam.debug + "=(\\w+)"))
+    if (matches && matches[1]) {
+        _aaDebugStatus = bool(matches[1])
+        return _aaDebugStatus
+    }
+    const h = window.location.hostname.substring(0, 8)
+    return ["192.168.", "localhost"].includes(h)
+}
