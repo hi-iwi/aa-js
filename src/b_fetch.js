@@ -8,16 +8,19 @@ class _aaFetch {
         'Accept'      : "application/json"
     }
 
-    static new() {
-        return new _aaFetch()
-    }
 
     constructor() {
     }
 
-    setGlobalHeaders(headers) {
+    initGlobalHeaders(headers) {
         this.headers = headers
     }
+
+    addGlobalHeaders(headers) {
+        this.headers = {...this.headers, ...headers}
+    }
+
+
 
     #makeHeaders(headers = {}) {
         // @TODO 合并

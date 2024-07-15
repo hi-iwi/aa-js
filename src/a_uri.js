@@ -54,11 +54,6 @@ class _aaURI {
         return s
     }
 
-
-    static new(url = window.location.href, params = {}) {
-        return new _aaURI(url, params)
-    }
-
     constructor(url = window.location.href, params = {}) {
         this.parse(url)
         if (len(params) > 0) {

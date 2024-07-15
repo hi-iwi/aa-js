@@ -6,8 +6,8 @@
 
 ```javascript
 const aa = new Aa()
-aa.initCookieStorage(xxxx)
- 
+aa.storage.initCookieStorage()
+aa.fetch.initGlobalHeaders() 
 
 
 ```
@@ -27,7 +27,6 @@ aa.initCookieStorage(xxxx)
 ```
 // pseudo-code
 interface BaseClass {
-    ::new(): BaseClass              // static
     ?valueOf(): any                // refer to .value, if neccessary. e.g. +new Date()  ==> will call this
     ?toString(): string            // '' + new BaseClass()  ===> will call this
     ?toJSON(): string              // for JSON.stringify
@@ -38,8 +37,7 @@ interface BaseClass {
 
 class XXX{
   constructor(){}
-  static new(){ return new XXX() }
-}
+ }
 
 ```
 

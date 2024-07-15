@@ -1,18 +1,19 @@
 class Aa {
     // a_
-    date = _aaDate
-    logger = _aaLogger   // for call static methods
+    Date = _aaDate
+    Log = _aaLog   // for call static methods
     log
 
-    uri = _aaURI
-    math = _aaMath
+    URI = _aaURI
+
+    Math = _aaMath
     // b_
-    environment = _aaEnvironment
+    Env = _aaEnvironment
     env
     // c_
     storage
     // @type typeof _aaFetch
-    fetcher = _aaFetch
+    Fetch = _aaFetch
     // @type _aaFetch
     fetch
 
@@ -20,20 +21,11 @@ class Aa {
         let dbg = this.#parseDebug()
 
         this.env = new _aaEnvironment(dbg)
-        this.log = new _aaLogger(_aaURI, this.env)
+        this.log = new _aaLog(_aaURI, this.env)
         this.storage = new _aaStorage()
 
         this.fetch = new _aaFetch()
 
-    }
-
-    // @param {Storage} cookieStorage
-    initCookieStorage(cookieStorage) {
-        this.storage.setCookieStorage(cookieStorage)
-    }
-
-    initGlobalHeaders(headers){
-        this.fetch.initGlobalHeaders(headers)
     }
 
     setDebug(debug = true) {
@@ -42,7 +34,7 @@ class Aa {
 
 
     #parseDebug() {
-        const url = this.uri.new()
+        const url = new this.URI()
         if (url.has(aparam.debug)) {
             return url.queryBool(aparam.debug)
         }
@@ -50,9 +42,12 @@ class Aa {
         return ["192.168.", "localhost"].includes(h)
     }
 
+    date(...args){
+        return new _aaDate(...args)
+    }
 
     url(url = window.location.href, params = {}) {
-        return this.uri.new(url, params)
+        return new this.URI(url, params)
     }
 
 

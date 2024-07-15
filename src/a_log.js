@@ -26,8 +26,8 @@ class AaLoggerStyle {
     }
 }
 
-class _aaLogger {
-    name = 'aa-logger'
+class _aaLog {
+    name = 'aa-log'
     // @type {_aaUri}
     _uri
     // @type {_aaEnvironment}
@@ -36,9 +36,7 @@ class _aaLogger {
     alertEffect
     _breakpointIncr = 0
 
-    static new(...args) {
-        return new _aaApollo(...args)
-    }
+
 
     /**
      * @param {_aaURI} [uri]
@@ -109,7 +107,7 @@ class _aaLogger {
         }
 
         let data = style instanceof AaLoggerStyle ? args : {style, ...args}
-        let alert = this._uri.new().queryBool(aparam.alert)
+        let alert = new this._uri().queryBool(aparam.alert)
         if (alert) {
             this.alert(...data)
             return

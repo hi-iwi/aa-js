@@ -1,42 +1,9 @@
-class _aaDate {
-    name = 'aa-date'
-    static localTimezoneOffsetString = _aaDate.parseTimezoneOffsetString()
-    // @type Date
-    date
+class _aaDateString {
+    name = 'aa-date-string'
+    timezoneOffset = _aaDateString.localTimezoneOffsetString
+    value = ""
 
-
-    pattern = 'YYYY-MM-DD HH:II:SS'
-    timezoneOffset
-
-
-    // check the date    -2 on unknown; -1 on zero date;  0 on OK; 1 on max date;
-    // @param {string} s
-    static check(s) {
-
-        if (_aaDate.isZero(s, true)) {
-            return -1
-        }
-        if (_aaDate.isMax(s)) {
-            return 1
-        }
-        try {
-            new _aaDate(s)
-            return 0
-        } catch (e) {
-            return -2
-        }
-    }
-
-    static isZero(s, strict = true) {
-        if (!strict && !s) {
-            return true
-        }
-        return ["0000", "0000-00", "0000-00-00", "0000-00-00 00:00:00"].includes(s)
-    }
-
-    static isMax(s) {
-        return ["9999-12-31", "9999-12-31 23:59:59"].includes(s)
-    }
+    static localTimezoneOffsetString = _aaDateString.parseTimezoneOffsetString()
 
     /**
      * 将秒数转为 II:SS 格式，或者把分钟数转为 HH:II格式
@@ -66,86 +33,333 @@ class _aaDate {
         } else if (typeof offset !== "number") {
             offset = new Date().getTimezoneOffset()
         }
-        return offset < 0 ? "+" + _aaDate.formatTime(-offset) : "-" + _aaDate.formatTime(offset)
+        return offset < 0 ? "+" + _aaDateString.formatTime(-offset) : "-" + _aaDateString.formatTime(offset)
     }
 
-    static new(...args) {
-        return new _aaDate(...args)
+    constructor(s, zone) {
+        if (!s) {
+            return
+        }
+        s = s.replace(' ', 'T')
+        let reg = /[-+][01]\d:[0-5]\d$/
+        let zm = s.match(reg)
+        if (zm) {
+            zone = zm[0]
+            s = s.replace(reg, '')
+        }
+
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\d{2}$/.test(s)) {
+            s += '.000' + zone
+        } else if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+            s += 'T00:00:00.000' + zone
+        } else if (/^\d{4}-\d{2}$/.test(s)) {
+            s += '-01T00:00:00.000' + zone
+        } else if (/^\d{4}$/.test(s)) {
+            s += '-01-01T00:00:00.000' + zone
+        } else {
+            s += zone
+        }
+        this.timezoneOffset = zone
+        this.value = s
     }
 
-    /*
-Chrome 支持  new Date('YYYY-MM-DD')  但是 safari 不支持！！
-Safari 支持的日期格式：
-    YYYY-MM-DD HH:II:SS.sss+08:00
- * @param {Date|number|string} date   YYYY 'YYYY' 'YYY-MM' 'YYYY-MM-DD'  'YYYY-MM-DD HH:II:SS' 'YYYY-MM-DDTHH:II:SS' 'YYYY-MM-DD HH:II:SS.sss+08:00'
- *              timestamp 3424342234 '3424342234'              date
- * @param {string} [zone]   "+08:00"
+    isZero(strict = true) {
+        return (!strict && !this.value) || this.value.indexOf("0000-00-00T00:00:00.000") === 0
+    }
 
- * 时间戳就是： AaDate.New(xxxx).valueOf() / 1000 到秒
+    isMax() {
+        let s = this.value.substring(0, 19)
+        return s === "9999-12-31T23:59:59" || s === "9999-12-31T00:00:00"
+    }
 
-   new _aaDate()
-   new _aaDate(date:string, zone?:string)
-   new _aaDate(timestamp:number, zone?string)   ---> new Date(millisecond)
-   new _aaDate(year:number, month:number, day:number, hour?:number, minute?:number, second?:number, millisecond?:number, zone?:string)
- */
+    toString() {
+        return this.value
+    }
+}
+
+class _aaDateValidator {
+    name = 'aa-date-validator'
+
+    type
+
+    // support '1000-01-01' to '9999-12-31'
+    static invalidDate = 'invalid date'
+    static zeroDate = 'zero date'    // 0000-00-00   or  0000-00-00 00:00:00
+    static validDate = 'valid date'
+    static maxDate = 'max date'  // 9999-12-31 or 9999-12-31 23:59:59
+
+    constructor(s, strict = true) {
+        this.parse(s, strict)
+    }
+
+    /**
+     *
+     * @param {string|Date} date
+     * @param {boolean} strict
+     * @return {_aaDateValidator}
+     */
+    parse(date, strict = true) {
+        if (typeof date === "string") {
+            let ds = new _aaDateString(date)
+            if (ds.isZero(strict)) {
+                this.type = _aaDateValidator.zeroDate
+                return this
+            }
+            if (ds.isMax()) {
+                this.type = _aaDateValidator.maxDate
+                return this
+            }
+
+            date = ds.toString()
+        }
+
+        // new Date() not yet thrown an exception.  but .toString() may throw
+        try {
+
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Invalid_date
+            // RangeError: Invalid time value (V8-based)
+            // RangeError: invalid date (Firefox)
+            // RangeError: Invalid Date (Safari)
+            let d = new Date(date)
+            if (["", "null", "invalid date", "invalid time value"].includes(d.toString().toLowerCase())) {
+                this.type = _aaDateValidator.invalidDate
+                return this
+            }
+            // 253402271999000 = new Date("9999-12-31 23:59:59")
+            // 253402214400000 = new Date("9999-12-31")
+            this.type = [253402271999000, 253402214400000].d.valueOf() ? _aaDateValidator.maxDate : _aaDateValidator.validDate
+        } catch (e) {
+            this.type = _aaDateValidator.invalidDate
+        }
+        return this
+    }
+
+    setInvalid() {
+        this.type = _aaDateValidator.invalidDate
+    }
+
+    setZero() {
+        this.type = _aaDateValidator.zeroDate
+    }
+
+    isZero() {
+        return this.type === _aaDateValidator.zeroDate
+    }
+
+    isMax() {
+        return this.type === _aaDateValidator.maxDate
+    }
+
+    isValid(includeMaxDate = false) {
+        let ok = this.type === _aaDateValidator.validDate
+        return ok || (includeMaxDate && this.type === _aaDateValidator.maxDate)
+    }
+
+}
+
+class _aaDateZero extends Date {
+    name = 'aa-date-zero'
+    value
+
+    // @param {string} date
+    constructor(date = '0000-00-00 00:00:00') {
+        super(date)
+        this.value = date
+    }
+
+    toString() {
+        return this.value
+    }
+
+    toDateString() {
+        return this.value
+    }
+
+    toTimeString() {
+        return this.value
+    }
+
+    toLocaleString() {
+        return this.value
+    }
+
+
+    toLocaleDateString() {
+        return this.value
+    }
+
+    toLocaleTimeString() {
+        return this.value
+    }
+
+    valueOf() {
+        return 0
+    }
+
+    getTime() {
+        return 0
+    }
+
+    getFullYear() {
+        return 0
+    }
+
+    getUTCFullYear() {
+        return 0
+    }
+
+    getMonth() {
+        return -1  // month start from 0;
+    }
+
+    getUTCMonth() {
+        return -1
+    }
+
+    getDate() {
+        return 0
+    }
+
+    getUTCDate() {
+        return 0
+    }
+
+    getDay() {
+        return 0
+    }
+
+    getUTCDay() {
+        return 0
+    }
+
+    getHours() {
+        return 0
+    }
+
+    getUTCHours() {
+        return 0
+    }
+
+    getMinutes() {
+        return 0
+    }
+
+    getUTCMinutes() {
+        return 0
+    }
+
+    getSeconds() {
+        return 0
+    }
+
+    getUTCSeconds() {
+        return 0
+    }
+
+    getMilliseconds() {
+        return 0
+    }
+
+    getUTCMilliseconds() {
+        return 0
+    }
+
+    getTimezoneOffset() {
+        return 0
+    }
+
+
+    toUTCString() {
+        return this.value
+    }
+
+    toISOString() {
+        return this.value
+    }
+
+    toJSON() {
+        return this.value
+    }
+}
+
+class _aaDate {
+    name = 'aa-date'
+    // @type Date
+    date
+    // @type AaDateValidator
+    validator = new _aaDateValidator("Invalid Date")
+
+
+    pattern = 'YYYY-MM-DD HH:II:SS'
+    timezoneOffset = _aaDateString.localTimezoneOffsetString
+
+
+
+
+
+
+    /**
+     *
+
+     * @param args
+     *  date string:
+     *      YYYY-MM-DDTHH:II:SS.sss+08:00       YYYY-MM-DD HH:II:SS.sss+08:00
+     *      YYYY-MM-DDTHH:II:SS                 YYYY-MM-DD HH:II:SS
+     *      YYYY-MM-DD        YYYY-MM            YYYY
+     * @warn Chrome 支持  new Date('YYYY-MM-DD')  但是 safari 不支持！！Safari 需转换完整字符串：YYYY-MM-DD HH:II:SS.sss+08:00
+     * @usage
+     *  new _aaDate()
+     *  new _aaDate(date:string, zone?:string)
+     *  new _aaDate(timestamp:number, zone?string)   ---> new Date(millisecond)
+     *  new _aaDate(year:number, month:number, day:number, hour?:number, minute?:number, second?:number, millisecond?:number, zone?:string)
+     *  @throws {TypeError}
+     */
     constructor(...args) {
-        this.timezoneOffset = _aaDate.localTimezoneOffsetString
         let l = args.length
         if (l === 0) {
-            this.date = new Date()
-            return
+            return this.setDate(new Date())
         }
         // parse zone
         if (l > 1 && args[l - 1] && typeof args[l - 1] === "string") {
             this.timezoneOffset = args[l - 1]
             l--  // 移除最后一位
         }
-        let s = args[0]
-        if (s instanceof Date) {
-            this.date = s
-            return
-        }
         //  new _aaDate(year:number, month:number, day:number, hour?:number, minute?:number, second?:number, millisecond?:number, zone?:string)
-        if (l > 1) {
-            this.date = new Date(...args.slice(0, l))
-            return
-        }
-        if (typeof s === "string" && /^\d+$/.test(s)) {
-            s = Number(s)
-        }
-
-        if (typeof s === "number") {
-            console.log('%c' + "[warn] new _aaDate(timestamp * second)  ==> different with new Date(millisecond)", 'color:#aa0;font-weight:700;')
-            this.date = new Date(datex * C.Second)
-            return
-        }
-
-        if (typeof s !== "string") {
-            throw new TypeError("invalid date")
-        }
-
-        // "0000-00-00 00:00:00" 是invalid date
-        // "9999-12-31 23:59:59" 是可以的
-        // if (["0000", "0000-00", "0000-00-00", "0000-00-00 00:00:00"].includes(s)) {
-        //
-        // }
-        //
-        // if (["9999-12-31", "9999-12-31 23:59:59"].includes(d)) {
-        //
-        // }
-
-        if (/^\d{4}-\d{2}-\d{2}[\sT]\d{2}:\d{2}\d{2}$/.test(s)) {
-            s += '.000' + this.timezoneOffset
-        } else if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-            s += 'T00:00:00.000' + this.timezoneOffset
-        } else if (/^\d{4}-\d{2}$/.test(s)) {
-            s += '-01T00:00:00.000' + this.timezoneOffset
-        } else if (/^\d{4}$/.test(s)) {
-            s += '-01-01T00:00:00.000' + this.timezoneOffset
-        }
-        this.date = new Date(s.replace(' ', 'T'))
+        let arg = l === 1 ? args[0] : new Date(...args.slice(0, l))
+        this.setDate(arg)
     }
 
+    // @param {Date|string|number} date
+    setDate(date, strict = true) {
+        let zone = this.timezoneOffset
+        // timestamp
+        if (typeof date === "number") {
+            console.log('%c' + "[warn] new _aaDate(timestamp * second)  ==> different with new Date(millisecond)", 'color:#aa0;font-weight:700;')
+            date = new Date(datex * C.Second)
+        } else if (typeof date === "string") {
+            let ds = new _aaDateString(date, this.timezoneOffset)
+            if (ds.isZero(true)) {
+                this.date = new _aaDateZero()
+                this.validator.setZero()
+                return this
+            }
+            date = new Date(ds.toString())
+        }
+
+        if (date instanceof Date) {
+            this.date = date
+            this.validator.parse(date, strict)
+            if (this.validator.isValid(true)) {
+                this.timezoneOffset = zone  // set after valid date
+                return this
+            }
+        } else {
+            date = new Date("Invalid Date")
+            this.date = date
+            this.validator.setInvalid()
+        }
+        return this
+    }
 
     setPattern(pattern) {
         this.pattern = pattern
@@ -195,7 +409,7 @@ Safari 支持的日期格式：
         return this.date.getDate()
     }
 
-    // Gets the day of the week
+    // @return {(1|2|3|4|5|6|7)} Gets the day of the week
     weekDay() {
         return this.date.getDay()
     }
@@ -218,6 +432,9 @@ Safari 支持的日期格式：
 
     // timestamp in milliseconds.   +date  可以隐式调用 valueOf()
     valueOf() {
+        if (this.validator.isZero()) {
+            return 0
+        }
         return this.date.valueOf()
     }
 
@@ -234,14 +451,25 @@ Safari 支持的日期格式：
     }
 
 
-    // Gets quarter of the year
+    // Gets quarter-of-the-year
     quarter() {
         return Math.floor((this.date.getMonth() + 3) / 3)
+    }
+
+    // Gets week-of-the-year
+    weekOfYear() {
+        let d1 = new Date(this.year(), 0, 1) // 当年1月1日
+        let x = Math.round((this - d1) / C.Day);
+        return Math.ceil((x + d1.getDay()) / 7)
     }
 
     // YYYY-MM-DD HH:II:SS   YYYY-MM-DD HH:II:SS.sss
     // z ==> timezone
     format(s = "YYYY-MM-DD HH:II:SS") {
+        if (this.date instanceof _aaDateZero) {
+            return s.replace(/[YMDHISs]/g, '0').replace(/Z/g, this.timezoneOffset)
+        }
+
         // @type {[{key:string}:[padZero:number, *]}
         // padZero: 0 no pad;  > 0 pad left; < 0 pad right
         const o = {

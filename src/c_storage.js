@@ -38,9 +38,7 @@ class _aaStorage {
     // @type Storage
     sessionStorage = window.sessionStorage
 
-    static new(cookieStorage) {
-        return new _aaStorage(cookieStorage)
-    }
+
     // @param {Storage} [cookieStorage]
     constructor(cookieStorage) {
         this.cookieStorage = cookieStorage instanceof Storage ? cookieStorage : new _aaStorageNotImplemented('cookie')

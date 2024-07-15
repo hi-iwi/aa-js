@@ -10,9 +10,6 @@ class _aaApollo {
     url
     apollo
 
-    static new(...args) {
-        return new _aaApollo(...args)
-    }
 
     /**
      *
