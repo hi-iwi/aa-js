@@ -693,6 +693,7 @@ class _aaDate {
 class _aaDateDifference {
     name = 'aa-date-difference'
     // differences in milliseconds
+    valid = false
     diff
 
     yearsPart
@@ -708,7 +709,7 @@ class _aaDateDifference {
         d0 = d0 instanceof _aaDate ? d0 : new _aaDate(d0)
         d1 = d1 instanceof _aaDate ? d1 : new _aaDate(d1)  // new _aaDate(undfined) equals to new _aaDate(new Date())
         if (!d0.validator.isValid(true) || !d0.validator.isValid(true)) {
-            console.warn()
+            log.error("date difference: invalid date")
             return
         }
         this.diff = d1.valueOf() - d0.valueOf()
@@ -750,6 +751,7 @@ class _aaDateDifference {
         this.minutesPart = minutesPart
         this.secondsPart = secondsPart
         this.millisecondsPart = millisecondsPart
+        this.valid = true
     }
 
     /**
@@ -901,7 +903,7 @@ class _aaDateDifference {
 
     format(layout, noCarry = false) {
         // "{%Y年}{%M个月}{%D天}
-        if (this.diff < C.Second) {
+        if (!this.valid || this.diff < C.Second) {
             return ""
         }
         layout = string(layout)
@@ -971,6 +973,57 @@ class _aaDateDifference {
             start = true
         }
         return out
+    }
+
+    formatFriendly(lang, dict) {
+        const Timeline = {
+            translate: function (...args) {
+                const pkg = {
+                    'zh-CN': {
+                        'Recently': '刚刚',
+                        '%sm ago' : '%s分钟前',
+                        '%sh ago' : '%s小时前',
+                        '%sd ago' : '%s天前',
+                        '%sw ago' : '%s周前',
+                        '%smo ago': '%s个月前',
+                        '%sy ago' : '%s年前',  // 最多1年前
+                    }
+                };
+                // const lang = AaLib..acceptLanguage();
+                const p = pkg['zh-CN'];
+
+
+
+                return fmt.translate(p, ...args)
+
+            }
+        };
+        let diff = this.diff()
+
+
+        const r = diff.inSeconds()
+
+        if (r < 60) {
+            return Timeline.translate('Recently')
+        } else if (r < 3600) {
+            const n = Math.floor(r / 60);
+            return Timeline.translate('%sm ago', n);
+        } else if (r < 3600 * 24) {
+            const n = Math.floor(r / 3600);
+            return Timeline.translate('%sh ago', n);
+        } else if (r < 3600 * 24 * 7) {
+            const n = Math.floor(r / 3600 / 24);
+            return Timeline.translate('%sd ago', n);
+        } else if (r < 3600 * 24 * 30) {
+            const n = Math.floor(r / 3600 / 24 / 7);
+            return Timeline.translate('%sw ago', n);
+        } else if (r < 3600 * 24 * 30 * 12) {
+            const n = Math.floor(r / 3600 / 24 / 30);
+            return Timeline.translate('%smo ago', n);
+        } else {
+            const n = Math.floor(r / 3600 / 24 / 365);
+            return Timeline.translate('%sy ago', n)
+        }
     }
 
 }

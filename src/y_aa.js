@@ -1,5 +1,6 @@
 class Aa {
     // a_
+
     Date = _aaDate
 
     // log   log 类是纯静态方法，全局直接使用
@@ -18,6 +19,7 @@ class Aa {
     fetch
 
     constructor() {
+
         let dbg = this.#parseDebug()
         this.env = new _aaEnvironment(dbg)
         this.storage = new _aaStorage()
@@ -40,6 +42,7 @@ class Aa {
 
     url(url = window.location.href, params = {}) {
         return new this.URI(url, params)
+
     }
 
 
