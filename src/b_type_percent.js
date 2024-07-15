@@ -1,4 +1,6 @@
 class percent extends decimal {
+    name = 'aa-percent'
+
     /**
      *
      * @param {money|number|string} vv

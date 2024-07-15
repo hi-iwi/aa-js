@@ -1,33 +1,17 @@
-class _aaEnv {
+class _aaEnvironment {
+    name = 'aa-environment'
     debug = false  // {bool} 是否是debug状态
     paramName = aparam.debug
     _uri  // {typeof _aaUri}
 
-    /**
-     *
-     * @param {typeof _aaUri} uri
-     */
-    constructor(uri) {
-        this._uri = uri
-        this.parseDebug()
+
+    constructor(debug = false) {
+        this.debug = debug
     }
 
-    parseDebug() {
-        const url = this._uri.url()
-        if (url.has(this.paramName)) {
-            this.debug = url.queryBool(this.paramName)
-        } else {
-            const h = location.hostname.substring(0, 8)
-            this.debug = ["192.168.", "localhost"].includes(h)
-        }
-        return this
+    setDebug(debug = true) {
+        this.debug = debug
     }
-
-    toDebug(onDebug) {
-        this.debug = bool(onDebug)
-        return this
-    }
-
 
     isPC() {
         return $(document).width() >= 768

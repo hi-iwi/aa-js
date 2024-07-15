@@ -1,5 +1,6 @@
 // 自定义map类型  参考 Map
 class map {
+    name = 'aa-map'
     object // {{[key:string]:*} | string}
     size // {number}
     /**

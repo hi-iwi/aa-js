@@ -1,37 +1,58 @@
 class Aa {
     // a_
-    uri = _aaUri
+    date = _aaDate
+    logger = _aaLogger   // for call static methods
+    log
+
+    uri = _aaURI
     math = _aaMath
     // b_
-    env= new _aaEnv(_aaUri)
+    environment = _aaEnvironment
+    env
     // c_
-    storage = new _aaStorage()
+    storage
+    // @type typeof _aaFetch
+    fetcher = _aaFetch
+    // @type _aaFetch
+    fetch
 
     constructor() {
+        let dbg = this.#parseDebug()
+
+        this.env = new _aaEnvironment(dbg)
+        this.log = new _aaLogger(_aaURI, this.env)
+        this.storage = new _aaStorage()
+
+        this.fetch = new _aaFetch()
 
     }
 
-
-    date() {
-        return new _aaDate(...arguments)
+    // @param {Storage} cookieStorage
+    initCookieStorage(cookieStorage) {
+        this.storage.setCookieStorage(cookieStorage)
     }
 
-    /**
-     * URL
-     * @param url
-     * @param params
-     * @returns {_aaUrl}
-     */
+    initGlobalHeaders(headers){
+        this.fetch.initGlobalHeaders(headers)
+    }
+
+    setDebug(debug = true) {
+        this.env.setDebug(debug)
+    }
+
+
+    #parseDebug() {
+        const url = this.uri.new()
+        if (url.has(aparam.debug)) {
+            return url.queryBool(aparam.debug)
+        }
+        const h = location.hostname.substring(0, 8)
+        return ["192.168.", "localhost"].includes(h)
+    }
+
+
     url(url = window.location.href, params = {}) {
-        return new _aaUrl(url, params)
-    }
-
-    /**
-     * Fetch
-     * @returns {_aaFetch}
-     */
-    fetch() {
-        return new _aaFetch()
+        return this.uri.new(url, params)
     }
 
 
@@ -45,13 +66,11 @@ class Aa {
      * @return {_aaApollo}
      */
     apollo(url, fingerprintGenerator, loginDataHandler, storageGetter, storageSetter) {
-        return new _aaApollo(this.fetch(), url, fingerprintGenerator, loginDataHandler, storageGetter, storageSetter)
+        return new _aaApollo(this.fetch, url, fingerprintGenerator, loginDataHandler, storageGetter, storageSetter)
     }
 
 
-    vuser() {
 
-    }
 }
 
 

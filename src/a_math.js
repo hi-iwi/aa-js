@@ -1,4 +1,6 @@
 class _aaMath {
+    name = 'aa-math'
+
     /**
      * 转换字节
      * @param {number} bytes

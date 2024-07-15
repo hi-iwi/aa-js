@@ -1,4 +1,5 @@
 class decimal {
+    name = 'aa-decimal'
     type = "decimal"
     scaleMax = C.DecimalScale
     // https://www.splashlearn.com/math-vocabulary/decimals/decimal-point

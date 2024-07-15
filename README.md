@@ -6,7 +6,8 @@
 
 ```javascript
 const aa = new Aa()
-aa.storage.setCookieStorage(xxx)
+aa.initCookieStorage(xxxx)
+ 
 
 
 ```
@@ -21,25 +22,52 @@ aa.storage.setCookieStorage(xxx)
     * .fetch(): _aaFetch
     * .apollo(): _aaApollo
 
-## 全局变量
+## base class interface
+
+```
+// pseudo-code
+interface BaseClass {
+    ::new(): BaseClass              // static
+    ?valueOf(): any                // refer to .value, if neccessary. e.g. +new Date()  ==> will call this
+    ?toString(): string            // '' + new BaseClass()  ===> will call this
+    ?toJSON(): string              // for JSON.stringify
+    
+    readonly name: string    // name of this class
+    ?value: any              // the value of this class, if neccessary
+}
+
+class XXX{
+  constructor(){}
+  static new(){ return new XXX() }
+}
+
+```
+
+## global variables
 
 下划线开头的变量表示private私有变量，禁止外部使用！
 
-nif nil function
-defval()   defined value
-len()      length of everything
+* AError
+* nif nil function
+* defval()   defined value
+* len()      length of everything
 
-not()     
-nullable()
+* not()
+* nullable()
+* Round()
+* RoundTrim()
+* RoundAway()
+* RoundReverse()
 
-* atype{} type check
+* new atype()  type check
+* new map()
 * type convert: cast (vv, vk) to such type
     * string()
     * number()
     * struct()   map struct {[key:string]:*}
     * array()
-    * date()     convert to YYYY-MM-DD format string
-    * datetime() convert to YYYY-MM-DD HH:II:SS format string
+    * date()     @deprecated convert to YYYY-MM-DD format string
+    * datetime() @deprecated convert to YYYY-MM-DD HH:II:SS format string
     * func()     convert to function
     * bool()
     * booln()  convert to boolean number
@@ -56,7 +84,14 @@ nullable()
     * uint16()
     * uint8()
 
-## 通用参数规则
+## 命名规则
 
 * (vv, vk)   ====>  vk ? vv[vk] : vv
+* ::new()
 * .clone()  ===> 深度复制该类
+
+* 通用命名规则
+    * toJSON()    JSON.stringify() 能识别该方法
+    * toString()  '' + new Date() 会用该方法返回的string
+    * valueOf()  +new Date() 会用该方法返回的number
+

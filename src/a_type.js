@@ -51,7 +51,7 @@ function RoundAway() {
 
 /**
  *
- * @param {('round'|'ceil'|'floor'|'trim'|'reverse'|'away'|((x :number)=>number))} round
+ * @param {('round'|'floor'|'ceil'|'reverse'|'trim'|'away'|((x :number)=>number))} round
  * @return {((x: number) => number)|(function(): function(*): number)|(function(*): *)|*}
  */
 function Round(round) {
@@ -65,10 +65,10 @@ function Round(round) {
             return Math.round
         case 'ceil':
             return Math.ceil
-        case 'trim':
-            return RoundTrim
         case 'reverse':
             return RoundReverse
+        case 'trim':
+            return RoundTrim
         case 'away':
             return RoundAway
     }

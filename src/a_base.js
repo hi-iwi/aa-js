@@ -10,7 +10,8 @@ const aparam = {
 
 
     userGrowthFrom      : "f",
-    debug               : "debug",
+    debug               : "_debug",
+    alert               : "_alert",
     headerAuthorization : "Authorization",// header 里面，
     apollo              : "apollo",  // 阿波罗计划
     accessTokenType     : "token_type",

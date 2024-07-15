@@ -1,4 +1,6 @@
 class money extends decimal {
+    name = 'aa-money'
+
     /**
      *
      * @param {money|number|string} vv

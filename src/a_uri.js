@@ -30,7 +30,9 @@ scheme  user information     host     port                  query      fragm
             如 xhost https://a.com  也可能以后会被配置成 http://localhost/a
  */
 
-class _aaUrl {
+class _aaURI {
+    name='aa-uri'
+
     baseUrl  // ? 之前的部分
     scheme  //  e.g. http/tcp  or empty
     protocol
@@ -39,6 +41,23 @@ class _aaUrl {
     path
     queries
     fragment
+
+
+    // 多次转码后，解析到底
+    static decode(s) {
+        let d = ''
+        s = string(s)
+        while (d !== s) {
+            decodeURIComponent(s)
+            s = d
+        }
+        return s
+    }
+
+
+    static new(url = window.location.href, params = {}) {
+        return new _aaURI(url, params)
+    }
 
     constructor(url = window.location.href, params = {}) {
         this.parse(url)
@@ -97,7 +116,7 @@ class _aaUrl {
                     continue;
                 }
                 let p = q[i].split('=');
-                queries.set(p[0], p.length > 1 ? _aaUri.decode(p[1]) : '')
+                queries.set(p[0], p.length > 1 ? _aaURI.decode(p[1]) : '')
             }
         }
         this.baseUrl = baseUrl   // ? 之前的部分
@@ -235,25 +254,6 @@ class _aaUrl {
 
     queryUint(key) {
         return this.query(key, uint32)
-    }
-
-
-}
-
-class _aaUri {
-    static url(url = window.location.href, params = {}) {
-        return new _aaUrl(url, params)
-    }
-
-    // 多次转码后，解析到底
-    static decode(s) {
-        let d = ''
-        s = string(s)
-        while (d !== s) {
-            decodeURIComponent(s)
-            s = d
-        }
-        return s
     }
 
 

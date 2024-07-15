@@ -1,4 +1,5 @@
 class _aaDate {
+    name = 'aa-date'
     static localTimezoneOffsetString = _aaDate.parseTimezoneOffsetString()
     // @type Date
     date
@@ -8,14 +9,14 @@ class _aaDate {
     timezoneOffset
 
 
-
     // check the date    -2 on unknown; -1 on zero date;  0 on OK; 1 on max date;
     // @param {string} s
     static check(s) {
-        if (["0000", "0000-00", "0000-00-00", "0000-00-00 00:00:00"].includes(s)) {
+
+        if (_aaDate.isZero(s, true)) {
             return -1
         }
-        if (["9999-12-31", "9999-12-31 23:59:59"].includes(s)) {
+        if (_aaDate.isMax(s)) {
             return 1
         }
         try {
@@ -24,6 +25,17 @@ class _aaDate {
         } catch (e) {
             return -2
         }
+    }
+
+    static isZero(s, strict = true) {
+        if (!strict && !s) {
+            return true
+        }
+        return ["0000", "0000-00", "0000-00-00", "0000-00-00 00:00:00"].includes(s)
+    }
+
+    static isMax(s) {
+        return ["9999-12-31", "9999-12-31 23:59:59"].includes(s)
     }
 
     /**
@@ -55,6 +67,10 @@ class _aaDate {
             offset = new Date().getTimezoneOffset()
         }
         return offset < 0 ? "+" + _aaDate.formatTime(-offset) : "-" + _aaDate.formatTime(offset)
+    }
+
+    static new(...args) {
+        return new _aaDate(...args)
     }
 
     /*
@@ -99,8 +115,8 @@ Safari 支持的日期格式：
         }
 
         if (typeof s === "number") {
-            logc("new _aaDate(timestamp * second)  ==> different with new Date(millisecond)", "#aa0")
-            this.date = new Date(date * C.Second)
+            console.log('%c' + "[warn] new _aaDate(timestamp * second)  ==> different with new Date(millisecond)", 'color:#aa0;font-weight:700;')
+            this.date = new Date(datex * C.Second)
             return
         }
 
@@ -128,8 +144,8 @@ Safari 支持的日期格式：
             s += '-01-01T00:00:00.000' + this.timezoneOffset
         }
         this.date = new Date(s.replace(' ', 'T'))
-
     }
+
 
     setPattern(pattern) {
         this.pattern = pattern
@@ -271,6 +287,11 @@ Safari 支持的日期格式：
      */
     diff(d1) {
         return new _aaDateDifference(this.date, d1)
+    }
+
+    // 用于json序列号
+    toJSON() {
+        return this.toString()
     }
 }
 

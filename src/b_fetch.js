@@ -2,15 +2,20 @@
  * Ajax 包括：XMLHttpRequest 、fetch 等
  */
 class _aaFetch {
+    name = 'aa-fetch'
     headers = {
         'Content-Type': "application/json",
         'Accept'      : "application/json"
     }
 
+    static new() {
+        return new _aaFetch()
+    }
+
     constructor() {
     }
 
-    initGlobalHeaders(headers) {
+    setGlobalHeaders(headers) {
         this.headers = headers
     }
 

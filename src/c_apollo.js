@@ -1,4 +1,5 @@
 class _aaApollo {
+    name = 'aa-apollo'
     _fetcher
     _fingerprintGenerator
     _loginDataHandler
@@ -8,6 +9,10 @@ class _aaApollo {
     paramName = aparam.apollo   //  参数名 --> 阿波罗计划
     url
     apollo
+
+    static new(...args) {
+        return new _aaApollo(...args)
+    }
 
     /**
      *
