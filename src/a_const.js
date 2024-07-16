@@ -1,5 +1,6 @@
+const nif = () => void 0   // 空函数  ==>  Go语言都定义 any = interface{}，这里定义要给 nif 是有必要的
+
 const C = {
-    
     // 9007199254740992 Number.MAX_SAFE_INTEGER
     Second: 1000,  // 1000ms
     Minute: 60000,
@@ -39,7 +40,4 @@ const C = {
 
     MinMoney: Number.MIN_SAFE_INTEGER,
     MaxMoney: Number.MAX_SAFE_INTEGER,
-
-
 }
-

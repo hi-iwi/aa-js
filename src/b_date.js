@@ -185,9 +185,13 @@ class _aaDateValidator {
         return this.type === _aaDateValidator.maxDate
     }
 
-    isValid(includeMaxDate = false) {
+    isValid(isMaxDateValid = false) {
         let ok = this.type === _aaDateValidator.validDate
-        return ok || (includeMaxDate && this.type === _aaDateValidator.maxDate)
+        return ok || (isMaxDateValid && this.type === _aaDateValidator.maxDate)
+    }
+
+    notValid(isMaxDateValid = false) {
+        return !this.isValid(isMaxDateValid)
     }
 
 }
@@ -901,6 +905,12 @@ class _aaDateDifference {
         return p
     }
 
+    /**
+     * Format date with specified formats
+     * @param layout
+     * @param noCarry
+     * @return {string}
+     */
     format(layout, noCarry = false) {
         // "{%Y年}{%M个月}{%D天}
         if (!this.valid || this.diff < C.Second) {
@@ -975,7 +985,12 @@ class _aaDateDifference {
         return out
     }
 
-    formatFriendly(lang, dict) {
+    /**
+     * Format date friendly
+     * @param {string|{[key:string]:string}} dict
+     * @return {string}
+     */
+    formatFriendly(dict = 'zh-CN') {
         const Timeline = {
             translate: function (...args) {
                 const pkg = {
@@ -989,20 +1004,12 @@ class _aaDateDifference {
                         '%sy ago' : '%s年前',  // 最多1年前
                     }
                 };
-                // const lang = AaLib..acceptLanguage();
-                const p = pkg['zh-CN'];
-
-
-
+                const p = atype.isStruct(dict) ? dict : pkg[dict] ? pkg[dict] : null;
                 return fmt.translate(p, ...args)
-
             }
         };
-        let diff = this.diff()
 
-
-        const r = diff.inSeconds()
-
+        const r = this.diff().inSeconds()
         if (r < 60) {
             return Timeline.translate('Recently')
         } else if (r < 3600) {

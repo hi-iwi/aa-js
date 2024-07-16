@@ -6,7 +6,7 @@ class _aaApollo {
     _storageGetter
     _storageSetter
 
-    paramName = aparam.apollo   //  参数名 --> 阿波罗计划
+    paramName = _apolloQueryName_ //  参数名 --> 阿波罗计划
     url
     apollo
 
@@ -14,6 +14,7 @@ class _aaApollo {
     /**
      *
      * @param {_aaFetch} fetcher
+     * @param {string} url
      * @param {(fp:string)=>void} fingerprintGenerator 设备唯一码生成器
      * @param {(data:{[key:string]:*})=>void} loginDataHandler 登录处理
      * @param {(k:string)=>string} storageGetter 存储读取方法

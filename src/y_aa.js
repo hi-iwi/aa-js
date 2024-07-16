@@ -20,21 +20,11 @@ class Aa {
 
     constructor() {
 
-        let dbg = this.#parseDebug()
-        this.env = new _aaEnvironment(dbg)
+        this.env = new _aaEnvironment()
         this.storage = new _aaStorage()
         this.fetch = new _aaFetch()
     }
 
-
-    #parseDebug() {
-        const url = new this.URI()
-        if (url.has(aparam.debug)) {
-            return url.queryBool(aparam.debug)
-        }
-        const h = location.hostname.substring(0, 8)
-        return ["192.168.", "localhost"].includes(h)
-    }
 
     date(...args) {
         return new _aaDate(...args)

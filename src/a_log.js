@@ -90,7 +90,7 @@ class log {
         }
 
         let data = style instanceof AaLoggerStyle ? args : {style, ...args}
-        let matches = window.location.search.match(new RegExp(aparam.alert + "=(\\w+)"))
+        let matches = window.location.search.match(new RegExp(_alertQueryName_ + "=(\\w+)"))
         let alert = bool(matches, 1)
         if (alert) {
             log.alert(...data)

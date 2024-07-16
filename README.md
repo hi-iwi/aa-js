@@ -66,8 +66,8 @@ class XXX{
     * number()
     * struct()   map struct {[key:string]:*}
     * array()
-    * date()     @deprecated convert to YYYY-MM-DD format string
-    * datetime() @deprecated convert to YYYY-MM-DD HH:II:SS format string
+    * date()     keep word: convert to YYYY-MM-DD format string
+    * datetime() keep word: convert to YYYY-MM-DD HH:II:SS format string
     * func()     convert to function
     * bool()
     * booln()  convert to boolean number

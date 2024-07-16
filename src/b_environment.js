@@ -8,7 +8,7 @@ class _aaEnvironment {
     }
 
     setDebug(debug = true) {
-        _aaDebugStatus = debug
+        _aaDebugStatus_ = debug
     }
 
     isPC() {

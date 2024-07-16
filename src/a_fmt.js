@@ -1,7 +1,7 @@
 // 基础static class
 class fmt {
     /**
-     *
+     * Format string with specified formats
      * @param {string} format
      *  %s string
      * @param args
@@ -24,7 +24,7 @@ class fmt {
 
     /**
      * Translate formatted string
-     * @param dictionary
+     * @param {{[key:string]:string}|null} dictionary
      * @param args
      * @return {string}
      * @example fmt.translate({'I LOVE %s':'我爱%s'}, "I LOVE %s", "你")    ===>   我爱你
@@ -33,7 +33,7 @@ class fmt {
         if (args.length < 1) {
             return ""
         }
-        let format = dictionary[args[0]] ? dictionary[args[0]] : args[0]
+        let format = dictionary && dictionary[args[0]] ? dictionary[args[0]] : args[0]
         return fmt.sprintf(format, ...args.slice(1))
     }
 
