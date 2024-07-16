@@ -1,5 +1,5 @@
 
-
+// static class
 class _aaEnvironment {
     name = 'aa-environment'
 
@@ -7,44 +7,44 @@ class _aaEnvironment {
     constructor() {
     }
 
-    setDebug(debug = true) {
+    static setDebug(debug = true) {
         _aaDebugStatus_ = debug
     }
 
-    isPC() {
+    static isPC() {
         return $(document).width() >= 768
     }
 
-    isWin() {
+    static isWin() {
         return /(win32|win64|windows|wince)/i.test(window.navigator.userAgent)
     }
 
-    isIE() {
+    static isIE() {
         return !!window.ActiveXObject
     }
 
-    isWeixin() {
+    static  isWeixin() {
         return /MicroMessenger/i.test(window.navigator.userAgent)
     }
 
-    isEdge() {
+    static isEdge() {
         return /Edge/i.test(window.navigator.userAgent) && (!!navigator.msSaveOrOpenBlob || !!navigator.msSaveBlob)
     }
 
-    isSafari() {
+    static isSafari() {
          return /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
     }
 
-    isIphone() {
+    static  isIphone() {
          return /iPhone/i.test(window.navigator.userAgent)
     }
 
-    isIpad() {
+    static isIpad() {
         return /iPad/i.test(window.navigator.userAgent)
     }
 
-    isAppleTouch() {
-        return this.isIphone() || this.isIpad()
+    static isAppleTouch() {
+        return _aaEnvironment.isIphone() || _aaEnvironment.isIpad()
     }
 
 }

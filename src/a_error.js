@@ -196,7 +196,6 @@ class AError extends Error {
         return this.getMsg() + " [CODE:" + this.code + "]"
     }
 
-
     getMsg(dict = 'zh-CN') {
         dict = AErrorEnum.getDictionary(dict)
         let heading = fmt.translate(dict, this.#heading)

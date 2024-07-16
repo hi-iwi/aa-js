@@ -5,21 +5,19 @@ class Aa {
 
     // log   log 类是纯静态方法，全局直接使用
 
-    URI = _aaURI
+    uri = _aaURI
 
-    Math = _aaMath
+    math = _aaMath
     // b_
-    Env = _aaEnvironment
-    env
+    env = _aaEnvironment
     // c_
     storage
     // @type typeof _aaFetch
-    Fetch = _aaFetch
+    //Fetch = _aaFetch
     // @type _aaFetch
     fetch
 
     constructor() {
-
         this.env = new _aaEnvironment()
         this.storage = new _aaStorage()
         this.fetch = new _aaFetch()
@@ -31,7 +29,7 @@ class Aa {
     }
 
     url(url = window.location.href, params = {}) {
-        return new this.URI(url, params)
+        return new this.uri(url, params)
 
     }
 
@@ -48,8 +46,7 @@ class Aa {
     apollo(url, fingerprintGenerator, loginDataHandler, storageGetter, storageSetter) {
         return new _aaApollo(this.fetch, url, fingerprintGenerator, loginDataHandler, storageGetter, storageSetter)
     }
-
-
+    
 }
 
 

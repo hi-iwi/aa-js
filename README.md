@@ -7,7 +7,7 @@
 ```javascript
 const aa = new Aa()
 aa.storage.initCookieStorage()
-aa.fetch.initGlobalHeaders() 
+aa.fetch.initGlobalHeaders()
 
 
 ```
@@ -45,6 +45,7 @@ class XXX{
 
 下划线开头的变量表示private私有变量，禁止外部使用！
 
+* AErrorEnum
 * AError
 * nif nil function
 * defval()   defined value
