@@ -352,10 +352,10 @@ class _aaDate {
     get validator() {
         return this.#validator
     }
-
-    set validator(value) {
-        throw new SyntaxError("date validator is readonly")
-    }
+    // 不用报错，正常人也不会这么操作
+    // set validator(value) {
+    //     throw new SyntaxError("date validator is readonly")
+    // }
 
     // @deprecated 外部修改无法及时改变 validator，因此不要暴露出去
     get date() {

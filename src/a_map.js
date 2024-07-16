@@ -7,10 +7,10 @@ class map {
     get size() {
         return this.keys().length
     }
-
-    set size(value) {
-        throw new SyntaxError("map.size is readonly")
-    }
+    // 不用报错，正常人也不会这么操作
+    // set size(value) {
+    //     throw new SyntaxError("map.size is readonly")
+    // }
 
     /**
      * @param {{[key:string]:*} | string} o

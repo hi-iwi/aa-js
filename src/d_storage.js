@@ -7,10 +7,10 @@ const _aaPseudoStorage_ = new class {
         log.warn("it's a pseudo storage!")
         return Object.keys(this).length
     }
-
-    set length(name) {
-        throw new SyntaxError("storage length is readonly")
-    }
+    // 不用报错，正常人也不会这么操作
+    // set length(name) {
+    //     throw new SyntaxError("storage length is readonly")
+    // }
 
 
     key(index) {
