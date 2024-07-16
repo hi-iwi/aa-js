@@ -2,6 +2,7 @@ class Aa {
     // a_
 
     Date = _aaDate
+    registry
 
     // log   log 类是纯静态方法，全局直接使用
 
@@ -18,6 +19,7 @@ class Aa {
     fetch
 
     constructor() {
+        this.registry = new _aaRegistry()
         this.storage = new _aaStorage()
         this.fetch = new _aaFetch()
     }
