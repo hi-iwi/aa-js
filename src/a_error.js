@@ -177,18 +177,46 @@ const AErrorEnum = {
 class AError extends Error {
     name = "AError"
     code
-    message // raw message
+    message // 原始数据。部分错误会把msg当作有效信息。比如 449 RetryWith 会通过该数据传递跳转URL等
 
-
+    #dict
     #heading = ''
     #ending = ''
 
+    get msg() {
+        return this.getMsg()
+    }
 
-    constructor(code, msg = "") {
+    static newBadRequest(param) {
+        return new AError(AErrorEnum.BadRequest, "Bad request `" + param + "`")
+
+    }
+
+    static parseResp(resp, dict) {
+        if (!resp) {
+            return new AError(this.ServerException, "", dict)
+        }
+        if (typeof resp === "string") {
+            try {
+                resp = JSON.parse(resp.trim())
+            } catch (e) {
+                return new AError(this.ServerException, "", dict)
+            }
+        }
+        if (resp && typeof resp === "object" && resp.hasOwnProperty("code") && resp.hasOwnProperty("msg")) {
+            return new AError(resp['code'], resp['msg'], dict)
+        }
+
+        return new AError(this.ServerException, "", dict)
+    }
+
+    // 创建的时候更接近业务，而输出的时候往往由框架或底层完成。因此字典创建时期提供更合理
+    constructor(code, msg, dict) {
         msg = string(msg)
         super(msg)
         this.code = code
         this.message = msg
+        this.#dict = dict
     }
 
 
@@ -197,6 +225,14 @@ class AError extends Error {
     }
 
     getMsg(dict = 'zh-CN') {
+        if (len(this.#dict) > 0) {
+            if (!dict || typeof dict === "string") {
+                dict = this.#dict
+            } else {
+                map.spread(this.#dict, dict)
+            }
+        }
+
         dict = AErrorEnum.getDictionary(dict)
         let heading = fmt.translate(dict, this.#heading)
         let msg = AErrorEnum.translate(this.code, this.message)
@@ -228,20 +264,24 @@ class AError extends Error {
         return this.code >= 200 && this.code < 300
     }
 
-    isRetryWith() {
-        return this.is(AErrorEnum.RetryWith)
+    isServerErrors() {
+        return this.code >= 500
     }
 
-    isConflict() {
-        return this.is(AErrorEnum.Conflict)
+    isNoContent() {
+        return this.is(AErrorEnum.NoContent)
     }
 
-    isTimeout() {
-        return this.is(AErrorEnum.Timeout)
+    isBadRequest() {
+        return this.is(AErrorEnum.BadRequest)
     }
 
     isUnauthorized() {
         return this.is(AErrorEnum.Unauthorized)
+    }
+
+    isPaymentRequired() {
+        return this.is(AErrorEnum.PaymentRequired)
     }
 
     isForbidden() {
@@ -252,8 +292,78 @@ class AError extends Error {
         return [AErrorEnum.NoRows, AErrorEnum.NotFound, AErrorEnum.Gone].includes(this.code)
     }
 
-    isServerError() {
-        return this.code >= 500
+    isTimeout() {
+        return this.is(AErrorEnum.Timeout)
     }
 
+    isConflict() {
+        return this.is(AErrorEnum.Conflict)
+    }
+
+    isGone() {
+        return this.is(AErrorEnum.Gone)
+    }
+
+    isUnsupportedMediaType() {
+        return this.is(AErrorEnum.UnsupportedMediaType)
+    }
+
+    isLocked() {
+        return this.is(AErrorEnum.Locked)
+    }
+
+    isFailedDependency() {
+        return this.is(AErrorEnum.FailedDependency)
+    }
+
+    isRetryWith() {
+        return this.is(AErrorEnum.RetryWith)
+    }
+
+    isIllegal() {
+        return this.is(AErrorEnum.Illegal)
+    }
+
+    isInternalServerError() {
+        return this.is(AErrorEnum.InternalServerError)
+    }
+
+    isNotImplemented() {
+        return this.is(AErrorEnum.NotImplemented)
+    }
+
+    isBadGateway() {
+        return this.is(AErrorEnum.BadGateway)
+    }
+
+    isServerException() {
+        return this.is(AErrorEnum.ServerException)
+    }
+
+    isGatewayTimeout() {
+        return this.is(AErrorEnum.GatewayTimeout)
+    }
+
+    isBandwidthLimitExceeded() {
+        return this.is(AErrorEnum.BandwidthLimitExceeded)
+    }
+
+    isServerStatusException() {
+        return this.is(AErrorEnum.ServerStatusException)
+    }
+
+    isClientThrow() {
+        return this.is(AErrorEnum.ClientThrow)
+    }
+
+    log() {
+        if (this.isOK()) {
+            return
+        }
+        if (this.isServerErrors()) {
+            log.error(this.toString())
+        } else {
+            log.warn(this.toString())
+        }
+    }
 }

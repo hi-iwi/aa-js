@@ -7,8 +7,8 @@ class _aaRegistry {
     }
 
     register(name, method) {
-        if (typeof method === "function") {
-            throw new TypeError("registry only accept callable method")
+        if (typeof method !== "function") {
+            throw new TypeError(`registry only accept callable method, but ${name} get ${atype.of(method)}`)
         }
         this.#registers[name] = method
     }

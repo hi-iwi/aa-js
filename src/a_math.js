@@ -3,6 +3,30 @@ class _aaMath {
     name = 'aa-math'
 
     /**
+     * Convert rem to px
+     * @param vv
+     * @param vk
+     * @param defaultV
+     * @return {number}
+     */
+    static px(vv, vk, defaultV) {
+        vv = defval(...arguments)
+        if (vv === null) {
+            return 0
+        }
+        if (typeof vv === "number") {
+            return Math.floor(vv)
+        }
+        vv = string(vv).replace(' ', '').toLowerCase()
+        if (vv.indexOf("rem") > -1) {
+            // 计算1rem对应px
+            const rem = parseFloat(window.getComputedStyle(document.documentElement)["fontSize"])  // 1rem 对应像素
+            return Math.floor(float32(vv.replace("rem", '')) * rem)
+        }
+        return Math.floor(float32(vv))
+    }
+
+    /**
      * 转换字节
      * @param {number} bytes
      * @param {number} decimals

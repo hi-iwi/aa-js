@@ -40,6 +40,7 @@ class _aaURI {
     hierarchicalPart
     authority
     path
+    // @type {_aaMap}
     queries
     fragment
 
