@@ -65,12 +65,21 @@ class _aaStorage {
 
 
     get length() {
-        return this.cookieLength() + this.storageLength() + this.sessionLength()
+        return this.#localStorage.length
     }
 
     set length(value) {
         throw SyntaxError("storage length is readonly")
     }
+
+    get size() {
+        return this.#localStorage.length + this.#sessionStorage.length + this.#cookieStorage.length
+    }
+
+    set size(value) {
+        throw SyntaxError("storage size is readonly")
+    }
+
 
     // @param {Storage} [cookieStorage]
     constructor(cookieStorage) {
@@ -114,39 +123,6 @@ class _aaStorage {
                 break;
         }
         return value
-    }
-
-    key(index) {
-        return this.#localStorage.key(index)
-    }
-
-    storageLength() {
-        return this.#localStorage.length
-    }
-
-    // @param {{[key:string]:any}}
-    setItems(items, persistent = false) {
-        for (let [key, value] of Object.entries(items)) {
-            this.setItem(key, value, persistent)
-        }
-    }
-
-    setItem(key, value, persistent = false) {
-        key = this.keyname(key)
-        value = this.#makeValue(value, persistent)
-        this.#localStorage.setItem(key, value)
-        this.length = this.#localStorage.length
-    }
-
-    getItem(key) {
-        key = this.keyname(key)
-        this.#localStorage.getItem(key)
-    }
-
-    remove(key) {
-        key = this.keyname(key)
-        this.#localStorage.removeItem(key)
-        this.length = this.#localStorage.length
     }
 
     /**
@@ -198,6 +174,49 @@ class _aaStorage {
         return len(pers) > 0 ? pers : null
     }
 
+    key(index) {
+        return this.#localStorage.key(index)
+    }
+
+    /**
+     * Iterate storage
+     * @param {function(value:string, key:string)} callback
+     */
+    forEach(callback) {
+        for (let i = 0; i < this.length; i++) {
+            let key = this.key(i)
+            let value = this.getItem(key)
+            callback(value, key)
+        }
+    }
+
+
+    // @param {{[key:string]:any}}
+    setItems(items, persistent = false) {
+        for (let [key, value] of Object.entries(items)) {
+            this.setItem(key, value, persistent)
+        }
+    }
+
+    setItem(key, value, persistent = false) {
+        key = this.keyname(key)
+        value = this.#makeValue(value, persistent)
+        this.#localStorage.setItem(key, value)
+        this.length = this.#localStorage.length
+    }
+
+    getItem(key) {
+        key = this.keyname(key)
+        return this.#localStorage.getItem(key)
+    }
+
+    remove(key) {
+        key = this.keyname(key)
+        this.#localStorage.removeItem(key)
+        this.length = this.#localStorage.length
+    }
+
+
     clear() {
         let pers = this.filterPersistentData(this.#localStorage)
         this.#localStorage.clear()
@@ -209,6 +228,19 @@ class _aaStorage {
 
     sessionLength() {
         return this.#sessionStorage.length
+    }
+
+    /**
+     * Iterate sessions
+     * @note for each + singular
+     * @param {function(value:string, key:string)} callback
+     */
+    forEachSession(callback) {
+        for (let i = 0; i < this.sessionLength(); i++) {
+            let key = this.sessionKey(i)
+            let value = this.getSession(key)
+            callback(key, value)
+        }
     }
 
     sessionKey(index) {
@@ -223,7 +255,7 @@ class _aaStorage {
 
     getSession(key) {
         key = this.keyname(key)
-        this.#sessionStorage.getItem(key)
+        return this.#sessionStorage.getItem(key)
     }
 
     removeSession(key) {
@@ -237,6 +269,20 @@ class _aaStorage {
 
     cookieLength() {
         return this.#cookieStorage.length
+    }
+
+    /**
+     * Iterate cookies
+     * @note for each + singular
+     * @param {function(value:string, key:string)} callback
+     * @param {{[key:string]:*}} [options]
+     */
+    forEachCookie(callback, options) {
+        for (let i = 0; i < this.cookieLength(); i++) {
+            let key = this.cookieKey(i)
+            let value = this.getCookie(key, options)
+            callback(key, value)
+        }
     }
 
     cookieKey(index) {
