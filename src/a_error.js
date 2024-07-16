@@ -187,8 +187,8 @@ class AError extends Error {
         return this.getMsg()
     }
 
-    static newBadRequest(param) {
-        return new AError(AErrorEnum.BadRequest, "Bad request `" + param + "`")
+    static newBadRequest(param, dict) {
+        return new AError(AErrorEnum.BadRequest, "Bad request `" + param + "`", dict)
 
     }
 

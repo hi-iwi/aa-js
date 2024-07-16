@@ -60,6 +60,7 @@ class _aaDateString {
      * @param {string} [zone]
      */
     reset(s, zone) {
+        s = string(s)
         this.raw = s
         s = s.replace(' ', 'T')
         let reg = /[-+][01]\d:[0-5]\d$/
@@ -80,7 +81,7 @@ class _aaDateString {
             s += '-01T00:00:00.000' + zone
         } else if (/^\d{4}$/.test(s)) {
             s += '-01-01T00:00:00.000' + zone
-        } else {
+        } else if (!["", "null", "invalid date", "invalid time value"].includes(s.toLowerCase())) {
             s += zone
         }
         this.timezoneOffset = zone
@@ -172,7 +173,9 @@ class _aaDateValidator {
             // RangeError: Invalid time value (V8-based)
             // RangeError: invalid date (Firefox)
             // RangeError: Invalid Date (Safari)
-            let d = new Date(date)
+            let d = date instanceof Date ? date : new Date(date)
+
+
             if (["", "null", "invalid date", "invalid time value"].includes(d.toString().toLowerCase())) {
                 this.#type = _aaDateValidator.InvalidDate
                 return this
@@ -352,6 +355,7 @@ class _aaDate {
     get validator() {
         return this.#validator
     }
+
     // 不用报错，正常人也不会这么操作
     // set validator(value) {
     //     throw new SyntaxError("date validator is readonly")
@@ -425,7 +429,7 @@ class _aaDate {
         let zone = this.timezoneOffset
         // timestamp
         if (typeof date === "number") {
-            date = new Date(datex)
+            date = new Date(date)
         } else if (typeof date === "string") {
             this.setPattern(date)
             let ds = new _aaDateString(date, this.timezoneOffset)
@@ -740,7 +744,7 @@ class _aaDateDifference {
         d0 = d0 instanceof _aaDate ? d0 : new _aaDate(d0)
         d1 = d1 instanceof _aaDate ? d1 : new _aaDate(d1)  // new _aaDate(undfined) equals to new _aaDate(new Date())
         if (!d0.validator.isValid(true) || !d0.validator.isValid(true)) {
-            log.error("date difference: invalid date")
+            log.error("date difference: invalid date", d0, d1)
             return
         }
         this.diff = d1.valueOf() - d0.valueOf()
@@ -1036,7 +1040,7 @@ class _aaDateDifference {
             }
         };
 
-        const r = this.diff().inSeconds()
+        const r = this.inSeconds()
         if (r < 60) {
             return Timeline.translate('Recently')
         } else if (r < 3600) {
