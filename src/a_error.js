@@ -187,6 +187,10 @@ class AError extends Error {
         return this.getMsg()
     }
 
+    set msg(value) {
+        this.message = value
+    }
+
     static newBadRequest(param, dict) {
         return new AError(AErrorEnum.BadRequest, "Bad request `" + param + "`", dict)
 
@@ -366,4 +370,5 @@ class AError extends Error {
             log.warn(this.toString())
         }
     }
+
 }

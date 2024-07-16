@@ -60,8 +60,8 @@ class _aaApollo {
                 log.debug("change apollo " + this.get() + " to " + data['apollo'])
                 this.set(data['apollo'])
             }
-        }).catch(e => {
-            log.error(e.toString())
+        }).catch(err => {
+            err.log()
         })
     }
 
