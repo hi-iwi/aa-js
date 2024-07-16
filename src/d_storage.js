@@ -21,7 +21,7 @@ const _aaPseudoStorage_ = new class {
 
     setItem(key, value) {
         log.warn("it's a pseudo storage!")
-        cookieStorage[key] = value
+        cookieStorage[key] = string(value)
     }
 
     getItem(key) {
