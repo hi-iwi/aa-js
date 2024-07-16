@@ -63,6 +63,7 @@ class XXX{
 * new map()
 * log.xx
 * fmt.xx
+* * slice.xxx
 * type convert: cast (vv, vk) to such type
     * string()
     * number()

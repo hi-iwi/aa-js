@@ -327,12 +327,19 @@ class _aaDate {
     date
     rawString = ''
     // @type AaDateValidator
-    validator = new _aaDateValidator("Invalid Date")
-
+    #validator = new _aaDateValidator("Invalid Date")
 
     pattern = 'YYYY-MM-DD HH:II:SS'
     timezoneOffset = _aaDateString.localTimezoneOffsetString
 
+
+    get validator() {
+        return this.#validator
+    }
+
+    set validator(value) {
+        throw new SyntaxError("date validator is readonly")
+    }
 
     /**
      * Extract the date string to YYYYMM style number

@@ -1,31 +1,51 @@
-class _aaStorageNotImplemented {
-    errmsg
-
-    constructor(type = '') {
-        this.errmsg = type + " storage is not implemented"
+// 不要  extends Storage，会报错
+const _aaPseudoStorage_ = new class {
+    constructor() {
     }
 
+    get length() {
+        log.warn("it's a pseudo storage!")
+        return Object.keys(this).length
+    }
+
+    set length(name) {
+        throw new SyntaxError("storage length is readonly")
+    }
+
+
     key(index) {
-        throw new ReferenceError(this.errmsg)
+        log.warn("it's a pseudo storage!")
+        let keys = Object.keys(this)
+        return keys.length > index ? keys[index] : null
     }
 
     setItem(key, value) {
-        throw new ReferenceError(this.errmsg)
+        log.warn("it's a pseudo storage!")
+        cookieStorage[key] = value
     }
 
     getItem(key) {
-        throw new ReferenceError(this.errmsg)
+        log.warn("it's a pseudo storage!")
+        return typeof this[key] === "string" ? this[key] : null
     }
 
     remove(key) {
-        throw new ReferenceError(this.errmsg)
+        log.warn("it's a pseudo storage!")
+        if (typeof this[key] === "string") {
+            delete this[key]
+        }
     }
 
     clear() {
-        throw new ReferenceError(this.errmsg)
+        log.warn("it's a pseudo storage!")
+        Object.keys(this).map(key => {
+            if (typeof this[key] === "string") {
+                delete this[key]
+            }
+        })
     }
-
 }
+
 
 class _aaStorage {
     name = 'aa-storage'
@@ -38,10 +58,15 @@ class _aaStorage {
     // @type Storage
     sessionStorage = window.sessionStorage
 
+    persistentNames = []  // both session/storage/cookie
+    persistentSessionNames = []
+    persistentStorageNames = []
+    persistentCookieNames = []
+
 
     // @param {Storage} [cookieStorage]
     constructor(cookieStorage) {
-        this.cookieStorage = cookieStorage instanceof Storage ? cookieStorage : new _aaStorageNotImplemented('cookie')
+        this.cookieStorage = cookieStorage instanceof Storage ? cookieStorage : _aaPseudoStorage_
     }
 
     // @param {Storage} cookieStorage
@@ -52,6 +77,10 @@ class _aaStorage {
 
     keyname(key) {
         return this.prefix + key
+    }
+
+    unpackKeyname(key) {
+        return key.indexOf(this.prefix) === 0 ? key.replace(this.prefix, '') : key
     }
 
     #makeValue(value, persistent = false) {
@@ -107,9 +136,62 @@ class _aaStorage {
         this.length = this.localStorage.length
     }
 
+    /**
+     *
+     * @param {Storage} storage
+     * @return {null|{[key:string]:string}}
+     */
+    filterPersistentData(storage) {
+        let pers = {}
+
+        let perNames = null
+        switch (storage) {
+            case this.localStorage:
+                perNames = this.persistentStorageNames
+                break
+            case this.sessionStorage:
+                perNames = this.persistentSessionNames
+                break
+            case this.cookieStorage:
+                perNames = this.persistentCookieNames
+                break
+        }
+
+
+        for (let i = 0; i < storage.length; i++) {
+            let k = storage.key(i)
+            let rawKey = this.unpackKeyname(k)
+            let v = storage.getItem(k)
+            if (this.persistentNames && this.persistentNames.includes(rawKey)) {
+                pers[k] = v
+                continue
+            }
+
+            if (perNames && perNames.includes(rawKey)) {
+                pers[k] = v
+                continue
+            }
+            if (v === null || v.length < 3 || v.substring(1, 2) !== ":") {
+                continue
+            }
+
+            let type = v.charAt(0)
+            //  unclearable caches
+            // 大写字母: 开头，表示不可清空
+            if (type >= "A" && type <= "Z") {
+                pers[k] = v
+            }
+        }
+        return len(pers) > 0 ? pers : null
+    }
+
     clear() {
+        let pers = this.filterPersistentData(this.localStorage)
         this.localStorage.clear()
         this.length = this.localStorage.length
+        if (len(pers) > 0) {
+            this.setItems(pers)
+        }
     }
 
     sessionKey(index) {

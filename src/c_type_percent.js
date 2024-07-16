@@ -1,5 +1,6 @@
 class percent extends decimal {
     name = 'aa-percent'
+    type = "percent"
 
     /**
      *
@@ -8,7 +9,6 @@ class percent extends decimal {
      */
     constructor(vv, vk = void '') {
         super(vv, vk)
-        this.type = "percent"
         this.scaleMax = C.PercentScale
         this.scale = C.PercentScale
         this.rounder = Math.round

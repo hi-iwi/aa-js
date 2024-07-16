@@ -53,15 +53,15 @@ class _aaApollo {
 
         this._fetcher.get(this.url, {"apollo": apollo}).then(data => {
             if (!data['apollo']) {
-                console.error("fetch " + this.url + " response invalid")
+                log.error("fetch " + this.url + " response invalid")
                 return
             }
             if (this.get() !== data['apollo']) {
-                console.debug("change apollo " + this.get() + " to " + data['apollo'])
+                log.debug("change apollo " + this.get() + " to " + data['apollo'])
                 this.set(data['apollo'])
             }
         }).catch(e => {
-            console.error(e.toString())
+            log.error(e.toString())
         })
     }
 

@@ -2,13 +2,21 @@
 class map {
     name = 'aa-map'
     object // {{[key:string]:*} | string}
-    size // {number}
+
+
+    get size() {
+        return this.keys().length
+    }
+
+    set size(value) {
+        throw new SyntaxError("map.size is readonly")
+    }
+
     /**
      * @param {{[key:string]:*} | string} o
      */
     constructor(o = {}) {
         this.object = map.parse(o)
-        this.size = this.keys().length
     }
 
     /**
@@ -165,12 +173,10 @@ class map {
 
     clear() {
         this.object = {}
-        this.size = 0
     }
 
     delete(key) {
         delete this.object[key]
-        this.size = this.keys().length
     }
 
     set(key, value) {
@@ -178,7 +184,13 @@ class map {
             return
         }
         this.object[key] = value
-        this.size = this.keys().length
+    }
+
+    getOrSet(key, defaultValue, allowUndefined = false) {
+        if (!this.has(key, allowUndefined)) {
+            this.set(key, defaultValue)
+        }
+        return this.get(key)
     }
 
     extend(obj) {
@@ -188,7 +200,6 @@ class map {
         for (let [k, v] of Object.entries(obj)) {
             this.set(k, v)
         }
-        this.size = this.keys().length
         return this
     }
 

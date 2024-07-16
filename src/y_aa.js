@@ -18,7 +18,6 @@ class Aa {
     fetch
 
     constructor() {
-        this.env = new _aaEnvironment()
         this.storage = new _aaStorage()
         this.fetch = new _aaFetch()
     }

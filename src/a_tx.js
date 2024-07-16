@@ -2,9 +2,10 @@
 let _aaTxIncr_ = 0
 
 class AaTx {
-    id
-    lock  // bool, 锁状态
-    timer // 超时自动解锁
+    name = 'aa-tx'
+    #id
+    #lock  // bool, 锁状态
+    #timer // 超时自动解锁
 
     static atomicId() {
         return ++_aaTxIncr_
@@ -12,52 +13,56 @@ class AaTx {
 
 
     constructor() {
-        this.id = AaTx.atomicId()
-        this.lock = false
-        this.timer = null
+        this.#id = AaTx.atomicId()
+        this.#lock = false
+        this.#timer = null
     }
 
     log(msg) {
         let dbg = false
         if (dbg) {
-            log.info("#" + this.id + " " + msg)
+            log.info("#" + this.#id + " " + msg)
         }
     }
 
     notFree() {
-        return this.lock
+        return this.#lock
     }
 
-    isFree() {  // 是否空闲
+    isFree() {
         return !this.notFree()
     }
 
 
-    begin(timeout) {
+    /**
+     * Start transaction
+     * @param {number} timeout in millisecond
+     */
+    begin(timeout = 10 * C.Second) {
         this.log('Begin')
-        this.lock = true  // BEGIN 事务开启
-        timeout = typeof timeout === "undefined" ? 10000 : uint32(timeout)  // 默认10秒超时解锁
-        clearTimeout(this.timer)
-        this.timer = setTimeout(() => {
+        this.#lock = true  // BEGIN 事务开启
+        timeout = !timeout ? 10 * C.Second : number(timeout)  // 默认10秒超时解锁
+        clearTimeout(this.#timer)
+        this.#timer = setTimeout(() => {
             log.warn("tx timeout")
-            this.lock = false
+            this.#lock = false
         }, timeout)
     }
 
     commit() {
         this.log('Commit')
-        clearTimeout(this.timer)
-        this.lock = false // COMMIT 事务结束
+        clearTimeout(this.#timer)
+        this.#lock = false // COMMIT 事务结束
     }
 
     rollback() {
         this.log('Rollback')
-        clearTimeout(this.timer)
-        this.lock = false  // ROLLBACK 事务结束
+        clearTimeout(this.#timer)
+        this.#lock = false  // ROLLBACK 事务结束
     }
 
     unmount() {
         this.log('Unmount')
-        clearTimeout(this.timer)
+        clearTimeout(this.#timer)
     }
 }

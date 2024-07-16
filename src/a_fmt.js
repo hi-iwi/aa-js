@@ -1,5 +1,7 @@
 // 基础static class
 class fmt {
+    name = 'aa-fmt'
+
     /**
      * Format string with specified formats
      * @param {string} format

@@ -1,4 +1,3 @@
-
 // static class
 class _aaEnvironment {
     name = 'aa-environment'
@@ -23,7 +22,7 @@ class _aaEnvironment {
         return !!window.ActiveXObject
     }
 
-    static  isWeixin() {
+    static isWeixin() {
         return /MicroMessenger/i.test(window.navigator.userAgent)
     }
 
@@ -32,11 +31,11 @@ class _aaEnvironment {
     }
 
     static isSafari() {
-         return /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
+        return /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
     }
 
-    static  isIphone() {
-         return /iPhone/i.test(window.navigator.userAgent)
+    static isIphone() {
+        return /iPhone/i.test(window.navigator.userAgent)
     }
 
     static isIpad() {
