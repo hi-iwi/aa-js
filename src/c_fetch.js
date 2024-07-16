@@ -50,7 +50,7 @@ class _aaFetch {
             if (err instanceof AError) {
                 throw err
             } else {
-                throw  new AError(AError.ClientThrow, err.toString())
+                throw  new AError(AErrorEnum.ClientThrow, err.toString())
             }
         })
     }

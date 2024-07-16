@@ -10,44 +10,50 @@ var _aerrorDictionaries_ = {
         "Invalid parameter: %s": "%s 输入不符合规则",
 
 
-        "Ok"                           : "成功",
-        "No content"                   : "成功",
-        "Bad param"                    : "参数错误",
-        "Unauthorized"                 : "请登录授权后使用",
-        "Payment required"             : "请付费后使用",
-        "Forbidden"                    : "您没有权限使用",
-        "Not found"                    : "糟糕，数据找不到啦~",
-        "Request timeout"              : "请求超时，请稍后再试",
-        "Conflict"                     : "异常冲突",
-        "Key conflict"                 : "冲突或已被占用",
-        "Gone"                         : "数据已被删除",
-        "Unsupported media type"       : "文件格式不正确",
-        "No rows"                      : "没有数据啦",
-        "Locked"                       : "资源已被锁定",
-        "Failed dependency"            : "之前发生错误",
-        "Unavailable for legal reasons": "因法律原因不可用",
-        "Internal server error"        : "服务端错误",
-        "Not implemented"              : "拒绝服务",
-        "Bad gateway"                  : "上游服务异常",
-        "Server exception"             : "服务端异常",
-        "Gateway timeout"              : "上游服务器超时",
-        "Bandwidth limit exceeded"     : "访问太频繁，临时限制访问",
-        "Server status exception"      : "服务器状态异常",
+        "Ok"        : "成功",
+        "No content": "成功",
+
+        "Bad request"     : "请求参数或其他错误",
+        "Unauthorized"    : "请登录授权后使用",
+        "Payment required": "请付费后使用",
+        "Forbidden"       : "您没有权限使用",
+        "Not found"       : "糟糕，数据找不到啦~",
+
+        "Timeout"               : "请求超时，请稍后再试",
+        "Conflict"              : "异常冲突",
+        "Gone"                  : "数据已被删除",
+        "Unsupported media type": "文件格式不正确",
+
+        "No rows"          : "没有数据啦",
+        "Locked"           : "资源已被锁定",
+        "Failed dependency": "之前发生错误",
+        "Retry with"       : "正在重试",
+        "Illegal"          : "因法律原因不可用",
+
+        "Internal server error"   : "服务端错误",
+        "Not implemented"         : "拒绝服务",
+        "Bad gateway"             : "上游服务异常",
+        "Server exception"        : "服务端异常",
+        "Gateway timeout"         : "上游服务器超时",
+        "Bandwidth limit exceeded": "访问太频繁，临时限制访问",
+        "Server status exception" : "服务器状态异常",
+        "Client throw"            : "客户端抛出异常",
     }
 }
 const AErrorEnum = {
     OK       : 200,
     NoContent: 204,
 
-    BadParam       : 400,
+    BadRequest     : 400,
     Unauthorized   : 401,
     PaymentRequired: 402,
     Forbidden      : 403,
     NotFound       : 404,// refer to redis.Nil, sql.ErrNoRows
-    Timeout        : 408, // 被限流也是返回这个
-    Conflict       : 409,
-    Gone           : 410,              // 以前存在过，以后都不会再存在了，表示数据已经删除、过期、失效
-    BadMediaType   : 415, // 上传的数据格式非法
+
+    Timeout             : 408, // 被限流也是返回这个
+    Conflict            : 409,
+    Gone                : 410,              // 以前存在过，以后都不会再存在了，表示数据已经删除、过期、失效
+    UnsupportedMediaType: 415, // 上传的数据格式非法
     // code:444, data:null   表示空数组返回这个错误，表示不可以再进行下一页查询了
     // code:200/204, data:[]  空数组，表示查询到了数据，但是数据过滤完了，可以尝试下一页查询
     NoRows          : 444,
@@ -62,7 +68,9 @@ const AErrorEnum = {
     ServerException       : 503,  // 客户端自定义，表示未知服务端错误；最常见的就是，没有正确返回数据，或者返回 {code:0,msg:""} 等未协商的数据，导致客户端无法正常处理
     GatewayTimeout        : 504,
     BandwidthLimitExceeded: 509,
-    StatusException       : 555,  // http 状态码出错，未达到程序阶段
+    ServerStatusException : 555,  // http 状态码出错，未达到程序阶段
+    ClientThrow           : 556, // 捕获js catch的报错
+
 
     /**
      *
@@ -175,35 +183,6 @@ class AError extends Error {
     #heading = ''
     #ending = ''
 
-    static OK = 200
-    static NoContent = 204
-
-    static BadParam = 400
-    static Unauthorized = 401
-    static PaymentRequired = 402
-    static Forbidden = 403
-    static NotFound = 404// refer to redis.Nil, sql.ErrNoRows
-    static Timeout = 408 // 被限流也是返回这个
-    static Conflict = 409
-    static Gone = 410              // 以前存在过，以后都不会再存在了，表示数据已经删除、过期、失效
-    static BadMediaType = 415 // 上传的数据格式非法
-    // code:444, data:null   表示空数组返回这个错误，表示不可以再进行下一页查询了
-    // code:200/204, data:[]  空数组，表示查询到了数据，但是数据过滤完了，可以尝试下一页查询
-    static NoRows = 444
-    static Locked = 423
-    static FailedDependency = 424// 之前发生错误
-    static  RetryWith = 449 // 特殊错误码，msg 用于跳转
-    static Illegal = 451// 该请求因法律原因不可用。
-
-    static InternalServerError = 500
-    static NotImplemented = 501 // 服务器不支持当前请求所需要的某个功能。当服务器无法识别请求的方法，
-    static BadGateway = 502  //
-    static ServerException = 503  // 客户端自定义，表示未知服务端错误；最常见的就是，没有正确返回数据，或者返回 {code:0,msg:""} 等未协商的数据，导致客户端无法正常处理
-    static GatewayTimeout = 504
-    static BandwidthLimitExceeded = 509
-    static StatusException = 555  // http 状态码出错，未达到程序阶段
-    static ClientThrow = 556 // 捕获js catch的报错
-
 
     constructor(code, msg = "") {
         msg = string(msg)
@@ -251,27 +230,27 @@ class AError extends Error {
     }
 
     isRetryWith() {
-        return this.is(AError.RetryWith)
+        return this.is(AErrorEnum.RetryWith)
     }
 
     isConflict() {
-        return this.is(AError.Conflict)
+        return this.is(AErrorEnum.Conflict)
     }
 
     isTimeout() {
-        return this.is(AError.Timeout)
+        return this.is(AErrorEnum.Timeout)
     }
 
     isUnauthorized() {
-        return this.is(AError.Unauthorized)
+        return this.is(AErrorEnum.Unauthorized)
     }
 
     isForbidden() {
-        return this.is(AError.Forbidden)
+        return this.is(AErrorEnum.Forbidden)
     }
 
     noMatched() {
-        return [AError.NoRows, AError.NotFound, AError.Gone].includes(this.code)
+        return [AErrorEnum.NoRows, AErrorEnum.NotFound, AErrorEnum.Gone].includes(this.code)
     }
 
     isServerError() {
