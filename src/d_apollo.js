@@ -1,10 +1,10 @@
 class _aaApollo {
     name = 'aa-apollo'
-    _fetcher
-    _fingerprintGenerator
-    _loginDataHandler
-    _storageGetter
-    _storageSetter
+    #fetcher
+    #fingerprintGenerator
+    #loginDataHandler
+    #storageGetter
+    #storageSetter
 
     paramName = _apolloQueryName_ //  参数名 --> 阿波罗计划
     url
@@ -21,12 +21,12 @@ class _aaApollo {
      * @param {(k:string, v:string)=>void} storageSetter 存储保存方法
      */
     constructor(fetcher, url, fingerprintGenerator, loginDataHandler, storageGetter = localStorage.getItem, storageSetter = localStorage.setItem) {
-        this._fetcher = fetcher
+        this.#fetcher = fetcher
         this.url = url
-        this._fingerprintGenerator = fingerprintGenerator
-        this._loginDataHandler = loginDataHandler;
-        this._storageGetter = storageGetter
-        this._storageSetter = storageSetter
+        this.#fingerprintGenerator = fingerprintGenerator
+        this.#loginDataHandler = loginDataHandler;
+        this.#storageGetter = storageGetter
+        this.#storageSetter = storageSetter
         this.apollo = storageGetter(this.paramName)  // 初始化获取
         this.Check()
         this.fetch()
@@ -35,14 +35,14 @@ class _aaApollo {
 
     get(readStorage = false) {
         if (readStorage) {
-            return this._storageGetter(this.paramName)
+            return this.#storageGetter(this.paramName)
         }
         return this.apollo
     }
 
     set(apollo) {
         this.apollo = apollo
-        this._storageSetter(this.paramName, apollo)
+        this.#storageSetter(this.paramName, apollo)
     }
 
     fetch() {
@@ -51,7 +51,7 @@ class _aaApollo {
             return
         }
 
-        this._fetcher.get(this.url, {"apollo": apollo}).then(data => {
+        this.#fetcher.get(this.url, {"apollo": apollo}).then(data => {
             if (!data['apollo']) {
                 log.error("fetch " + this.url + " response invalid")
                 return
@@ -72,7 +72,7 @@ class _aaApollo {
             return
         }
 
-        this._fingerprintGenerator((fingerprint) => {
+        this.#fingerprintGenerator((fingerprint) => {
             let info = {
                 "psid" : fingerprint,
                 "dpw"  : Math.ceil(window.screen.height * window.devicePixelRatio),  // 物理分辨率宽度

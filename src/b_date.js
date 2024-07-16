@@ -1,8 +1,16 @@
 class _aaDateString {
     name = 'aa-date-string'
     timezoneOffset
-    value = ""
+    #value = ""
     raw = ""
+
+    get value() {
+        return this.#value
+    }
+
+    set value(value) {
+        this.reset(value)
+    }
 
     static localTimezoneOffsetString = _aaDateString.parseTimezoneOffsetString()
 
@@ -43,6 +51,15 @@ class _aaDateString {
      * @param {string} [zone]
      */
     constructor(s, zone = _aaDateString.localTimezoneOffsetString) {
+        this.reset(s, zone)
+    }
+
+    /**
+     *
+     * @param {string} s
+     * @param {string} [zone]
+     */
+    reset(s, zone) {
         this.raw = s
         s = s.replace(' ', 'T')
         let reg = /[-+][01]\d:[0-5]\d$/
@@ -67,55 +84,55 @@ class _aaDateString {
             s += zone
         }
         this.timezoneOffset = zone
-        this.value = s
+        this.#value = s
     }
 
     isZero(strict = true) {
-        return (!strict && !this.value) || this.value.indexOf("0000-00-00T00:00:00.000") === 0
+        return (!strict && !this.#value) || this.#value.indexOf("0000-00-00T00:00:00.000") === 0
     }
 
     isMax() {
-        let s = this.value.substring(0, 19)
+        let s = this.#value.substring(0, 19)
         return s === "9999-12-31T23:59:59" || s === "9999-12-31T00:00:00"
     }
 
     year() {
-        return this.value.substring(0, 4)
+        return this.#value.substring(0, 4)
     }
 
     month() {
-        return this.value.substring(5, 7)
+        return this.#value.substring(5, 7)
     }
 
     day() {
-        return this.value.substring(8, 10)
+        return this.#value.substring(8, 10)
     }
 
     hour() {
-        return this.value.substring(11, 13)
+        return this.#value.substring(11, 13)
     }
 
     minute() {
-        return this.value.substring(14, 16)
+        return this.#value.substring(14, 16)
     }
 
     second() {
-        return this.value.substring(17, 19)
+        return this.#value.substring(17, 19)
     }
 
     millisecond() {
-        return this.value.substring(19)
+        return this.#value.substring(19)
     }
 
     toString() {
-        return this.value
+        return this.#value
     }
 }
 
 class _aaDateValidator {
     name = 'aa-date-validator'
 
-    type
+    #type
 
     // support '1000-01-01' to '9999-12-31'
     static InvalidDate = 'invalid date'
@@ -137,11 +154,11 @@ class _aaDateValidator {
         if (typeof date === "string") {
             let ds = new _aaDateString(date)
             if (ds.isZero(strict)) {
-                this.type = _aaDateValidator.ZeroDate
+                this.#type = _aaDateValidator.ZeroDate
                 return this
             }
             if (ds.isMax()) {
-                this.type = _aaDateValidator.MaxDate
+                this.#type = _aaDateValidator.MaxDate
                 return this
             }
 
@@ -157,37 +174,37 @@ class _aaDateValidator {
             // RangeError: Invalid Date (Safari)
             let d = new Date(date)
             if (["", "null", "invalid date", "invalid time value"].includes(d.toString().toLowerCase())) {
-                this.type = _aaDateValidator.InvalidDate
+                this.#type = _aaDateValidator.InvalidDate
                 return this
             }
             // 253402271999000 = new Date("9999-12-31 23:59:59")
             // 253402214400000 = new Date("9999-12-31")
-            this.type = [253402271999000, 253402214400000].d.valueOf() ? _aaDateValidator.MaxDate : _aaDateValidator.ValidDate
+            this.#type = [253402271999000, 253402214400000].d.valueOf() ? _aaDateValidator.MaxDate : _aaDateValidator.ValidDate
         } catch (e) {
-            this.type = _aaDateValidator.InvalidDate
+            this.#type = _aaDateValidator.InvalidDate
         }
         return this
     }
 
     setInvalid() {
-        this.type = _aaDateValidator.InvalidDate
+        this.#type = _aaDateValidator.InvalidDate
     }
 
     setZero() {
-        this.type = _aaDateValidator.ZeroDate
+        this.#type = _aaDateValidator.ZeroDate
     }
 
     isZero() {
-        return this.type === _aaDateValidator.ZeroDate
+        return this.#type === _aaDateValidator.ZeroDate
     }
 
     isMax() {
-        return this.type === _aaDateValidator.MaxDate
+        return this.#type === _aaDateValidator.MaxDate
     }
 
     isValid(isMaxDateValid = false) {
-        let ok = this.type === _aaDateValidator.ValidDate
-        return ok || (isMaxDateValid && this.type === _aaDateValidator.MaxDate)
+        let ok = this.#type === _aaDateValidator.ValidDate
+        return ok || (isMaxDateValid && this.#type === _aaDateValidator.MaxDate)
     }
 
     notValid(isMaxDateValid = false) {
@@ -324,8 +341,7 @@ class _aaDateZero extends Date {
 class _aaDate {
     name = 'aa-date'
     // @type Date
-    date
-    rawString = ''
+    #date
     // @type AaDateValidator
     #validator = new _aaDateValidator("Invalid Date")
 
@@ -340,6 +356,12 @@ class _aaDate {
     set validator(value) {
         throw new SyntaxError("date validator is readonly")
     }
+
+    // @deprecated 外部修改无法及时改变 validator，因此不要暴露出去
+    get date() {
+        return this.#date
+    }
+
 
     /**
      * Extract the date string to YYYYMM style number
@@ -399,18 +421,16 @@ class _aaDate {
 
     // @param {Date|string|number} date
     reset(date, strict = true) {
-        this.rawString = ''
         this.resetPatter()
         let zone = this.timezoneOffset
         // timestamp
         if (typeof date === "number") {
             date = new Date(datex)
         } else if (typeof date === "string") {
-            this.rawString = date
             this.setPattern(date)
             let ds = new _aaDateString(date, this.timezoneOffset)
             if (ds.isZero(true)) {
-                this.date = new _aaDateZero()
+                this.#date = new _aaDateZero()
                 this.validator.setZero()
                 return this
             }
@@ -418,7 +438,7 @@ class _aaDate {
         }
 
         if (date instanceof Date) {
-            this.date = date
+            this.#date = date
             this.validator.parse(date, strict)
             if (this.validator.isValid(true)) {
                 this.timezoneOffset = zone  // set after valid date
@@ -426,7 +446,7 @@ class _aaDate {
             }
         } else {
             date = new Date("Invalid Date")
-            this.date = date
+            this.#date = date
             this.validator.setInvalid()
         }
         return this
@@ -497,38 +517,38 @@ class _aaDate {
 
     // Get the year
     year() {
-        return this.date.getFullYear()
+        return this.#date.getFullYear()
     }
 
     // Get the real month, starts from 1
     month() {
-        return this.date.getMonth() + 1    // Date.getMonth 从0 开始
+        return this.#date.getMonth() + 1    // Date.getMonth 从0 开始
     }
 
     // Get the day-of-the-month
     day() {
-        return this.date.getDate()
+        return this.#date.getDate()
     }
 
     // @return {(1|2|3|4|5|6|7)} Get the day of the week
     weekDay() {
-        return this.date.getDay()
+        return this.#date.getDay()
     }
 
     hour() {
-        return this.date.getHours()
+        return this.#date.getHours()
     }
 
     minute() {
-        return this.date.getMinutes()
+        return this.#date.getMinutes()
     }
 
     second() {
-        return this.date.getSeconds()
+        return this.#date.getSeconds()
     }
 
     millisecond() {
-        return this.date.getMilliseconds()
+        return this.#date.getMilliseconds()
     }
 
     // timestamp in milliseconds.   +date  可以隐式调用 valueOf()
@@ -536,13 +556,13 @@ class _aaDate {
         if (this.validator.isZero()) {
             return 0
         }
-        return this.date.valueOf()
+        return this.#date.valueOf()
     }
 
     // 等同于 valueOf()
     // @deprecated
     // getTime() {
-    //     return this.date.getTime()
+    //     return this.#date.getTime()
     // }
     //
 
@@ -554,7 +574,7 @@ class _aaDate {
 
     // Get quarter-of-the-year
     quarter() {
-        return Math.floor((this.date.getMonth() + 3) / 3)
+        return Math.floor((this.#date.getMonth() + 3) / 3)
     }
 
     // Get week-of-the-year
@@ -565,15 +585,15 @@ class _aaDate {
     }
 
     getTimezoneOffset() {
-        return this.date.getTimezoneOffset()
+        return this.#date.getTimezoneOffset()
     }
 
     setTime(time) {
-        return this.date.setTime(time)
+        return this.#date.setTime(time)
     }
 
     setMilliseconds(ms) {
-        return this.date.setMilliseconds(ms)
+        return this.#date.setMilliseconds(ms)
     }
 
     /**
@@ -583,7 +603,7 @@ class _aaDate {
      * @return {number}
      */
     setSeconds(sec, ms) {
-        return this.date.setSeconds(sec, ms)
+        return this.#date.setSeconds(sec, ms)
     }
 
     /**
@@ -594,7 +614,7 @@ class _aaDate {
      * @return {number}
      */
     setMinutes(min, sec, ms) {
-        return this.date.setMinutes(min, sec, ms)
+        return this.#date.setMinutes(min, sec, ms)
     }
 
     /**
@@ -606,7 +626,7 @@ class _aaDate {
      * @returnn {number}
      */
     setHours(hours, min, sec, ms) {
-        return this.date.setHours(hours, min, sec, ms)
+        return this.#date.setHours(hours, min, sec, ms)
     }
 
     /**
@@ -615,7 +635,7 @@ class _aaDate {
      * @return {number}
      */
     setDate(day) {
-        return this.date.setDate(day)
+        return this.#date.setDate(day)
     }
 
     /**
@@ -625,7 +645,7 @@ class _aaDate {
      * @return {number}
      */
     setMonth(month, day) {
-        return this.date.setMonth(month, day)
+        return this.#date.setMonth(month, day)
     }
 
     /**
@@ -636,13 +656,13 @@ class _aaDate {
      * @return {number}
      */
     setFullYear(year, month, day) {
-        return this.date.setFullYear(year, month, day)
+        return this.#date.setFullYear(year, month, day)
     }
 
     // YYYY-MM-DD HH:II:SS   YYYY-MM-DD HH:II:SS.sss
     // z ==> timezone
     format(s = "YYYY-MM-DD HH:II:SS") {
-        if (this.date instanceof _aaDateZero) {
+        if (this.#date instanceof _aaDateZero) {
             return s.replace(/[YMDHISs]/g, '0').replace(/Z/g, this.timezoneOffset)
         }
 
