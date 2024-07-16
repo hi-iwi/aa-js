@@ -19,17 +19,17 @@ const _aaPseudoStorage_ = new class {
         return keys.length > index ? keys[index] : null
     }
 
-    setItem(key, value) {
+    setItem(key, value, options) {
         log.warn("it's a pseudo storage!")
         cookieStorage[key] = string(value)
     }
 
-    getItem(key) {
+    getItem(key, options) {
         log.warn("it's a pseudo storage!")
         return typeof this[key] === "string" ? this[key] : null
     }
 
-    remove(key) {
+    remove(key, options) {
         log.warn("it's a pseudo storage!")
         if (typeof this[key] === "string") {
             delete this[key]
@@ -63,6 +63,14 @@ class _aaStorage {
     persistentStorageNames = []
     persistentCookieNames = []
 
+
+    get length() {
+        return this.cookieLength() + this.storageLength() + this.sessionLength()
+    }
+
+    set length(value) {
+        throw SyntaxError("storage length is readonly")
+    }
 
     // @param {Storage} [cookieStorage]
     constructor(cookieStorage) {
@@ -105,10 +113,15 @@ class _aaStorage {
                 ok = false
                 break;
         }
+        return value
     }
 
     key(index) {
         return this.#localStorage.key(index)
+    }
+
+    storageLength() {
+        return this.#localStorage.length
     }
 
     // @param {{[key:string]:any}}
@@ -194,6 +207,10 @@ class _aaStorage {
         }
     }
 
+    sessionLength() {
+        return this.#sessionStorage.length
+    }
+
     sessionKey(index) {
         return this.#sessionStorage.key(index)
     }
@@ -218,25 +235,28 @@ class _aaStorage {
         this.#sessionStorage.clear()
     }
 
+    cookieLength() {
+        return this.#cookieStorage.length
+    }
 
     cookieKey(index) {
         return this.#cookieStorage.key(index)
     }
 
-    setCookie(key, value, persistent = false) {
-        key = this.keyname(key)
-        value = this.#makeValue(value, persistent)
-        this.#cookieStorage.setItem(key, value)
+    setCookie(key, value, options) {
+        // cookie 的 key 不需要修改
+        value = this.#makeValue(value, false)
+        this.#cookieStorage.setItem(key, value, options)
     }
 
-    getCookie(key) {
-        key = this.keyname(key)
-        this.#cookieStorage.getItem(key)
+    getCookie(key, options) {
+        // cookie 的 key 不需要修改
+        return this.#cookieStorage.getItem(key, options)
     }
 
-    removeCookie(key) {
-        key = this.keyname(key)
-        this.#cookieStorage.removeItem(key)
+    removeCookie(key, options) {
+        // cookie 的 key 不需要修改
+        this.#cookieStorage.removeItem(key, options)
     }
 
     clearCookie() {
