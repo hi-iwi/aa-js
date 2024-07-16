@@ -29,11 +29,9 @@ class AaLoggerStyle {
 class log {
     name = 'aa-log'
 
-      // @type {(s:string)=>void}
-    static alertEffect= s => console.log(s)
+    // @type {(s:string)=>void}
+    static alertEffect = s => console.log(s)
     static _breakpointIncr = 0
-
-
 
 
     /**
@@ -84,21 +82,22 @@ class log {
      * @param {AaLoggerStyle|*} style
      * @param args
      */
-    static print(style, ...args) {
+    static print(style = "", ...args) {
         if (!_aaIsDebug()) {
             return
         }
 
-        let data = style instanceof AaLoggerStyle ? args : {style, ...args}
-        let matches = window.location.search.match(new RegExp(_alertQueryName_ + "=(\\w+)"))
-        let alert = bool(matches, 1)
-        if (alert) {
-            log.alert(...data)
+        if(!(style instanceof AaLoggerStyle)){
+            args.unshift(style )
+        }
+        let alert = window.location.search.indexOf(_debugQueryName_ + "=(2|alert|Alert|ALERT)")
+        if (alert > 0) {
+            log.alert(...args)
             return
         }
 
         if (!(style instanceof AaLoggerStyle)) {
-            console.log(...data)
+            console.log(...args)
             return
         }
 

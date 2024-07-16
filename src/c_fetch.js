@@ -21,7 +21,6 @@ class _aaFetch {
     }
 
 
-
     #makeHeaders(headers = {}) {
         // @TODO 合并
         return this.headers
@@ -43,15 +42,15 @@ class _aaFetch {
         return response.json().then(resp => {
             // 捕获返回数据，修改为 resp.data
             const err = new AError(resp['code'], resp['msg'])
-            if (err.ok()) {
+            if (err.isOK()) {
                 return resp['data']
             }
-            throw err.append(url)
+            throw err.addHeading(url)
         }).catch(err => {
             if (err instanceof AError) {
                 throw err
             } else {
-                throw AError.newThrow(err.toString())
+                throw  new AError(AError.ClientThrow, err.toString())
             }
         })
     }

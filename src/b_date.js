@@ -118,10 +118,10 @@ class _aaDateValidator {
     type
 
     // support '1000-01-01' to '9999-12-31'
-    static invalidDate = 'invalid date'
-    static zeroDate = 'zero date'    // 0000-00-00   or  0000-00-00 00:00:00
-    static validDate = 'valid date'
-    static maxDate = 'max date'  // 9999-12-31 or 9999-12-31 23:59:59
+    static InvalidDate = 'invalid date'
+    static ZeroDate = 'zero date'    // 0000-00-00   or  0000-00-00 00:00:00
+    static ValidDate = 'valid date'
+    static MaxDate = 'max date'  // 9999-12-31 or 9999-12-31 23:59:59
 
     constructor(s, strict = true) {
         this.parse(s, strict)
@@ -137,11 +137,11 @@ class _aaDateValidator {
         if (typeof date === "string") {
             let ds = new _aaDateString(date)
             if (ds.isZero(strict)) {
-                this.type = _aaDateValidator.zeroDate
+                this.type = _aaDateValidator.ZeroDate
                 return this
             }
             if (ds.isMax()) {
-                this.type = _aaDateValidator.maxDate
+                this.type = _aaDateValidator.MaxDate
                 return this
             }
 
@@ -157,37 +157,37 @@ class _aaDateValidator {
             // RangeError: Invalid Date (Safari)
             let d = new Date(date)
             if (["", "null", "invalid date", "invalid time value"].includes(d.toString().toLowerCase())) {
-                this.type = _aaDateValidator.invalidDate
+                this.type = _aaDateValidator.InvalidDate
                 return this
             }
             // 253402271999000 = new Date("9999-12-31 23:59:59")
             // 253402214400000 = new Date("9999-12-31")
-            this.type = [253402271999000, 253402214400000].d.valueOf() ? _aaDateValidator.maxDate : _aaDateValidator.validDate
+            this.type = [253402271999000, 253402214400000].d.valueOf() ? _aaDateValidator.MaxDate : _aaDateValidator.ValidDate
         } catch (e) {
-            this.type = _aaDateValidator.invalidDate
+            this.type = _aaDateValidator.InvalidDate
         }
         return this
     }
 
     setInvalid() {
-        this.type = _aaDateValidator.invalidDate
+        this.type = _aaDateValidator.InvalidDate
     }
 
     setZero() {
-        this.type = _aaDateValidator.zeroDate
+        this.type = _aaDateValidator.ZeroDate
     }
 
     isZero() {
-        return this.type === _aaDateValidator.zeroDate
+        return this.type === _aaDateValidator.ZeroDate
     }
 
     isMax() {
-        return this.type === _aaDateValidator.maxDate
+        return this.type === _aaDateValidator.MaxDate
     }
 
     isValid(isMaxDateValid = false) {
-        let ok = this.type === _aaDateValidator.validDate
-        return ok || (isMaxDateValid && this.type === _aaDateValidator.maxDate)
+        let ok = this.type === _aaDateValidator.ValidDate
+        return ok || (isMaxDateValid && this.type === _aaDateValidator.MaxDate)
     }
 
     notValid(isMaxDateValid = false) {

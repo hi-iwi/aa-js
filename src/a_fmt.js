@@ -37,4 +37,43 @@ class fmt {
         return fmt.sprintf(format, ...args.slice(1))
     }
 
+    /**
+     * Convert UPPER_UNDERSCORE_CASE/PascalCase/camelCase/kebab-case to snake case(underscore_case)
+     * @param s
+     */
+    static toSnakeCase(s) {
+        s = s.replace(/-/g, '_')  // kebab-case
+        let isPascal = s && (s[0] >= 'A' && s[0] <= 'Z')
+
+        s = s.replace(/_?([A-Z]+)/g, function (x, y) {
+            return "_" + y.toLowerCase()
+        })
+        return isPascal ? s.replace(/^_/, "") : s
+
+    }
+
+    /**
+     * Capitalize the first letter of each word and leave the other letters lowercase
+     * @param {string} s  separate words with spaces, underscore(_) or hyphen(-)
+     * @param handleCases
+     */
+    static capitalizeEachWord(s, handleCases = false) {
+        if (handleCases) {
+            s = fmt.toSnakeCase(s).replace(/_/g, ' ')
+        }
+        s = s.replace(/(^|[\s_-])([a-z])/g, function (x, y, z) {
+            return y + z.toUpperCase()
+        })
+        return s
+    }
+
+    /**
+     * Convert to sentence-case
+     */
+    static toSentenceCase(s, handleCases = false) {
+        if (handleCases) {
+            s = fmt.toSnakeCase(s).replace(/_/g, ' ')
+        }
+        return !s ? "" : s[0].toUpperCase() + s.substring(1)
+    }
 }

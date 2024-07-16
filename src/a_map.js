@@ -44,7 +44,7 @@ class map {
      * Merge Objects
      * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名覆盖，抛弃sources对象多余属性值
      *      常用于配置文件填充
-     * @param {{[key:string]:*}} target
+     * @param {{[key:string]:*}} target --> 会污染 target
      * @param {{[key:string]:*}}  sources
      * @return {*} 注意配置属性固定的doc文档写法，所以这里返回通用对于doc兼容性最佳
      */
@@ -70,7 +70,7 @@ class map {
      * Strict Merge Objects
      * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名且值类型相同的覆盖，抛弃sources对象多余属性值
      *      常用于配置文件填充
-     * @param {{[key:string]:*}} target
+     * @param {{[key:string]:*}} target --> 会污染 target
      * @param {{[key:string]:*}}  sources
      * @return {*}  注意配置属性固定的doc文档写法，所以这里返回通用对于doc兼容性最佳
      */

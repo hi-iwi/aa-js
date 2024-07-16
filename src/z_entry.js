@@ -1,4 +1,2 @@
-
-
 // aparam   AError   aerror
-const aa = new Aa()
+const aa = new Aa();
