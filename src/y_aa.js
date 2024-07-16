@@ -23,7 +23,6 @@ class Aa {
         this.fetch = new _aaFetch()
     }
 
-
     date(...args) {
         return new _aaDate(...args)
     }
@@ -46,7 +45,7 @@ class Aa {
     apollo(url, fingerprintGenerator, loginDataHandler, storageGetter, storageSetter) {
         return new _aaApollo(this.fetch, url, fingerprintGenerator, loginDataHandler, storageGetter, storageSetter)
     }
-    
+
 }
 
 
