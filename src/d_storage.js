@@ -52,11 +52,11 @@ class _aaStorage {
     //@readonly
     prefix = 'a:'
     // @type Storage
-    cookieStorage
+    #cookieStorage
     // @type Storage
-    localStorage = window.localStorage
+    #localStorage = window.localStorage
     // @type Storage
-    sessionStorage = window.sessionStorage
+    #sessionStorage = window.sessionStorage
 
     persistentNames = []  // both session/storage/cookie
     persistentSessionNames = []
@@ -66,12 +66,12 @@ class _aaStorage {
 
     // @param {Storage} [cookieStorage]
     constructor(cookieStorage) {
-        this.cookieStorage = cookieStorage instanceof Storage ? cookieStorage : _aaPseudoStorage_
+        this.#cookieStorage = cookieStorage instanceof Storage ? cookieStorage : _aaPseudoStorage_
     }
 
     // @param {Storage} cookieStorage
     setCookieStorage(cookieStorage) {
-        this.cookieStorage = cookieStorage
+        this.#cookieStorage = cookieStorage
         return this
     }
 
@@ -108,7 +108,7 @@ class _aaStorage {
     }
 
     key(index) {
-        return this.localStorage.key(index)
+        return this.#localStorage.key(index)
     }
 
     // @param {{[key:string]:any}}
@@ -121,19 +121,19 @@ class _aaStorage {
     setItem(key, value, persistent = false) {
         key = this.keyname(key)
         value = this.#makeValue(value, persistent)
-        this.localStorage.setItem(key, value)
-        this.length = this.localStorage.length
+        this.#localStorage.setItem(key, value)
+        this.length = this.#localStorage.length
     }
 
     getItem(key) {
         key = this.keyname(key)
-        this.localStorage.getItem(key)
+        this.#localStorage.getItem(key)
     }
 
     remove(key) {
         key = this.keyname(key)
-        this.localStorage.removeItem(key)
-        this.length = this.localStorage.length
+        this.#localStorage.removeItem(key)
+        this.length = this.#localStorage.length
     }
 
     /**
@@ -146,13 +146,13 @@ class _aaStorage {
 
         let perNames = null
         switch (storage) {
-            case this.localStorage:
+            case this.#localStorage:
                 perNames = this.persistentStorageNames
                 break
-            case this.sessionStorage:
+            case this.#sessionStorage:
                 perNames = this.persistentSessionNames
                 break
-            case this.cookieStorage:
+            case this.#cookieStorage:
                 perNames = this.persistentCookieNames
                 break
         }
@@ -186,61 +186,61 @@ class _aaStorage {
     }
 
     clear() {
-        let pers = this.filterPersistentData(this.localStorage)
-        this.localStorage.clear()
-        this.length = this.localStorage.length
+        let pers = this.filterPersistentData(this.#localStorage)
+        this.#localStorage.clear()
+        this.length = this.#localStorage.length
         if (len(pers) > 0) {
             this.setItems(pers)
         }
     }
 
     sessionKey(index) {
-        return this.sessionStorage.key(index)
+        return this.#sessionStorage.key(index)
     }
 
     setSession(key, value, persistent = false) {
         key = this.keyname(key)
         value = this.#makeValue(value, persistent)
-        this.sessionStorage.setItem(key, value)
+        this.#sessionStorage.setItem(key, value)
     }
 
     getSession(key) {
         key = this.keyname(key)
-        this.sessionStorage.getItem(key)
+        this.#sessionStorage.getItem(key)
     }
 
     removeSession(key) {
         key = this.keyname(key)
-        this.sessionStorage.removeItem(key)
+        this.#sessionStorage.removeItem(key)
     }
 
     clearSession() {
-        this.sessionStorage.clear()
+        this.#sessionStorage.clear()
     }
 
 
     cookieKey(index) {
-        return this.cookieStorage.key(index)
+        return this.#cookieStorage.key(index)
     }
 
     setCookie(key, value, persistent = false) {
         key = this.keyname(key)
         value = this.#makeValue(value, persistent)
-        this.cookieStorage.setItem(key, value)
+        this.#cookieStorage.setItem(key, value)
     }
 
     getCookie(key) {
         key = this.keyname(key)
-        this.cookieStorage.getItem(key)
+        this.#cookieStorage.getItem(key)
     }
 
     removeCookie(key) {
         key = this.keyname(key)
-        this.cookieStorage.removeItem(key)
+        this.#cookieStorage.removeItem(key)
     }
 
     clearCookie() {
-        this.cookieStorage.clear()
+        this.#cookieStorage.clear()
     }
 
     clearAll() {
