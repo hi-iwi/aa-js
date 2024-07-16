@@ -29,9 +29,10 @@ scheme  user information     host     port                  query      fragm
             xhost 也可以表示这段，因为xhost一般保存在配置文件
             如 xhost https://a.com  也可能以后会被配置成 http://localhost/a
  */
+const UrlRemoveRedirect = {redirect: null}
 
 class _aaURI {
-    name='aa-uri'
+    name = 'aa-uri'
 
     baseUrl  // ? 之前的部分
     scheme  //  e.g. http/tcp  or empty
