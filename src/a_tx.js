@@ -6,13 +6,13 @@ class AaTx {
     lock  // bool, 锁状态
     timer // 超时自动解锁
 
-    static AtomicId() {
+    static atomicId() {
         return ++_aaTxIncr_
     }
 
 
     constructor() {
-        this.id = AaTx.AtomicId()
+        this.id = AaTx.atomicId()
         this.lock = false
         this.timer = null
     }
