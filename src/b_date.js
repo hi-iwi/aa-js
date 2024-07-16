@@ -152,6 +152,7 @@ class _aaDateValidator {
      * @return {_aaDateValidator}
      */
     parse(date, strict = true) {
+
         if (typeof date === "string") {
             let ds = new _aaDateString(date)
             if (ds.isZero(strict)) {
@@ -169,6 +170,7 @@ class _aaDateValidator {
         // new Date() not yet thrown an exception.  but .toString() may throw
         try {
 
+
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Invalid_date
             // RangeError: Invalid time value (V8-based)
             // RangeError: invalid date (Firefox)
@@ -180,9 +182,11 @@ class _aaDateValidator {
                 this.#type = _aaDateValidator.InvalidDate
                 return this
             }
+
+
             // 253402271999000 = new Date("9999-12-31 23:59:59")
             // 253402214400000 = new Date("9999-12-31")
-            this.#type = [253402271999000, 253402214400000].d.valueOf() ? _aaDateValidator.MaxDate : _aaDateValidator.ValidDate
+            this.#type = [253402271999000, 253402214400000].includes(d.valueOf()) ? _aaDateValidator.MaxDate : _aaDateValidator.ValidDate
         } catch (e) {
             this.#type = _aaDateValidator.InvalidDate
         }
@@ -409,6 +413,9 @@ class _aaDate {
             this.reset(new Date())
             return
         }
+        if (args[0] instanceof _aaDate) {
+            return args[0]
+        }
         if (typeof args[0] === "undefined" || args[0] === null) {
             args[0] = new Date()
         }
@@ -443,6 +450,7 @@ class _aaDate {
 
         if (date instanceof Date) {
             this.#date = date
+
             this.validator.parse(date, strict)
             if (this.validator.isValid(true)) {
                 this.timezoneOffset = zone  // set after valid date
