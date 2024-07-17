@@ -1,8 +1,10 @@
 class Aa {
     // a_
 
+    Path = _aaPath
     Date = _aaDate
     registry
+
 
     // log   log 类是纯静态方法，全局直接使用
 
@@ -18,10 +20,18 @@ class Aa {
     // @type _aaFetch
     fetch
 
+    d_
+    oss
+
     constructor() {
         this.registry = new _aaRegistry()
         this.storage = new _aaStorage()
         this.fetch = new _aaFetch()
+        this.oss = new _aaOSS()
+    }
+
+    path(path) {
+        return new _aaPath(path)
     }
 
     date(...args) {

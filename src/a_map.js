@@ -7,6 +7,7 @@ class map {
     get size() {
         return this.keys().length
     }
+
     // 不用报错，正常人也不会这么操作
     // set size(value) {
     //     throw new SyntaxError("map.size is readonly")
@@ -16,6 +17,10 @@ class map {
      * @param {{[key:string]:*} | string} o
      */
     constructor(o = {}) {
+        this.load(o)
+    }
+
+    load(o) {
         this.object = map.parse(o)
     }
 

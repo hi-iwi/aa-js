@@ -68,22 +68,20 @@ class _aaStorage {
         return this.#localStorage.length
     }
 
-    set length(value) {
-        throw SyntaxError("storage length is readonly")
-    }
+    // set length(value) {
+    //     throw SyntaxError("storage length is readonly")
+    // }
 
     get size() {
         return this.#localStorage.length + this.#sessionStorage.length + this.#cookieStorage.length
     }
 
-    set size(value) {
-        throw SyntaxError("storage size is readonly")
-    }
+    // set size(value) {
+    //     throw SyntaxError("storage size is readonly")
+    // }
 
+    constructor() {
 
-    // @param {Storage} [cookieStorage]
-    constructor(cookieStorage) {
-        this.#cookieStorage = cookieStorage instanceof Storage ? cookieStorage : _aaPseudoStorage_
     }
 
     // @param {Storage} cookieStorage

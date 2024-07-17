@@ -63,7 +63,8 @@ class XXX{
 * new map()
 * log.xx
 * fmt.xx
-* * slice.xxx
+*
+    * slice.xxx
 * type convert: cast (vv, vk) to such type
     * string()
     * number()
@@ -92,6 +93,7 @@ class XXX{
 * (vv, vk)   ====>  vk ? vv[vk] : vv
 * ::new()
 * .clone()  ===> 深度复制该类
+* .load(data)   ===> 重置数据
 
 * 通用命名规则
     * toJSON()    JSON.stringify() 能识别该方法
