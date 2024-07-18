@@ -141,7 +141,7 @@ class _aaFileSrc {
 }
 
 
-class _aaImgSrc {
+class AaImgSrc {
     name = 'aa-img-src'
     // @property {function(path:string)=>int}
     #providerHandler
@@ -158,6 +158,12 @@ class _aaImgSrc {
     allowed
 
     #parsePath(path) {
+        const x = path.indexOf('//')
+        if (x > -1) {
+            let u = new URL(x === 0 ? location.protocol + path : path)
+            path = u.pathname
+        }
+
         const p = new _aaPath(path)
         let width = 0, size = 0, height = 0
         const a = p.filename.split('_')
@@ -166,45 +172,104 @@ class _aaImgSrc {
             width = parseInt(a[1], 36)
             height = len(a) === 3 ? parseInt(a[2], 36) : width
         }
+        this.#providerHandler({})
 
-        return {
-            //provider: this.#providerHandler(p),
-            path    : path,
-            filetype: AaFileTypeEnum.parseImage(p.ext),
-            size    : size,
-            width   : width,
-            height  : height,
-        }
     }
 
     /**
      *
-     * @param {string|{[key:string]:*}} props
+     * @param {{[key:string]:*}|string|HTMLElement} props
      * @param {function(path:string):int} [providerHandler]
      */
     constructor(props, providerHandler = nif) {
         this.#providerHandler = providerHandler
-        return this.load(props)
+        this.load(props)
     }
 
     /**
      *
-     * @param {string|{[key:string]:*}} data
+     * @param {{[key:string]:*}|string|HTMLElement} props
      */
-    load(data) {
-        if (!data) {
-            throw new RangeError("invalid AaImgSrc props")
-        }
-        if (typeof data === "string") {
-            this.#parsePath(data)
+    load(props) {
+        const type = atype.of(props)
+        if (type === atype.struct) {
+            map.overwrite(this, props)
             return
         }
-        if (atype.isStruct(data)) {
-            map.overwrite(this, data)
+        props = type === atype.dom ? props.dataset.path : props
+        if (type === atype.string) {
+            this.#parsePath(props)
             return
         }
+
         throw new RangeError("invalid AaImgSrc props")
     }
+
+    /**
+     * Return cropped image URL
+     * @param width
+     * @param height
+     * @return {string|*}
+     */
+    crop(width, height) {
+        width = int32(width)
+        height = int32(height)
+        const rw = this.width
+        const rh = this.height
+        if (width >= rw && height >= rh) {
+            return this.origin
+        }
+        if (len(this.allowed) > 0) {
+            const allowed = this.allowed
+            let matched = false
+            let found = false
+            let mw = 0
+            let mh = 0
+            let w = width
+            let h = height
+
+            for (let i = 0; i < allowed.length; i++) {
+                let a = allowed[i]
+                let aw = int32(a[0])
+                let ah = int32(a[1])
+                if (aw === width && ah === height) {
+                    found = true
+                    break
+                }
+                if (!matched) {
+                    if (aw > mw) {
+                        mw = aw
+                        mh = ah
+                    }
+                    // 首先找到比缩放比例大过需求的
+                    if (aw >= w && a[1] >= h) {
+                        w = aw
+                        h = ah
+                        matched = true
+                    }
+                } else {
+                    // 后面的都跟第一次匹配的比，找到最小匹配
+                    if (aw >= width && aw <= w && ah >= height && ah <= h) {
+                        w = aw
+                        h = ah
+                    }
+                }
+            }
+            if (!found) {
+                if (!matched) {
+                    width = mw
+                    height = mh
+                } else {
+                    width = w
+                    height = h
+                }
+            }
+        }
+        return this.cropPattern.replace(/\${WIDTH}/g, width).replace(/\${HEIGHT}/g, height)
+    }
+
+
+
 
 
 }
@@ -223,6 +288,6 @@ class _aaOSS {
     }
 
     imgSrc(data) {
-        return new _aaImgSrc(data, this.providerHandler)
+        return new AaImgSrc(data, this.providerHandler)
     }
 }

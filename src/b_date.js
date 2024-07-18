@@ -1,4 +1,3 @@
-
 /**
  * @import C.MinDatetime, C.MaxDatetime
  */
@@ -363,7 +362,6 @@ class _aaDateValidator {
      *
      * @param {_aaDateString|string|number|Date} date
      * @param {boolean} strict
-     * @return {_aaDateValidator}
      */
     load(date, strict = true) {
         const d = _aaDateValidator
@@ -371,15 +369,15 @@ class _aaDateValidator {
         if (date instanceof _aaDateString) {
             if (date.isZero()) {
                 this.#type = date.isYear() ? d.ZeroYear : (date.isDate() ? d.ZeroDate : d.ZeroDatetime)
-                return this
+                return
             }
             if (date.isMin(strict)) {
                 this.#type = date.isYear() ? d.MinYear : (date.isDate() ? d.MinDate : d.MinDatetime)
-                return this
+                return
             }
             if (date.isMax()) {
                 this.#type = date.isYear() ? d.MaxYear : (date.isDate() ? d.MaxDate : d.MaxDatetime)
-                return this
+                return
             }
             date = date.toString()
         }
@@ -554,7 +552,7 @@ class _aaDate {
             let ds = new _aaDateString(date, this.timezoneOffset)
             this.validator.load(ds, strict)
             if (this.validator.isMin() || this.validator.isMax()) {
-                return this
+                return
             }
             date = new Date(ds.toString())
         }
@@ -565,13 +563,12 @@ class _aaDate {
             if (this.validator.isValid(true)) {
                 this.timezoneOffset = zone  // set after valid date
             }
-            return this
-        } else {
-            date = new Date("Invalid Date")
-            this.#date = date
-            this.validator.setInvalid()
+            return
         }
-        return this
+        date = new Date("Invalid Date")
+        this.#date = date
+        this.validator.setInvalid()
+
     }
 
     resetPatter() {

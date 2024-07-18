@@ -56,6 +56,14 @@ class _aaURI {
         return s
     }
 
+    /**
+     *
+     * @param url
+     */
+    static split(url) {
+
+    }
+
     constructor(url = window.location.href, params = {}) {
         this.load(url, params)
     }
@@ -125,7 +133,6 @@ class _aaURI {
         //this.queryString = queryString
         this.queries = queries
         this.fragment = fragment
-        return this
     }
 
 
