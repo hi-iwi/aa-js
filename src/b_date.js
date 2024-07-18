@@ -1,6 +1,133 @@
+
 /**
  * @import C.MinDatetime, C.MaxDatetime
  */
+
+class _aaDateZero extends Date {
+    name = 'aa-date-zero'
+    value
+
+    // @param {string} date
+    constructor(date = '0000-00-00 00:00:00') {
+        super(date)
+        this.value = date
+    }
+
+    toString() {
+        return this.value
+    }
+
+    toDateString() {
+        return this.value
+    }
+
+    toTimeString() {
+        return this.value
+    }
+
+    toLocaleString() {
+        return this.value
+    }
+
+
+    toLocaleDateString() {
+        return this.value
+    }
+
+    toLocaleTimeString() {
+        return this.value
+    }
+
+    valueOf() {
+        return 0
+    }
+
+    getTime() {
+        return 0
+    }
+
+    getFullYear() {
+        return 0
+    }
+
+    getUTCFullYear() {
+        return 0
+    }
+
+    getMonth() {
+        return -1  // month start from 0;
+    }
+
+    getUTCMonth() {
+        return -1
+    }
+
+    getDate() {
+        return 0
+    }
+
+    getUTCDate() {
+        return 0
+    }
+
+    getDay() {
+        return 0
+    }
+
+    getUTCDay() {
+        return 0
+    }
+
+    getHours() {
+        return 0
+    }
+
+    getUTCHours() {
+        return 0
+    }
+
+    getMinutes() {
+        return 0
+    }
+
+    getUTCMinutes() {
+        return 0
+    }
+
+    getSeconds() {
+        return 0
+    }
+
+    getUTCSeconds() {
+        return 0
+    }
+
+    getMilliseconds() {
+        return 0
+    }
+
+    getUTCMilliseconds() {
+        return 0
+    }
+
+    getTimezoneOffset() {
+        return 0
+    }
+
+
+    toUTCString() {
+        return this.value
+    }
+
+    toISOString() {
+        return this.value
+    }
+
+    toJSON() {
+        return this.value
+    }
+}
+
 class _aaDateString {
     name = 'aa-date-string'
     timezoneOffset
@@ -329,130 +456,6 @@ class _aaDateValidator {
 
 }
 
-class _aaDateZero extends Date {
-    name = 'aa-date-zero'
-    value
-
-    // @param {string} date
-    constructor(date = '0000-00-00 00:00:00') {
-        super(date)
-        this.value = date
-    }
-
-    toString() {
-        return this.value
-    }
-
-    toDateString() {
-        return this.value
-    }
-
-    toTimeString() {
-        return this.value
-    }
-
-    toLocaleString() {
-        return this.value
-    }
-
-
-    toLocaleDateString() {
-        return this.value
-    }
-
-    toLocaleTimeString() {
-        return this.value
-    }
-
-    valueOf() {
-        return 0
-    }
-
-    getTime() {
-        return 0
-    }
-
-    getFullYear() {
-        return 0
-    }
-
-    getUTCFullYear() {
-        return 0
-    }
-
-    getMonth() {
-        return -1  // month start from 0;
-    }
-
-    getUTCMonth() {
-        return -1
-    }
-
-    getDate() {
-        return 0
-    }
-
-    getUTCDate() {
-        return 0
-    }
-
-    getDay() {
-        return 0
-    }
-
-    getUTCDay() {
-        return 0
-    }
-
-    getHours() {
-        return 0
-    }
-
-    getUTCHours() {
-        return 0
-    }
-
-    getMinutes() {
-        return 0
-    }
-
-    getUTCMinutes() {
-        return 0
-    }
-
-    getSeconds() {
-        return 0
-    }
-
-    getUTCSeconds() {
-        return 0
-    }
-
-    getMilliseconds() {
-        return 0
-    }
-
-    getUTCMilliseconds() {
-        return 0
-    }
-
-    getTimezoneOffset() {
-        return 0
-    }
-
-
-    toUTCString() {
-        return this.value
-    }
-
-    toISOString() {
-        return this.value
-    }
-
-    toJSON() {
-        return this.value
-    }
-}
 
 class _aaDate {
     name = 'aa-date'

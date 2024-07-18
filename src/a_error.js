@@ -2,7 +2,7 @@
 let _aerrorCode2MsgMap_ = null
 
 // @type  {{[key:string]:(null|{[key:string]:string})}}
-var _aerrorDictionaries_ = {
+let _aerrorDictionaries_ = {
     'en'   : null,  // will init later   必须要增加一个en模式的，这样直接匹配到可以直接输出
     'zh-CN': {
         "Please input: %s"     : "请输入：%s",
@@ -39,7 +39,7 @@ var _aerrorDictionaries_ = {
         "Server status exception" : "服务器状态异常",
         "Client throw"            : "客户端抛出异常",
     }
-}
+};
 const AErrorEnum = {
     OK       : 200,
     NoContent: 204,
@@ -184,7 +184,7 @@ class AError extends Error {
     #ending = ''
 
     get code() {
-        return this._code
+        return this.code
     }
 
     get msg() {
@@ -202,20 +202,20 @@ class AError extends Error {
 
     static parseResp(resp, dict) {
         if (!resp) {
-            return new AError(this.ServerException, "", dict)
+            return new AError(AErrorEnum.ServerException, "", dict)
         }
         if (typeof resp === "string") {
             try {
                 resp = JSON.parse(resp.trim())
             } catch (e) {
-                return new AError(this.ServerException, "", dict)
+                return new AError(AErrorEnum.ServerException, "", dict)
             }
         }
         if (resp && typeof resp === "object" && resp.hasOwnProperty("code") && resp.hasOwnProperty("msg")) {
             return new AError(resp['code'], resp['msg'], dict)
         }
 
-        return new AError(this.ServerException, "", dict)
+        return new AError(AErrorEnum.ServerException, "", dict)
     }
 
     // 创建的时候更接近业务，而输出的时候往往由框架或底层完成。因此字典创建时期提供更合理
@@ -229,7 +229,7 @@ class AError extends Error {
 
 
     toString() {
-        return this.getMsg() + " [CODE:" + this.code + "]"
+        return this.getMsg() + " [code:" + this.code + "]"
     }
 
     getMsg(dict = 'zh-CN') {

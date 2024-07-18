@@ -2,15 +2,18 @@ class AaLoggerStyle {
     name = 'aa-logger-style'
     color
     fontWeight
+    background
 
     /**
      *
      * @param {string} color
-     * @param fontWeight
+     * @param {string}[background]
+     * @param {number} [fontWeight]
      */
-    constructor(color, fontWeight = 400) {
+    constructor(color, background, fontWeight) {
         this.color = color
         this.fontWeight = fontWeight
+        this.background = background;
     }
 
     toString() {
@@ -18,7 +21,9 @@ class AaLoggerStyle {
         if (this.color) {
             s += 'color:' + this.color + ';'
         }
-
+        if (this.background) {
+            s += 'background:' + this.background + ';width:100%;'
+        }
         if (this.fontWeight && this.fontWeight !== 400) {
             s += 'font-weight:' + this.fontWeight + ';'
         }
@@ -51,19 +56,19 @@ class log {
     }
 
     static error(...args) {
-        log.print(new AaLoggerStyle("#f00", 700), '[error]', ...args)
+        log.print('[error]', ...args)
     }
 
     static warn(...args) {
-        log.print(new AaLoggerStyle("#d5cc00", 700), '[warn]', ...args)
+        log.print('[warn]', ...args)
     }
 
     static info(...args) {
-        log.print(new AaLoggerStyle("#6ece00"), '[info]', ...args)
+        log.print('[info]', ...args)
     }
 
     static debug(...args) {
-        log.print(new AaLoggerStyle("#888"), '[debug]', ...args)
+        log.print('[debug]', ...args)
     }
 
     // console.log with color
@@ -86,9 +91,11 @@ class log {
         if (!_aaIsDebug()) {
             return
         }
-
-        if(!(style instanceof AaLoggerStyle)){
-            args.unshift(style )
+        if (!(style instanceof AaLoggerStyle)) {
+            args.unshift(style)
+        }
+        if (args.length === 0) {
+            return
         }
         let alert = window.location.search.indexOf(_debugQueryName_ + "=(2|alert|Alert|ALERT)")
         if (alert > 0) {
@@ -96,8 +103,15 @@ class log {
             return
         }
 
+        let f = console.log
+        const match = args[0].match(/^\[([a-zA-Z]+)\]/)
+        if (match && typeof console[match[1]] === "function") {
+            args[0] = args[0].replace(match[0], '')
+            f = console[match[1]]
+        }
+
         if (!(style instanceof AaLoggerStyle)) {
-            console.log(...args)
+            f(...args)
             return
         }
 
@@ -106,7 +120,7 @@ class log {
         for (let i = 0; i < args.length; i++) {
             if (typeof args[i] === "object" && typeof args[i].toString !== "function" && typeof args[i].valueOf !== "function") {
                 if (s) {
-                    console.log("%c" + s, sty)
+                    f("%c" + s, sty)
                     s = ''
                 }
                 console.log(args[i])
@@ -115,7 +129,7 @@ class log {
             s += args[i] + ' '
         }
         if (s) {
-            console.log("%c" + s, sty)
+            f("%c" + s, sty)
         }
     }
 
