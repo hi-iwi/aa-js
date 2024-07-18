@@ -54,60 +54,61 @@ class map {
     }
 
     /**
-     * Merge Objects
+     * Merge the contents of two or more objects together into the first object based on the properties of the first object
      * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名覆盖，抛弃sources对象多余属性值
      *      常用于配置文件填充
-     * @param {{[key:string]:*}} target --> 会污染 target
-     * @param {{[key:string]:*}}  sources
+     * @param {{[key:string]:*}} target --> 会污染 target。 target 可以是struct，也可以是class.
+     * @param {[{[key:string]:*}]}  sources
      * @return {*} 注意配置属性固定的doc文档写法，所以这里返回通用对于doc兼容性最佳
      */
     static merge(target, ...sources) {
-        if (!target) {
-            return target
-        }
-        for (let [k, v] of Object.entries(target)) {
-            for (let i = 0; i < sources.length; i++) {
-                let src = sources[i]
-                if (!src) {
-                    continue
-                }
-                if (typeof src[k] !== "undefined") {
-                    target[k] = src[k]
+        for (let i = 0; i < sources.length; i++) {
+            let src = sources[i]
+            if (!src) {
+                continue
+            }
+            for (let [k, v] of Object.entries(src)) {
+                // 定义不存在undefined。undefined当作特殊情况过滤；
+                if (typeof v !== "undefined" && target.hasOwnProperty(k)) {
+                    target[k] = v
                 }
             }
         }
+
         return target
     }
 
     /**
-     * Strict Merge Objects
+     * Merge the contents of two or more objects together into the first object based on the properties and their types of the first object
      * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名且值类型相同的覆盖，抛弃sources对象多余属性值
      *      常用于配置文件填充
-     * @param {{[key:string]:*}} target --> 会污染 target
+     * @param {object|{[key:string]:*}} target --> 会污染 target。 target 可以是struct，也可以是class.
      * @param {{[key:string]:*}}  sources
      * @return {*}  注意配置属性固定的doc文档写法，所以这里返回通用对于doc兼容性最佳
      */
     static strictMerge(target, ...sources) {
-        if (!target) {
-            return target
-        }
-        for (let [k, v] of Object.entries(target)) {
-            for (let i = 0; i < sources.length; i++) {
-                let src = sources[i]
-                if (!src) {
+        for (let i = 0; i < sources.length; i++) {
+            let src = sources[i]
+            if (!src) {
+                continue
+            }
+            for (let [k, v] of Object.entries(src)) {
+                if (typeof v === "undefined" || !target.hasOwnProperty(v)) {
                     continue
                 }
-                // 相同属性、值类型相同
-                if (typeof src[k] === typeof v) {
-                    target[k] = src[k]
+                let t = target[k]
+                // type consistency, except undefined/null (unknown type)
+                if (typeof t === "undefined" || t === null || v === null || typeof v === typeof t) {
+                    target[k] = v
                 }
             }
         }
+
         return target
     }
 
     /**
-     * Spread Objects
+     * Merge two or more objects into a new object
      * @description 合并两个对象属性，若出现相同属性，则后者b的该属性覆盖前者a的该属性。
      *      若想相反覆盖，则调换位置即可
      * @param {{[key:string]:*}} a
@@ -118,6 +119,34 @@ class map {
         return {...a, ...b}   //  {...a, ...b, ...c} === Object.assign({}, a, b, c)
     }
 
+    /**
+     * Overwrite the target object's content with source object based on the target object's properties,
+     *      and zeroize the target object's properties before overwriting.
+     * @param {object|{[key:string]:*}} target --> 会污染 target。
+     * @param {{[key:string]:*}}  source   --> probably it's a configuration struct ，后者往往是配置项，覆盖掉前者
+     */
+    static overwrite(target, source) {
+        let keys = Object.keys(source)
+        let fields = target._fields_ ? target._fields_ : target.constructor['_fields_'] ? target.constructor['_fields_'] : null
+        if (Array.isArray(fields) && fields.length > 0) {
+            keys = fields
+        }
+
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i]
+            if (typeof source[key] === "undefined") {
+                target[key] = atype.zeroize(target)
+            } else {
+                target[key] = typeof target[key] === "number" ? number(source[key]) : source[key]
+            }
+        }
+        return target
+    }
+
+    /**
+     * Sort this map
+     * @return {map}
+     */
     sort() {
         let ks = this.keys().sort();
         let sortedObj = {};

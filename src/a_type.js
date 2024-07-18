@@ -1,5 +1,6 @@
 //  react state  数字 001231 === 1231 == 001231.000  这些数值都没有变化，state就不会触发
 
+
 /**
  * defined value
  * @param {*} vv
@@ -104,6 +105,47 @@ class atype {
         regexp   : "r",
     }
 
+    /**
+     * Zeroize a value
+     * @param v
+     * @param {boolean} [nullable]
+     */
+    static zeroize(v, nullable = false) {
+        if (!v) {
+            return v
+        }
+        if (typeof v === "string") {
+            if (/^\d{4}-[01]\d-[03]\d[\sT][0-2]\d:[0-5]\d:[0-5]\d$/.test(v)) {
+                return '0000-00-00 00:00:00'
+            }
+            return /^\d{4}-[01]\d-[03]\d$/.test(v) ? '0000-00-00' : ''
+        }
+        switch (atype.of(v)) {
+            case atype.array:
+                return nullable ? null : []
+            case atype.boolean:
+                return false
+            case atype.class:
+                return null
+            case atype.date:
+                return null
+            case atype.dom:
+                return null
+            case atype.function:
+                return nullable ? null : nif
+            case atype.null:
+                return null
+            case atype.number:
+                return 0
+            case atype.struct:
+                v = nullable ? null : {}
+                return v.length === 0
+            case atype.string:
+                return ""
+        }
+        return typeof v === "object" ? null : void 0
+    }
+
     // 缩短类型为1个字符
     static aliasOf(t) {
         if (typeof t === "undefined") {
@@ -183,11 +225,13 @@ class   // Returns function XXX()
                 return v.length === 0
             case atype.boolean:
                 return !v
+            case atype.class:
+                return false
             case atype.date:
             case atype.dom:
             case atype.function:
                 return false
-            case null:
+            case atype.null:
                 return true
             case atype.number:
                 return v <= 0

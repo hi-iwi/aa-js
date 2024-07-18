@@ -8,6 +8,7 @@
 const aa = new Aa()
 aa.storage.initCookieStorage()
 aa.fetch.initGlobalHeaders()
+aa.Date.initMinDate()
 
 
 ```
@@ -89,6 +90,9 @@ class XXX{
     * uint8()
 
 ## 命名规则
+
+* _fields_: []string|{[key:string}:typeFunc}    :  一个类似结构体或object的class，用 _files_ :["key"]   来描述有效字段。主要用于
+  map.merge/strictMerge/overwrite
 
 * (vv, vk)   ====>  vk ? vv[vk] : vv
 * ::new()

@@ -162,7 +162,8 @@ class decimal {
         }
 
         if (s.length > scale) {
-            let g = scaleRound === 'ceil' || (scaleRound === 'round' && Number(s[scale]) > 4)   //  进位判断
+            let b = scale > 0 ? s[scale - 1] : s[s.length - 1]
+            let g = scaleRound === 'ceil' || (scaleRound === 'round' && Number(b) > 4)   //  进位判断
             s = s.substring(0, scale)
             if (g) {
                 // 0.999... 不用进位

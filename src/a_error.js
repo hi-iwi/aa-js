@@ -1,5 +1,5 @@
 // @type {(null|{[key:number]:string})}
-var _aerrorCode2MsgMap_ = null
+let _aerrorCode2MsgMap_ = null
 
 // @type  {{[key:string]:(null|{[key:string]:string})}}
 var _aerrorDictionaries_ = {
@@ -182,6 +182,10 @@ class AError extends Error {
     #dict
     #heading = ''
     #ending = ''
+
+    get code() {
+        return this._code
+    }
 
     get msg() {
         return this.getMsg()

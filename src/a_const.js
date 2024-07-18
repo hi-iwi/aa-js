@@ -6,6 +6,11 @@ const C = {
     Minute: 60000,
     Hour  : 3600000,
     Day   : 86400000,
+    // MinDate    : '0000-00-00',
+    // MaxDate    : '9999-12-31',
+    MinDatetime: '0000-00-00 00:00:00', // 当作配置，可以修改; date/year 等可以通过此解析出来，不用单独配置了
+    MaxDatetime: '9999-12-31 23:59:59',
+
 
 
     MaxDecimal: parseInt("".padEnd((Math.ceil(Number.MAX_SAFE_INTEGER / 10) + '').length, "9")),  // 最多支持999亿.9999

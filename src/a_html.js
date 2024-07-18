@@ -1,5 +1,5 @@
-const _aaHtmlTplLeftClose_ = '(_._._._|I|W|I|____[[['
-const _aaHtmlTplRightClose_ = ']]]____|I|W|I|_._._._)'
+const _aaHtmlTplLeftClose_ = '(_._._._A|A|R|I|O____[[['
+const _aaHtmlTplRightClose_ = ']]]____A|a|r|i|o_._._._)'
 const _aaHtmlEncoder_ = {
     // 不替换空格，否则看起来不方便
     ">"     : "&#62;",
@@ -105,9 +105,8 @@ class html {
                 s = s.replace(new RegExp(k, 'g'), v)
             }
         }
-        s = s.replace(/\r\n/g, '<br>')  // &#10;  --> \n
-        s = s.replace(/\r/g, '<br>')  // &#10;  --> \n
-        s = s.replace(/\n/g, '<br>')  // &#10;  --> \n
+        s = s.replace(/\r\n/g, '<br>')  // Win: \r\n
+        s = s.replace(/[\r\n]/g, '<br>')  // Unix: \n;  Mac: \r
         return s
     }
 
@@ -116,6 +115,4 @@ class html {
         s = html.decode(s)
         return s
     }
-
-
 }
