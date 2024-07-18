@@ -123,7 +123,7 @@ class log {
                     f("%c" + s, sty)
                     s = ''
                 }
-                console.log(args[i])
+                f(args[i])
                 continue
             }
             s += args[i] + ' '
