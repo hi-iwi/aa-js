@@ -119,6 +119,7 @@ class map {
         return {...a, ...b}   //  {...a, ...b, ...c} === Object.assign({}, a, b, c)
     }
 
+
     /**
      * Overwrite the target object's content with source object based on the target object's properties,
      *      and zeroize the target object's properties before overwriting.

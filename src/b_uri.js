@@ -44,6 +44,10 @@ class _aaURI {
     queries
     fragment
 
+    // 预留
+    static encode(s) {
+        return encodeURIComponent(uri)
+    }
 
     // 多次转码后，解析到底
     static decode(s) {
@@ -64,8 +68,13 @@ class _aaURI {
 
     }
 
-    constructor(url = window.location.href, params = {}) {
-        this.build(url, params)
+    /**
+     * @param {string} url
+     * @param {{[key:string]:*}} [params]
+     * @param {string} [fragment]
+     */
+    constructor(url = window.location.href, params, fragment) {
+        this.build(url, params, fragment)
     }
 
 
@@ -78,7 +87,12 @@ class _aaURI {
      ⑥ /home/me  --> https://xxx.xx/home/me
      @TODO 支持相对路径
      */
-    build(url = location.href, params = {}) {
+    /**
+     * @param {string} url
+     * @param {{[key:string]:*}} [params]
+     * @param {string} [fragment]
+     */
+    build(url = location.href, params, fragment) {
 
         // 绝对路径URL
         if (url.substring(0, 1) === '/') {
@@ -92,14 +106,13 @@ class _aaURI {
         let b = url.split('?');
         let baseUrl = b[0];
         let qs = b.length > 1 ? b[1] : ''
-        let fragment = ''
-        if (qs.indexOf('#') > 0) {
-            b = qs.split('#')
-            qs = b[0]
-            fragment = b[1]
+        if (typeof fragment === "undefined") {
+            if (qs.indexOf('#') > 0) {
+                b = qs.split('#')
+                qs = b[0]
+                fragment = b[1]
+            }
         }
-
-
         b = baseUrl.split('//');
         let protocol = b[0]  // https:
         let scheme = protocol.replace(':', '')    // https
