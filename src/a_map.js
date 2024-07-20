@@ -17,10 +17,10 @@ class map {
      * @param {{[key:string]:*} | string} o
      */
     constructor(o = {}) {
-        this.load(o)
+        this.build(o)
     }
 
-    load(o) {
+    build(o) {
         this.object = map.parse(o)
     }
 
@@ -124,20 +124,34 @@ class map {
      *      and zeroize the target object's properties before overwriting.
      * @param {object|{[key:string]:*}} target --> 会污染 target。
      * @param {{[key:string]:*}}  source   --> probably it's a configuration struct ，后者往往是配置项，覆盖掉前者
+     * @param {function} keynameConvertor convert properties' field names in source object
      */
-    static overwrite(target, source) {
-        let keys = Object.keys(source)
+    static overwrite(target, source, keynameConvertor) {
         let fields = target._fields_ ? target._fields_ : target.constructor['_fields_'] ? target.constructor['_fields_'] : null
-        if (Array.isArray(fields) && fields.length > 0) {
-            keys = fields
-        }
+        for (let [k, v] of Object.entries(source)) {
+            let keyname = typeof keynameConvertor === "function" ? keynameConvertor(k) : k
+            if (!target.hasOwnProperty(keyname)) {
+                for (let [k2, v2] of Object.entries(target)) {
+                    // "base_url" ===> baseUrl  or  baseURL
+                    if (k2.toLowerCase() === k.toLowerCase()) {
+                        keyname = k2
+                        break
+                    }
+                }
+            }
+            if (!target.hasOwnProperty(keyname)) {
+                continue
+            }
 
-        for (let i = 0; i < keys.length; i++) {
-            const key = keys[i]
-            if (typeof source[key] === "undefined") {
-                target[key] = atype.zeroize(target)
+            // filter by target._fields_
+            if (fields && !fields.includes(k) && !fields.includes(keyname)) {
+                continue
+            }
+
+            if (typeof v === "undefined") {
+                target[keyname] = atype.zeroize(target[keyname])
             } else {
-                target[key] = typeof target[key] === "number" ? number(source[key]) : source[key]
+                target[keyname] = typeof target[keyname] === "number" ? number(v) : v
             }
         }
         return target

@@ -65,7 +65,7 @@ class _aaURI {
     }
 
     constructor(url = window.location.href, params = {}) {
-        this.load(url, params)
+        this.build(url, params)
     }
 
 
@@ -78,10 +78,7 @@ class _aaURI {
      ⑥ /home/me  --> https://xxx.xx/home/me
      @TODO 支持相对路径
      */
-    load(url = location.href, params = {}) {
-        if (len(params) > 0) {
-            this.extend(params)
-        }
+    build(url = location.href, params = {}) {
 
         // 绝对路径URL
         if (url.substring(0, 1) === '/') {
@@ -133,6 +130,12 @@ class _aaURI {
         //this.queryString = queryString
         this.queries = queries
         this.fragment = fragment
+
+        // 一定要在 queries 实例化后
+        if (len(params) > 0) {
+            this.extend(params)
+        }
+
     }
 
 

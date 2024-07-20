@@ -39,9 +39,22 @@ class fmt {
         return fmt.sprintf(format, ...args.slice(1))
     }
 
+    static toPascalCase(s) {
+        s = fmt.toCamelCase(s)
+        return s[0].toUpperCase() + s.substring(1)
+    }
+
     /**
-     * Convert UPPER_UNDERSCORE_CASE/PascalCase/camelCase/kebab-case to snake case(underscore_case)
-     * @param s
+     * Convert  UPPER_UNDERSCORE_CASE/snake_case/PascalCase/kebab-case to  camelCase
+     * @param {string } s
+     */
+    static toCamelCase(s) {
+        return s.toLowerCase().replace(/[^a-z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
+    }
+
+    /**
+     * Convert UPPER_UNDERSCORE_CASE/PascalCase/camelCase/kebab-case to lower-case snake case(underscore_case)
+     * @param {string} s
      */
     static toSnakeCase(s) {
         s = s.replace(/-/g, '_')  // kebab-case
@@ -51,7 +64,6 @@ class fmt {
             return "_" + y.toLowerCase()
         })
         return isPascal ? s.replace(/^_/, "") : s
-
     }
 
     /**

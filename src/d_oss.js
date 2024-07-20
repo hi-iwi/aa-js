@@ -1,5 +1,8 @@
 // import _aaPath
-
+/**
+ *
+ * @import _aaPath, _aaEnvironment
+ */
 // filetype 统一了，方便客户端分析 path/filetype 结构类型。也方便客户端上传的格式符合标准格式。
 // .3pg 既是音频文件，也是视频文件。因此，不能单纯通过后缀知晓文件类型。需要客户端上传的时候预先知道是音频或视频。
 const AaFileTypeEnum = {
@@ -142,9 +145,7 @@ class _aaFileSrc {
 
 
 class AaImgSrc {
-    name = 'aa-img-src'
-    // @property {function(path:string)=>int}
-    #providerHandler
+    name = 'aa-imgsrc'
     // @property {int}
     provider
     cropPattern
@@ -157,13 +158,13 @@ class AaImgSrc {
     height
     allowed
 
-    #parsePath(path) {
-        const x = path.indexOf('//')
-        if (x > -1) {
-            let u = new URL(x === 0 ? location.protocol + path : path)
-            path = u.pathname
-        }
 
+    /**
+     *
+     * @param {string} path
+     * @return {{path: (string|*), filetype: number, size: number, width: number, height: number}}
+     */
+    static parsePath(path) {
         const p = new _aaPath(path)
         let width = 0, size = 0, height = 0
         const a = p.filename.split('_')
@@ -172,122 +173,148 @@ class AaImgSrc {
             width = parseInt(a[1], 36)
             height = len(a) === 3 ? parseInt(a[2], 36) : width
         }
-        this.#providerHandler({})
 
-    }
-
-    /**
-     *
-     * @param {{[key:string]:*}|string|HTMLElement} props
-     * @param {function(path:string):int} [providerHandler]
-     */
-    constructor(props, providerHandler = nif) {
-        this.#providerHandler = providerHandler
-        this.load(props)
+        return {
+            path    : p.toString(),
+            filetype: AaFileTypeEnum.parseImage(p.ext),
+            size    : size,
+            width   : width,
+            height  : height,
+        }
     }
 
     /**
      *
      * @param {{[key:string]:*}|string|HTMLElement} props
      */
-    load(props) {
-        const type = atype.of(props)
-        if (type === atype.struct) {
-            map.overwrite(this, props)
-            return
-        }
-        props = type === atype.dom ? props.dataset.path : props
-        if (type === atype.string) {
-            this.#parsePath(props)
-            return
-        }
-
-        throw new RangeError("invalid AaImgSrc props")
+    constructor(props) {
+        this.build(props)
     }
 
     /**
-     * Return cropped image URL
+     *
+     * @param {{[key:string]:*}} props
+     */
+    build(props) {
+        map.overwrite(this, props, fmt.toCamelCase)
+    }
+
+    /**
+     * Return the nearest size
+     * @param {number} width
+     * @param {number} [height]
+     * @return {[number,number]}
+     */
+    #allowedSize(width, height = 0) {
+        width = Math.ceil(width * window.devicePixelRatio)
+        height = Math.ceil(height * window.devicePixelRatio)
+        const allowed = this.allowed
+        if (len(allowed) === 0) {
+            if (width > 0 && height > 0) {
+                return [width, height]
+            }
+            const ratio = this.width > 0 ? (this.height / this.width) : 0
+            if (width === 0) {
+                width = ratio === 0 ? height : Math.ceil(height / ratio)
+            } else if (height === 0) {
+                height = ratio === 0 ? width : Math.ceil(ratio * width)
+            }
+            return [width, height]
+        }
+        let matched = false
+        let maxWidth = 0
+        let maxHeight = 0
+        let w = width
+        let h = height
+
+        for (let i = 0; i < allowed.length; i++) {
+            const allowedWidth = Number(allowed[i][0])
+            const allowedHeight = Number(allowed[i][1])
+            if ((allowedWidth === width && allowedHeight === height) || (allowedWidth === width && height === 0) || (allowedHeight === height && width === 0)) {
+                return [allowedWidth, allowedHeight]
+            }
+
+            if (!matched) {
+                if (allowedWidth > maxWidth) {
+                    maxWidth = allowedWidth
+                    maxHeight = allowedHeight
+                }
+                // 首先找到比缩放比例大过需求的
+                if (allowedWidth >= w && allowedHeight >= h) {
+                    w = allowedWidth
+                    h = allowedHeight
+                    matched = true
+                }
+            } else {
+                // 后面的都跟第一次匹配的比，找到最小匹配
+                if (allowedWidth >= width && allowedWidth <= w && allowedHeight >= height && allowedHeight <= h) {
+                    w = allowedWidth
+                    h = allowedHeight
+                }
+            }
+        }
+
+        return matched ? [w, h] : [maxWidth, maxHeight]
+    }
+
+    /**
+     * Crop image to the nearest size after resizing by window.devicePixelRatio
      * @param width
      * @param height
-     * @return {string|*}
+     * @return {{width: number, url: *, height: number, ratio: number}}
      */
     crop(width, height) {
-        width = int32(width)
-        height = int32(height)
-        const rw = this.width
-        const rh = this.height
-        if (width >= rw && height >= rh) {
-            return this.origin
+        [width, height] = this.#allowedSize(width, height)
+        const pattern = string(this.cropPattern)
+        const url = pattern.replace(/\${WIDTH}/g, width).replace(/\${HEIGHT}/g, height)
+        return {
+            width : width,
+            height: height,
+            ratio : width / height,
+            url   : url,
         }
-        if (len(this.allowed) > 0) {
-            const allowed = this.allowed
-            let matched = false
-            let found = false
-            let mw = 0
-            let mh = 0
-            let w = width
-            let h = height
-
-            for (let i = 0; i < allowed.length; i++) {
-                let a = allowed[i]
-                let aw = int32(a[0])
-                let ah = int32(a[1])
-                if (aw === width && ah === height) {
-                    found = true
-                    break
-                }
-                if (!matched) {
-                    if (aw > mw) {
-                        mw = aw
-                        mh = ah
-                    }
-                    // 首先找到比缩放比例大过需求的
-                    if (aw >= w && a[1] >= h) {
-                        w = aw
-                        h = ah
-                        matched = true
-                    }
-                } else {
-                    // 后面的都跟第一次匹配的比，找到最小匹配
-                    if (aw >= width && aw <= w && ah >= height && ah <= h) {
-                        w = aw
-                        h = ah
-                    }
-                }
-            }
-            if (!found) {
-                if (!matched) {
-                    width = mw
-                    height = mh
-                } else {
-                    width = w
-                    height = h
-                }
-            }
-        }
-        return this.cropPattern.replace(/\${WIDTH}/g, width).replace(/\${HEIGHT}/g, height)
     }
 
-
-
-
+    /**
+     * Resize image to the nearest size after resizing by window.devicePixelRatio
+     * @param maxWidth
+     * @return {{width: number, url: *, height: number, ratio: number}}
+     */
+    resize(maxWidth = MAX) {
+        if (!maxWidth || maxWidth === "MAX") {
+            maxWidth = _aaEnvironment.maxWidth()
+        }
+        let [width, height] = this.#allowedSize(maxWidth)
+        const pattern = string(this.resizePattern)
+        const url = pattern.replace(/\${MAXWIDTH}/g, maxWidth)
+        return {
+            width : width,
+            height: height,
+            ratio : width / height,
+            url   : url,
+        }
+    }
 
 }
 
 
 class _aaOSS {
     name = 'aa-oss'
-    providerHandler
 
 
-    constructor(processorParser) {
+    constructor() {
     }
 
-    load() {
 
-    }
-
+    /**
+     * New AaImgSrc
+     * @param {AaImgSrc|string|object} data
+     * @return {AaImgSrc}
+     */
     imgSrc(data) {
-        return new AaImgSrc(data, this.providerHandler)
+        if (data instanceof AaImgSrc) {
+            return data
+        }
+        return new AaImgSrc(data)
     }
 }

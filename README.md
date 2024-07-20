@@ -1,14 +1,17 @@
 # aa.js  基础库
 
+A Javascript SDK of AaGo
+
 这里要依赖于抽象，而不具体实现。实现尽量通过外部注入。
 
 ## Entry
 
 ```javascript
 const aa = new Aa()
+aa.Date.initMinDate()
 aa.storage.initCookieStorage()
 aa.fetch.initGlobalHeaders()
-aa.Date.initMinDate()
+aa.oss.init
 
 
 ```
@@ -97,7 +100,8 @@ class XXX{
 * (vv, vk)   ====>  vk ? vv[vk] : vv
 * ::new()
 * .clone()  ===> 深度复制该类
-* .load(data)   ===> 重置数据
+* .build(data)   ===> 重置数据
+  * 注意：.build() 不能返回 this，也不能传递本对象来重新赋值。因为内部无法修改 this 指针。
 
 * 通用命名规则
     * toJSON()    JSON.stringify() 能识别该方法

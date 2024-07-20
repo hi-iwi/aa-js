@@ -39,6 +39,7 @@ class log {
     static _breakpointIncr = 0
 
 
+
     /**
      *
      * @param {(s:string)=>void} effect
@@ -103,15 +104,17 @@ class log {
             return
         }
 
-        let f = console.log
-        const match = args[0].match(/^\[([a-zA-Z]+)\]/)
-        if (match && typeof console[match[1]] === "function") {
-            args[0] = args[0].replace(match[0], '')
-            f = console[match[1]]
-        }
+        let fn = console.log
+        if(typeof args[0] ==="string"){
+            const match = args[0].match(/^\[([a-zA-Z]+)\]/)
+            if (match && typeof console[match[1]] === "function") {
+                args[0] = args[0].replace(match[0], '')
+                fn = console[match[1]]
+            }
 
+        }
         if (!(style instanceof AaLoggerStyle)) {
-            f(...args)
+            fn(...args)
             return
         }
 
@@ -120,16 +123,16 @@ class log {
         for (let i = 0; i < args.length; i++) {
             if (typeof args[i] === "object" && typeof args[i].toString !== "function" && typeof args[i].valueOf !== "function") {
                 if (s) {
-                    f("%c" + s, sty)
+                    fn("%c" + s, sty)
                     s = ''
                 }
-                f(args[i])
+                fn(args[i])
                 continue
             }
             s += args[i] + ' '
         }
         if (s) {
-            f("%c" + s, sty)
+            fn("%c" + s, sty)
         }
     }
 

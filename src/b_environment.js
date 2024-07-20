@@ -1,4 +1,6 @@
-// static class
+/**
+ * @import C.MaxMainWidth
+ */
 class _aaEnvironment {
     name = 'aa-environment'
 
@@ -8,6 +10,17 @@ class _aaEnvironment {
 
     static setDebug(debug = true) {
         _aaDebugStatus_ = debug
+    }
+
+    /**
+     * Return the main area width
+     *     核心区宽度
+     *     // window.innerWidth /  window.innerHeight 去掉状态栏的高度、宽度
+     *     // window.outerWidth / window.outerHeight 带状态栏高度
+     *     // screen.width / screen.height  分辨率尺寸
+     */
+    static maxWidth() {
+      return  document.querySelector('body').offsetWidth
     }
 
     static isPC() {

@@ -28,7 +28,7 @@ class _aaApollo {
         this.#storageGetter = storageGetter
         this.#storageSetter = storageSetter
         this.apollo = storageGetter(this.paramName)  // 初始化获取
-        this.Check()
+        this.check()
         this.fetch()
     }
 
@@ -65,7 +65,7 @@ class _aaApollo {
         })
     }
 
-    Check(done = apollo => void 0) {
+    check(done = apollo => void 0) {
         let apollo = this.get()
         if (apollo) {
             done(apollo)

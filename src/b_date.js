@@ -151,7 +151,7 @@ class _aaDateString {
     }
 
     set value(value) {
-        this.load(value)
+        this.build(value)
     }
 
     static localTimezoneOffsetString = _aaDateString.parseTimezoneOffsetString()
@@ -193,7 +193,7 @@ class _aaDateString {
      * @param {string} [zone]
      */
     constructor(s, zone = _aaDateString.localTimezoneOffsetString) {
-        this.load(s, zone)
+        this.build(s, zone)
     }
 
     /**
@@ -201,7 +201,7 @@ class _aaDateString {
      * @param {string} s
      * @param {string} [zone]
      */
-    load(s, zone) {
+    build(s, zone) {
         this.raw = s
         s = s.replace(' ', 'T')
         let reg = /[-+][01]\d:[0-5]\d$/
@@ -355,7 +355,7 @@ class _aaDateValidator {
 
 
     constructor(s, strict = true) {
-        this.load(s, strict)
+        this.build(s, strict)
     }
 
     /**
@@ -363,7 +363,7 @@ class _aaDateValidator {
      * @param {_aaDateString|string|number|Date} date
      * @param {boolean} strict
      */
-    load(date, strict = true) {
+    build(date, strict = true) {
         const d = _aaDateValidator
         date = typeof date === "string" ? new _aaDateString(date) : date
         if (date instanceof _aaDateString) {
@@ -520,7 +520,7 @@ class _aaDate {
     constructor(...args) {
         let l = args.length
         if (l === 0) {
-            this.load(new Date())
+            this.build(new Date())
             return
         }
         if (args[0] instanceof _aaDate) {
@@ -537,11 +537,11 @@ class _aaDate {
         }
         //  new _aaDate(year:number, month:number, day:number, hour?:number, minute?:number, second?:number, millisecond?:number, zone?:string)
         let arg = l === 1 ? args[0] : new Date(...args.slice(0, l))
-        this.load(arg)
+        this.build(arg)
     }
 
     // @param {Date|string|number} date
-    load(date, strict = true) {
+    build(date, strict = true) {
         this.resetPatter()
         let zone = this.timezoneOffset
         // timestamp
@@ -550,7 +550,7 @@ class _aaDate {
         } else if (typeof date === "string") {
             this.setPattern(date)
             let ds = new _aaDateString(date, this.timezoneOffset)
-            this.validator.load(ds, strict)
+            this.validator.build(ds, strict)
             if (this.validator.isMin() || this.validator.isMax()) {
                 return
             }
@@ -559,7 +559,7 @@ class _aaDate {
 
         if (date instanceof Date) {
             this.#date = date
-            this.validator.load(date, strict)
+            this.validator.build(date, strict)
             if (this.validator.isValid(true)) {
                 this.timezoneOffset = zone  // set after valid date
             }
