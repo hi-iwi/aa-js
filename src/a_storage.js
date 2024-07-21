@@ -133,19 +133,16 @@ class _aaStorage {
         this.#persistentNames = persistentNames ? persistentNames : []
     }
 
-    getPersistentNames() {
-        return this.#persistentNames
-    }
 
-    getPersistentItems() {
-        let items = {}
+    getPersistentNames() {
+        let items = []
         this.forEach((key, value) => {
             if (array(aparam, 'PersistentNames').includes(key)) {
-                items[key] = value
+                items.push(key)
                 return
             }
             if (this.#persistentNames.includes(key)) {
-                items[key] = value
+                items.push(key)
                 return
             }
             if (!value || value.length < 3 || value.substring(1, 2) !== ":") {
@@ -155,10 +152,10 @@ class _aaStorage {
             let type = value.charAt(0)
             // persistent data starts with uppercase
             if (type >= "A" && type <= "Z") {
-                items[key] = value
+                items.push(key)
             }
         })
-        return len(items) > 0 ? items : null
+        return items.length > 0 ? items : null
     }
 
     /**
@@ -242,20 +239,32 @@ class _aaStorage {
         this.#storage.removeItem(...args)
     }
 
-
-    clear() {
-        let persistentItems = this.getPersistentItems()
-        if (!persistentItems) {
+    /**
+     * Clear all data except persistent data and ignores data from this storage
+     * @param {[string]} [ignores]
+     */
+    clearExcept(ignores) {
+        let keep = this.getPersistentNames()
+        if (len(ignores) > 0) {
+            keep = !keep ? ignores : keep.concat(ignores)
+        }
+        if (!keep) {
             this.#storage.clear()
             return
         }
         this.forEach((key, value) => {
-            if (typeof persistentItems[key] === "undefined") {
+            if (typeof keep[key] === "undefined") {
                 this.#storage.removeItem(key)
             }
         })
     }
 
+    /**
+     * Clear all data except persistent data from this storage
+     */
+    clear() {
+        this.clearExcept()
+    }
 
 }
 
@@ -305,10 +314,23 @@ class _aaStorageFactor {
         this.cookie.removeItem(key, options)
     }
 
+    /**
+     * Clear from all storages
+     */
     clearAll() {
         this.local.clear()
         this.session.clear()
         this.cookie.clear()
+    }
+
+    /**
+     * Clear all data except some fields from all storages
+     * @param {[string]} [ignores] ignore these fields
+     */
+    clearAllExcept(ignores) {
+        this.local.clearExcept(ignores)
+        this.session.clearExcept(ignores)
+        this.cookie.clearExcept(ignores)
     }
 
     /**

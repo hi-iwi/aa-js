@@ -30,9 +30,11 @@ class Aa {
         this.registry = new _aaRegistry()
         this.storage = new _aaStorageFactor()
 
-        this.auth = new _aaAuth(this.storage)
         this.fetch = new _aaFetch(this.storage)
+        this.auth = new _aaAuth(this.storage,this.fetch)
+
         this.oss = new _aaOSS()
+
     }
 
     path(path) {
