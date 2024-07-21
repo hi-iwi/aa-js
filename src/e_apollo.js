@@ -6,7 +6,7 @@ class _aaApollo {
     #storageGetter
     #storageSetter
 
-    paramName = _apolloQueryName_ //  参数名 --> 阿波罗计划
+    paramName = aparam.Apollo //  参数名 --> 阿波罗计划
     url
     apollo
 

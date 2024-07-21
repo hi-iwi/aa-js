@@ -5,6 +5,9 @@ class Aa {
     Date = _aaDate
     registry
 
+    // @type _aaStorageFactor
+    storage
+
 
     // log   log 类是纯静态方法，全局直接使用
 
@@ -14,19 +17,21 @@ class Aa {
     // b_
     env = _aaEnvironment
     // c_
-    storage
-    // @type typeof _aaFetch
-    //Fetch = _aaFetch
+    // @type _aaAuth
+    auth
+    // d_
+
     // @type _aaFetch
     fetch
 
-    d_
     oss
 
     constructor() {
         this.registry = new _aaRegistry()
-        this.storage = new _aaStorage()
-        this.fetch = new _aaFetch()
+        this.storage = new _aaStorageFactor()
+
+        this.auth = new _aaAuth(this.storage)
+        this.fetch = new _aaFetch(this.storage)
         this.oss = new _aaOSS()
     }
 

@@ -39,7 +39,6 @@ class log {
     static _breakpointIncr = 0
 
 
-
     /**
      *
      * @param {(s:string)=>void} effect
@@ -89,7 +88,7 @@ class log {
      * @param args
      */
     static print(style = "", ...args) {
-        if (!_aaIsDebug()) {
+        if (_aaDebug.disabled()) {
             return
         }
         if (!(style instanceof AaLoggerStyle)) {
@@ -98,15 +97,14 @@ class log {
         if (args.length === 0) {
             return
         }
-        let alert = window.location.search.indexOf(_debugQueryName_ + "=(2|alert|Alert|ALERT)")
-        if (alert > 0) {
+        if (_aaDebug.isAlert()) {
             log.alert(...args)
             return
         }
 
         let fn = console.log
-        if(typeof args[0] ==="string"){
-            const match = args[0].match(/^\[([a-zA-Z]+)\]/)
+        if (typeof args[0] === "string") {
+            const match = args[0].match(/^\[([a-zA-Z]+)]/)
             if (match && typeof console[match[1]] === "function") {
                 args[0] = args[0].replace(match[0], '')
                 fn = console[match[1]]

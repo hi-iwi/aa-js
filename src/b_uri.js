@@ -74,7 +74,7 @@ class _aaURI {
      * @param {string} [fragment]
      */
     constructor(url = window.location.href, params, fragment) {
-        this.build(url, params, fragment)
+        this.init(url, params, fragment)
     }
 
 
@@ -92,7 +92,7 @@ class _aaURI {
      * @param {{[key:string]:*}} [params]
      * @param {string} [fragment]
      */
-    build(url = location.href, params, fragment) {
+    init(url = location.href, params, fragment) {
 
         // 绝对路径URL
         if (url.substring(0, 1) === '/') {

@@ -1,15 +1,15 @@
-/**
- * @import C.MaxMainWidth
- */
+// @import C.MaxMainWidth, _aaDebug
+
 class _aaEnvironment {
     name = 'aa-environment'
+    debug = _aaDebug
 
 
     constructor() {
     }
 
-    static setDebug(debug = true) {
-        _aaDebugStatus_ = debug
+    static isLocalhost() {
+        return _aaDebug.isLocalhost()
     }
 
     /**
@@ -20,7 +20,7 @@ class _aaEnvironment {
      *     // screen.width / screen.height  分辨率尺寸
      */
     static maxWidth() {
-      return  document.querySelector('body').offsetWidth
+        return document.querySelector('body').offsetWidth
     }
 
     static isPC() {

@@ -154,6 +154,9 @@ class atype {
         if (t === null) {
             return atype.alias.null
         }
+        if (typeof t !== "string") {
+            t = atype.of(t)
+        }
         return atype.alias[t] ? atype.alias[t] : atype.alias.undefined
     }
 
@@ -302,8 +305,14 @@ class   // Returns function XXX()
 
 
 // len(bool) len(number) 为 0，防止直接用 for( < len(x)) 导致异常
-function len(...args) {
-    let v = defval(...args)
+/**
+ * Get length of anything
+ * @param vv
+ * @param {string|number} [kk]
+ * @return {number|*}
+ */
+function len(vv, kk) {
+    let v = defval(vv, kk)
     if (typeof v === "undefined" || v === null) {
         return 0
     }

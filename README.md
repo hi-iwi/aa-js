@@ -9,7 +9,7 @@ A Javascript SDK of AaGo
 ```javascript
 const aa = new Aa()
 aa.Date.initMinDate()
-aa.storage.initCookieStorage()
+aa.storage.cookie.init(cookieStorage)
 aa.fetch.initGlobalHeaders()
 aa.oss.init
 
@@ -100,8 +100,8 @@ class XXX{
 * (vv, vk)   ====>  vk ? vv[vk] : vv
 * ::new()
 * .clone()  ===> 深度复制该类
-* .build(data)   ===> 重置数据
-  * 注意：.build() 不能返回 this，也不能传递本对象来重新赋值。因为内部无法修改 this 指针。
+* .init(data)   ===> 重置数据
+  * 注意：.init() 不能返回 this，也不能传递本对象来重新赋值。因为内部无法修改 this 指针。
 
 * 通用命名规则
     * toJSON()    JSON.stringify() 能识别该方法

@@ -179,7 +179,7 @@ class AError extends Error {
     code
     message // 原始数据。部分错误会把msg当作有效信息。比如 449 RetryWith 会通过该数据传递跳转URL等
 
-    #dict
+    #dict = {}
     #heading = ''
     #ending = ''
 
@@ -237,7 +237,7 @@ class AError extends Error {
             if (!dict || typeof dict === "string") {
                 dict = this.#dict
             } else {
-                map.spread(this.#dict, dict)
+                dict = {...this.#dict, ...dict}
             }
         }
 

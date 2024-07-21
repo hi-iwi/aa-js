@@ -2,8 +2,10 @@ const nif = () => void 0   // 空函数  ==>  Go语言都定义 any = interface{
 
 const MAX = 'MAX'
 const MIN = 'MIN'
+const BreakSignal = false
+
 const C = {
-    MaxMainWidth:768,
+    MaxMainWidth: 768,
 
     // 9007199254740992 Number.MAX_SAFE_INTEGER
     Second: 1000,  // 1000ms
@@ -14,7 +16,6 @@ const C = {
     // MaxDate    : '9999-12-31',
     MinDatetime: '0000-00-00 00:00:00', // 当作配置，可以修改; date/year 等可以通过此解析出来，不用单独配置了
     MaxDatetime: '9999-12-31 23:59:59',
-
 
 
     MaxDecimal: parseInt("".padEnd((Math.ceil(Number.MAX_SAFE_INTEGER / 10) + '').length, "9")),  // 最多支持999亿.9999

@@ -55,10 +55,10 @@ class _aaPath {
     }
 
     constructor(path) {
-        this.build(path)
+        this.init(path)
     }
 
-    build(path) {
+    init(path) {
         path = _aaPath.clean(path)
         if (!path) {
             this.dir = ''

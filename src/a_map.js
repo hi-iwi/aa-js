@@ -17,10 +17,10 @@ class map {
      * @param {{[key:string]:*} | string} o
      */
     constructor(o = {}) {
-        this.build(o)
+        this.init(...arguments)
     }
 
-    build(o) {
+    init(o) {
         this.object = map.parse(o)
     }
 
@@ -54,71 +54,80 @@ class map {
     }
 
     /**
-     * Merge the contents of two or more objects together into the first object based on the properties of the first object
+     * Merge the contents of two objects together into the first object based on the properties of the first object
      * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名覆盖，抛弃sources对象多余属性值
      *      常用于配置文件填充
      * @param {{[key:string]:*}} target --> 会污染 target。 target 可以是struct，也可以是class.
-     * @param {[{[key:string]:*}]}  sources
+     * @param {{[key:string]:*}}  source
      * @return {*} 注意配置属性固定的doc文档写法，所以这里返回通用对于doc兼容性最佳
      */
-    static merge(target, ...sources) {
-        for (let i = 0; i < sources.length; i++) {
-            let src = sources[i]
-            if (!src) {
-                continue
-            }
-            for (let [k, v] of Object.entries(src)) {
-                // 定义不存在undefined。undefined当作特殊情况过滤；
-                if (typeof v !== "undefined" && target.hasOwnProperty(k)) {
-                    target[k] = v
-                }
+    static merge(target, source) {
+        for (let [k, v] of Object.entries(struct(source))) {
+            // 定义不存在undefined。undefined当作特殊情况过滤；
+            if (typeof v !== "undefined" && target.hasOwnProperty(k)) {
+                target[k] = v
             }
         }
-
         return target
     }
 
     /**
-     * Merge the contents of two or more objects together into the first object based on the properties and their types of the first object
+     * Merge the contents of two objects together into the first object based on the properties and their types of the first object
      * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名且值类型相同的覆盖，抛弃sources对象多余属性值
      *      常用于配置文件填充
      * @param {object|{[key:string]:*}} target --> 会污染 target。 target 可以是struct，也可以是class.
-     * @param {{[key:string]:*}}  sources
+     * @param {{[key:string]:*}}  source
      * @return {*}  注意配置属性固定的doc文档写法，所以这里返回通用对于doc兼容性最佳
      */
-    static strictMerge(target, ...sources) {
-        for (let i = 0; i < sources.length; i++) {
-            let src = sources[i]
-            if (!src) {
+    static strictMerge(target, source) {
+        for (let [k, v] of Object.entries(struct(source))) {
+            if (typeof v === "undefined" || !target.hasOwnProperty(k)) {
                 continue
             }
-            for (let [k, v] of Object.entries(src)) {
-                if (typeof v === "undefined" || !target.hasOwnProperty(v)) {
-                    continue
-                }
-                let t = target[k]
-                // type consistency, except undefined/null (unknown type)
-                if (typeof t === "undefined" || t === null || v === null || typeof v === typeof t) {
+            let t = target[k]
+            // type consistency, except undefined/null (unknown type)
+            if (typeof t === "undefined" || t === null || v === null || typeof v === typeof t) {
+                target[k] = v
+            }
+        }
+        return target
+    }
+
+    static assign(target, source) {
+        return Object.assign(struct(target), struct(source))
+    }
+
+    /**
+     * Merge two objects into a new object
+     * @description 合并两个对象属性，若出现相同属性，则后者b的该属性覆盖前者a的该属性。
+     *      若想相反覆盖，则调换位置即可
+     * @param {{[key:string]:*}} target
+     * @param  {{[key:string]:*}}    source
+     * @returns {{[key:string]:*}}   这里往往无法判断属性，因此返回结构固定
+     */
+    static spread(target, source) {
+        return {...struct(target), ...struct(source)} // Object.assign({}, target, ...sources)
+    }
+
+    /**
+     * Fill up the non-existent properties of the first object with the second object's
+     * @param target
+     * @param defaults
+     */
+    static fillUp(target, defaults, handler) {
+        target = struct(target)
+        if (typeof handler !== "function") {
+            handler = (k, v, target, defaults) => {
+                if (typeof target[k] === "undefined") {
                     target[k] = v
                 }
             }
         }
-
+        for (let [k, v] of Object.entries(struct(defaults))) {
+            handler(k, v, target, defaults)
+        }
         return target
     }
-
-    /**
-     * Merge two or more objects into a new object
-     * @description 合并两个对象属性，若出现相同属性，则后者b的该属性覆盖前者a的该属性。
-     *      若想相反覆盖，则调换位置即可
-     * @param {{[key:string]:*}} a
-     * @param {{[key:string]:*}} b
-     * @returns {{[key:string]:*}}   这里往往无法判断属性，因此返回结构固定
-     */
-    static spread(a, b) {
-        return {...a, ...b}   //  {...a, ...b, ...c} === Object.assign({}, a, b, c)
-    }
-
 
     /**
      * Overwrite the target object's content with source object based on the target object's properties,
@@ -128,7 +137,7 @@ class map {
      * @param {function} keynameConvertor convert properties' field names in source object
      */
     static overwrite(target, source, keynameConvertor) {
-        let fields = target._fields_ ? target._fields_ : target.constructor['_fields_'] ? target.constructor['_fields_'] : null
+        let fields = target.hasOwnProperty('_fields_') && target._fields_ ? target._fields_ : target.constructor['_fields_'] ? target.constructor['_fields_'] : null
         for (let [k, v] of Object.entries(source)) {
             let keyname = typeof keynameConvertor === "function" ? keynameConvertor(k) : k
             if (!target.hasOwnProperty(keyname)) {
@@ -140,7 +149,7 @@ class map {
                     }
                 }
             }
-            if (!target.hasOwnProperty(keyname)) {
+            if (keyname === '_fields_' || !target.hasOwnProperty(keyname)) {
                 continue
             }
 
