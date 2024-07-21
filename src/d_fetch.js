@@ -86,10 +86,10 @@ class _aaFetch {
      * @param {RequestInfo} input
      * @param {{[key:string]:*}} [init]
      * 对 RequestInit 扩展了:
-     *      auth:false      自动判断并添加access_token
+     *      auth:true      自动判断并添加access_token
      *      onAuthError: err:AError=>void
      *      data:{}
-     *      debounce:    debounce 节流：n秒内只运行一次，重复操作无效；throttle 防抖：n秒后执行事件，期间被重复触发，则重新计时
+     *      debounce:bool    debounce 节流：n秒内只运行一次，重复操作无效；throttle 防抖：n秒后执行事件，期间被重复触发，则重新计时
      *      dictionaries:{}
      *      preventTokenRefresh:false
      *

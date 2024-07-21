@@ -8,7 +8,7 @@ class _aaAuth {
     #storage
     // @type _aaFetch
     #fetch
-    // @type {{access_token: string, refresh_token: string, refresh_api: string, scope: null, token_type: string, secure: boolean|undefined, expires_in: number, conflict: boolean|undefined}}
+    // @type {{access_token: string, conflict: boolean|undefined, expires_in: number, refresh_api: string, refresh_token: string, scope: null, secure: boolean|undefined, token_type: string, validate_api: string}}
     #_token
     #tokenAuthAt = 0
 
@@ -25,13 +25,15 @@ class _aaAuth {
             }
             this.#_token = {
                 "access_token" : accessToken,
+                "conflict"     : r.getItem("aa:auth.conflict"),
                 "expires_in"   : r.getItem("aa:auth.expires_in"),
-                "token_type"   : r.getItem("aa:auth.token_type"),
                 "refresh_api"  : r.getItem("aa:auth.refresh_api"),
                 "refresh_token": r.getItem("aa:auth.refresh_token"),
-                "secure"       : r.getItem("aa:auth.secure"),
                 "scope"        : r.getItem("aa:auth.scope"),
-                "conflict"     : r.getItem("aa:auth.conflict"),
+                "secure"       : r.getItem("aa:auth.secure"),
+                "token_type"   : r.getItem("aa:auth.token_type"),
+                "validate_api" : r.getItem("aa:auth.validate_api"),
+
             }
             this.#tokenAuthAt = r.getItem("aa:auth._localAuthAt")
         }
@@ -57,8 +59,42 @@ class _aaAuth {
     constructor(storage, fetch) {
         this.#storage = storage
         this.#fetch = fetch
+        this.validate()
+
     }
 
+    static #parseApiUrl(s) {
+        let [method, api] = string(s).split(' ')  // GET xxxx
+        if (!api) {
+            api = method
+            method = 'GET'
+        }
+        return [method, api]
+    }
+
+    /**
+     * validate the availability of local access token with remote api
+     */
+    validate() {
+        let checked = bool(this.#storage.session.getItem('aa:auth.checked'))
+        if (checked || !this.token || !this.token['validate_api']) {
+            return
+        }
+        const [method, api] = _aaAuth.#parseApiUrl(this.token['validate_api'])
+        this.#fetch.fetch(api, {
+            method: method,
+            data  : {
+                auth: true,
+            }
+        }).then(_ => {
+            this.#storage.session.setItem('aa:auth.checked', true)
+        }).catch(err => {
+            if (err.isGone()) {
+                this.clear()
+            }
+            log.warn(err.toString())
+        })
+    }
 
     #tryStoreCookie(key, value, expiresInMilliseconds = 7 * C.Day) {
         if (this.#storage.cookie.isPseudo()) {
@@ -75,8 +111,7 @@ class _aaAuth {
         const cf = {
             domain : domain,
             path   : '/',
-            expires: new Date() + expiresInMilliseconds,
-            // Lax 允许部分第三方跳转过来时请求携带Cookie；Strict 仅允许同站请求携带cookie
+            expires: new Date() + expiresInMilliseconds, // Lax 允许部分第三方跳转过来时请求携带Cookie；Strict 仅允许同站请求携带cookie
             // 微信授权登录，跳转回来。如果是strict，就不会携带cookie（防止csrf攻击）；而lax就会携带。
             // 在 Lax 模式下只会阻止在使用危险 HTTP 方法进行请求携带的三方 Cookie，例如 POST 方式。同时，使用 Js 脚本发起的请求也无法携带三方 Cookie。
             // 谷歌默认 sameSite=Lax
@@ -104,13 +139,14 @@ class _aaAuth {
         }
         return {
             "access_token" : token["access_token"],
+            "conflict"     : token.hasOwnProperty('conflict') ? bool(token["conflict"]) : void false,
             "expires_in"   : expiresIn,
-            "token_type"   : token["token_type"],
             "refresh_api"  : string(token, "refresh_api"),  // 非必要
             "refresh_token": string(token, "refresh_token"),
-            "secure"       : token.hasOwnProperty('secure') ? bool(token["secure"]) : void false,
             "scope"        : token.hasOwnProperty('scope') ? token["secure"] : null,
-            "conflict"     : token.hasOwnProperty('conflict') ? bool(token["conflict"]) : void false,
+            "secure"       : token.hasOwnProperty('secure') ? bool(token["secure"]) : void false,
+            "token_type"   : token["token_type"],
+            "validate_api" : string(token, "validate_api"),
         }
     }
 
@@ -127,48 +163,52 @@ class _aaAuth {
 
         this.#_token = {
             "access_token" : token["access_token"],
+            "conflict"     : bool(token['conflict']),
             "expires_in"   : intMax(token["expires_in"]),
-            "token_type"   : token["token_type"],
             "refresh_api"  : token["refresh_api"],
             "refresh_token": token["refresh_token"],
-            "secure"       : bool(token["secure"]),
             "scope"        : token["scope"],
-            "conflict"     : bool(token['conflict']),
+            "secure"       : bool(token["secure"]),
+            "token_type"   : token["token_type"],
+            "validate_api" : token["validate_api"],
+
         }
         this.#tokenAuthAt = Math.floor(new Date().getTime() / 1000)
 
         // 清空其他缓存
         this.#storage.clearAll()
 
-
         const expiresIn = this.#_token['expires_in']
         this.#tryStoreCookie("aa:auth.access_token", this.#_token['access_token'], expiresIn * C.Second)
-
         this.#tryStoreCookie("aa:auth.token_type", this.#_token['token_type'], expiresIn * C.Second)
 
         // refresh token 不应该放到cookie里面
+        this.#storage.local.setItem("aa:auth.conflict", this.#_token['conflict'])
         this.#storage.local.setItem("aa:auth.expires_in", expiresIn, expiresIn * C.Second)
         this.#storage.local.setItem("aa:auth.refresh_api", this.#_token['refresh_api'])
         this.#storage.local.setItem("aa:auth.refresh_token", this.#_token['refresh_token'])
-        this.#storage.local.setItem("aa:auth.secure", this.#_token['secure'])
         this.#storage.local.setItem("aa:auth.scope", this.#_token['scope'])
-        this.#storage.local.setItem("aa:auth.conflict", this.#_token['conflict'])
+        this.#storage.local.setItem("aa:auth.secure", this.#_token['secure'])
+        this.#storage.local.setItem("aa:auth.validate_api", this.#_token['validate_api'], expiresIn * C.Second)
+
 
         this.#storage.local.setItem("aa:auth._localAuthAt", this.#tokenAuthAt)
-        this.#storage.session.setItem('aa:auth.checked', 1)
+        this.#storage.session.setItem('aa:auth.checked', true)
     }
 
     refresh() {
         const token = this.token
-        if (!token) {
+        if (!token || !token['refresh_api'] || !token['refresh_token']) {
             return null
         }
-        const api = token['refresh_api']
         const refreshToken = token['refresh_token']
-
-        this.#fetch.get(api, {
-            'grant_type': 'refresh_token',
-            'code'      : refreshToken,
+        const [method, api] = _aaAuth.#parseApiUrl(token['refresh_api'])
+        this.#fetch.fetch(api, {
+            method: method,
+            data  : {
+                'grant_type': 'refresh_token',
+                'code'      : refreshToken,
+            }
         }).then(data => {
             this.setToken(data)
         }).catch(err => {
@@ -177,18 +217,7 @@ class _aaAuth {
     }
 
     clear() {
-        this.#storage.removeAll("aa:auth.access_token")
-        this.#storage.removeAll("aa:auth.expires_in")
-        this.#storage.removeAll("aa:auth.token_type")
-        this.#storage.removeAll("aa:auth.refresh_api")
-        this.#storage.removeAll("aa:auth.refresh_token")
-        this.#storage.removeAll("aa:auth.secure")
-        this.#storage.removeAll("aa:auth.scope")
-        this.#storage.removeAll("aa:auth.conflict")
-
-        this.#storage.removeAll("aa:auth._localAuthAt")
-        this.#storage.removeAll("aa:auth.checked")
-
+        this.#storage.removeEntire(/^aa:auth\./)
     }
 
     /**

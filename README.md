@@ -101,7 +101,7 @@ class XXX{
 * ::new()
 * .clone()  ===> 深度复制该类
 * .init(data)   ===> 重置数据
-  * 注意：.init() 不能返回 this，也不能传递本对象来重新赋值。因为内部无法修改 this 指针。
+    * 注意：.init() 不能返回 this，也不能传递本对象来重新赋值。因为内部无法修改 this 指针。
 
 * 通用命名规则
     * toJSON()    JSON.stringify() 能识别该方法

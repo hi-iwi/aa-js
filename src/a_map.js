@@ -102,7 +102,7 @@ class map {
      * @description 合并两个对象属性，若出现相同属性，则后者b的该属性覆盖前者a的该属性。
      *      若想相反覆盖，则调换位置即可
      * @param {{[key:string]:*}} target
-     * @param  {{[key:string]:*}}    source
+     * @param  {{[key:string]:*}} source
      * @returns {{[key:string]:*}}   这里往往无法判断属性，因此返回结构固定
      */
     static spread(target, source) {
@@ -111,8 +111,9 @@ class map {
 
     /**
      * Fill up the non-existent properties of the first object with the second object's
-     * @param target
-     * @param defaults
+     * @param {{[key:string]:*}} target
+     * @param {{[key:string]:*}} defaults
+     * @param {function} [handler]
      */
     static fillUp(target, defaults, handler) {
         target = struct(target)
@@ -141,7 +142,7 @@ class map {
         for (let [k, v] of Object.entries(source)) {
             let keyname = typeof keynameConvertor === "function" ? keynameConvertor(k) : k
             if (!target.hasOwnProperty(keyname)) {
-                for (let [k2, v2] of Object.entries(target)) {
+                for (let [k2, _] of Object.entries(target)) {
                     // "base_url" ===> baseUrl  or  baseURL
                     if (k2.toLowerCase() === k.toLowerCase()) {
                         keyname = k2

@@ -142,7 +142,7 @@ class _aaFileSrc {
 
 
 class AaImgSrc {
-    name = 'aa-imgsrc'
+    name = 'aa-img-src'
     // @property {int}
     provider
     cropPattern
@@ -189,7 +189,6 @@ class AaImgSrc {
     }
 
     /**
-     *
      * @param {{[key:string]:*}} props
      */
     init(props) {
@@ -256,14 +255,14 @@ class AaImgSrc {
 
     /**
      * Crop image to the nearest size after resizing by window.devicePixelRatio
-     * @param width
-     * @param height
-     * @return {{width: number, url: *, height: number, ratio: number}}
+     * @param {number} width
+     * @param {number} height
+     * @return {{width: number, url: string, height: number, ratio: number}}
      */
     crop(width, height) {
         [width, height] = this.#allowedSize(width, height)
         const pattern = string(this.cropPattern)
-        const url = pattern.replace(/\${WIDTH}/g, width).replace(/\${HEIGHT}/g, height)
+        const url = pattern.replace(/\${WIDTH}/g, string(width)).replace(/\${HEIGHT}/g, string(height))
         return {
             width : width,
             height: height,
@@ -274,8 +273,8 @@ class AaImgSrc {
 
     /**
      * Resize image to the nearest size after resizing by window.devicePixelRatio
-     * @param maxWidth
-     * @return {{width: number, url: *, height: number, ratio: number}}
+     * @param {number|'MAX'|*} maxWidth
+     * @return {{width: number, url: string, height: number, ratio: number}}
      */
     resize(maxWidth = MAX) {
         if (!maxWidth || maxWidth === MAX) {

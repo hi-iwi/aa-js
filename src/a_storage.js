@@ -162,10 +162,10 @@ class _aaStorage {
      * Iterate storage
      * @param {function(key:string,value:string)} callback
      */
-    forEach(callback) {
+    forEach(callback, options) {
         for (let i = 0; i < this.length; i++) {
             let key = this.key(i)
-            let value = this.getItem(key)
+            let value = this.getItem(key, options)
             if (callback(key, value) === BreakSignal) {
                 break
             }
@@ -234,9 +234,23 @@ class _aaStorage {
         return value
     }
 
+    /**
+     * Remove item from this storage
+     * @param {string|RegExp} key
+     * @param options
+     */
     removeItem(key, options) {
+        if (key instanceof RegExp) {
+            this.forEach((k, v) => {
+                if (key.test(k)) {
+                    const args = this.#withOptions && options ? [k, options] : [k]
+                    this.#storage.removeItem(...args)
+                }
+            }, options)
+        }
         const args = this.#withOptions && options ? [key, options] : [key]
         this.#storage.removeItem(...args)
+
     }
 
     /**
@@ -296,7 +310,7 @@ class _aaStorageFactor {
         return this
     }
 
-    getItem(key, options) {
+    getEntire(key, options) {
         let value = this.cookie.getItem(key, options)
         if (value) {
             return value
@@ -308,7 +322,7 @@ class _aaStorageFactor {
         return this.local.getItem(key, options)
     }
 
-    removeItem(key, options) {
+    removeEntire(key, options) {
         this.local.removeItem(key, options)
         this.session.removeItem(key, options)
         this.cookie.removeItem(key, options)
@@ -338,7 +352,7 @@ class _aaStorageFactor {
      * @param {function(key:string,value:string)} callback
      * @param {{[key:string]:*}} [options] cookie options
      */
-    forEach(callback, options) {
+    forEachEntire(callback, options) {
         this.local.forEach(callback)
         this.session.forEach(callback)
         this.cookie.forEach(callback)
