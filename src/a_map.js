@@ -45,7 +45,7 @@ class map {
     }
 
     /**
-     * 深度复制一个对象
+     * Clone an object 深度复制一个对象
      * @param obj
      * @returns {any}
      */
@@ -55,11 +55,10 @@ class map {
 
     /**
      * Merge the contents of two objects together into the first object based on the properties of the first object
-     * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名覆盖，抛弃sources对象多余属性值
-     *      常用于配置文件填充
-     * @param {{[key:string]:*}} target --> 会污染 target。 target 可以是struct，也可以是class.
-     * @param {{[key:string]:*}}  source
-     * @return {*} 注意配置属性固定的doc文档写法，所以这里返回通用对于doc兼容性最佳
+     * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名覆盖，抛弃sources对象多余属性值。常用于配置文件填充
+     * @param {{[key:string]:*}} target A --> 会污染 target。 target 可以是struct，也可以是class.
+     * @param {{[key:string]:*}} source B
+     * @return {object|{[key:string]:*}}   A = A  ∪ (A ∩ B)
      */
     static merge(target, source) {
         for (let [k, v] of Object.entries(struct(source))) {
@@ -75,9 +74,9 @@ class map {
      * Merge the contents of two objects together into the first object based on the properties and their types of the first object
      * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名且值类型相同的覆盖，抛弃sources对象多余属性值
      *      常用于配置文件填充
-     * @param {object|{[key:string]:*}} target --> 会污染 target。 target 可以是struct，也可以是class.
-     * @param {{[key:string]:*}}  source
-     * @return {*}  注意配置属性固定的doc文档写法，所以这里返回通用对于doc兼容性最佳
+     * @param {object|{[key:string]:*}} target A --> 会污染 target。 target 可以是struct，也可以是class.
+     * @param {{[key:string]:*}}  source B
+     * @return  {object|{[key:string]:*}}     A = A ∪ (|A| ∩ |B|)
      */
     static strictMerge(target, source) {
         for (let [k, v] of Object.entries(struct(source))) {
@@ -93,17 +92,22 @@ class map {
         return target
     }
 
+    /**
+     *
+     * @param target A
+     * @param source B
+     * @return {*}    A = A ∪ B
+     */
     static assign(target, source) {
         return Object.assign(struct(target), struct(source))
     }
 
     /**
      * Merge two objects into a new object
-     * @description 合并两个对象属性，若出现相同属性，则后者b的该属性覆盖前者a的该属性。
-     *      若想相反覆盖，则调换位置即可
-     * @param {{[key:string]:*}} target
-     * @param  {{[key:string]:*}} source
-     * @returns {{[key:string]:*}}   这里往往无法判断属性，因此返回结构固定
+     * @description 合并两个对象属性，若出现相同属性，则后者b的该属性覆盖前者a的该属性。若想相反覆盖，则调换位置即可
+     * @param {{[key:string]:*}} target A
+     * @param {{[key:string]:*}} source B
+     * @returns {{[key:string]:*}}      C = A ∪ B
      */
     static spread(target, source) {
         return {...struct(target), ...struct(source)} // Object.assign({}, target, ...sources)
@@ -111,9 +115,11 @@ class map {
 
     /**
      * Fill up the non-existent properties of the first object with the second object's
-     * @param {{[key:string]:*}} target
-     * @param {{[key:string]:*}} defaults
+     * @description 将两个对象的差集填充进target对象。通常用于填充默认配置。
+     * @param {{[key:string]:*}} target   A --> 会污染 target
+     * @param {{[key:string]:*}} defaults B
      * @param {function} [handler]
+     * @return  {object|{[key:string]:*}}    A = A ∪ (A - B)
      */
     static fillUp(target, defaults, handler) {
         target = struct(target)
@@ -133,9 +139,11 @@ class map {
     /**
      * Overwrite the target object's content with source object based on the target object's properties,
      *      and zeroize the target object's properties before overwriting.
-     * @param {object|{[key:string]:*}} target --> 会污染 target。
-     * @param {{[key:string]:*}}  source   --> probably it's a configuration struct ，后者往往是配置项，覆盖掉前者
+     * @description 将两个对象的交集填充进target，将target其他属性设为零值。通常重新填充配置target。
+     * @param {object|{[key:string]:*}} target A --> 会污染 target。
+     * @param {{[key:string]:*}}  source B --> probably it's a configuration struct ，后者往往是配置项，覆盖掉前者
      * @param {function} keynameConvertor convert properties' field names in source object
+     * @return {object|{[key:string]:*}} A = (A ∩ B) ∪ zeroize(A)
      */
     static overwrite(target, source, keynameConvertor) {
         let fields = target.hasOwnProperty('_fields_') && target._fields_ ? target._fields_ : target.constructor['_fields_'] ? target.constructor['_fields_'] : null

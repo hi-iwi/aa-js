@@ -16,7 +16,7 @@ class _aaFetch {
 
     #requestInit = {
         // 对 RequestInit 扩展了:
-        auth: false,    //  check access_token before fetching
+        auth: true,    //  check access_token before fetching
         // @param {AError} err
         onAuthError        : err => alert(err.toString()),
         data               : {}, // 扩展了一个 data, map, body所有属性
