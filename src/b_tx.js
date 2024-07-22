@@ -1,4 +1,4 @@
-// @import C.Second
+// @import time.Second
 // a simple transaction lock
 let _aaTxIncr_ = 0
 
@@ -39,10 +39,10 @@ class AaTx {
      * Start transaction
      * @param {number} timeout in millisecond
      */
-    begin(timeout = 10 * C.Second) {
+    begin(timeout = 10 * time.Second) {
         this.log('Begin')
         this.#lock = true  // BEGIN 事务开启
-        timeout = !timeout ? 10 * C.Second : number(timeout)  // 默认10秒超时解锁
+        timeout = !timeout ? 10 * time.Second : number(timeout)  // 默认10秒超时解锁
         clearTimeout(this.#timer)
         this.#timer = setTimeout(() => {
             log.warn("tx timeout")

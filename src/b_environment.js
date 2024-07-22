@@ -1,4 +1,4 @@
-// @import C.MaxMainWidth, _aaDebug
+// @import   _aaDebug
 
 class _aaEnvironment {
     name = 'aa-environment'

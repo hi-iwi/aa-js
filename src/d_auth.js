@@ -95,7 +95,7 @@ class _aaAuth {
         })
     }
 
-    #tryStoreCookie(key, value, expiresInMilliseconds = 7 * C.Day) {
+    #tryStoreCookie(key, value, expiresInMilliseconds = 7 * time.Day) {
         if (this.#storage.cookie.isPseudo()) {
             this.#storage.local.setItem(key, value)
             return
@@ -133,7 +133,7 @@ class _aaAuth {
             return null
         }
         const expiresIn = intMax(token['expires_in'])  // expires in seconds
-        if (expiresIn * C.Second < 3 * C.Minute) {
+        if (expiresIn * time.Second < 3 * time.Minute) {
             return null
         }
         return {
@@ -178,17 +178,17 @@ class _aaAuth {
         this.#storage.clearAll()
 
         const expiresIn = this.#_token['expires_in']
-        this.#tryStoreCookie("aa:auth.access_token", this.#_token['access_token'], expiresIn * C.Second)
-        this.#tryStoreCookie("aa:auth.token_type", this.#_token['token_type'], expiresIn * C.Second)
+        this.#tryStoreCookie("aa:auth.access_token", this.#_token['access_token'], expiresIn * time.Second)
+        this.#tryStoreCookie("aa:auth.token_type", this.#_token['token_type'], expiresIn * time.Second)
 
         // refresh token 不应该放到cookie里面
         this.#storage.local.setItem("aa:auth.conflict", this.#_token['conflict'])
-        this.#storage.local.setItem("aa:auth.expires_in", expiresIn, expiresIn * C.Second)
+        this.#storage.local.setItem("aa:auth.expires_in", expiresIn, expiresIn * time.Second)
         this.#storage.local.setItem("aa:auth.refresh_api", this.#_token['refresh_api'])
         this.#storage.local.setItem("aa:auth.refresh_token", this.#_token['refresh_token'])
         this.#storage.local.setItem("aa:auth.scope", this.#_token['scope'])
         this.#storage.local.setItem("aa:auth.secure", this.#_token['secure'])
-        this.#storage.local.setItem("aa:auth.validate_api", this.#_token['validate_api'], expiresIn * C.Second)
+        this.#storage.local.setItem("aa:auth.validate_api", this.#_token['validate_api'], expiresIn * time.Second)
 
 
         this.#storage.local.setItem("aa:auth._localAuthAt", this.#tokenAuthAt)
@@ -245,7 +245,7 @@ class _aaAuth {
     logout(callback) {
         this.#storage.clearAllExcept([aparam.Logout])
         this.#_token = null // clear program cache
-        this.#tryStoreCookie(aparam.Logout, 1, 5 * C.Minute)
+        this.#tryStoreCookie(aparam.Logout, 1, 5 * time.Minute)
         callback()
     }
 }

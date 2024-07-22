@@ -3,7 +3,7 @@
 // 自定义map类型  参考 Map
 class map {
     name = 'aa-map'
-    object // {{[key:string]:*} | string}
+    object // {{[key:string]:*} | FormData| string}
 
     // len() 函数会识别这个
     len() {
@@ -29,11 +29,18 @@ class map {
     /**
      * 解析json或{} 为 {}
      * @param obj
-     * @returns {{}|*}
+     * @returns {{[key:string]:any}}
      */
     static parse(obj) {
         if (!obj) {
             return {}
+        }
+        if (obj instanceof FormData) {
+            let o = {}
+            for (const pair of obj.entries()) {
+                o[pair[0]] = pair[1]
+            }
+            return obj
         }
         if (typeof obj === "object") {
             return obj
@@ -204,6 +211,9 @@ class map {
             }
             if (typeof assert === "function" && assert(k, v)) {
                 return
+            }
+            if (Array.isArray(v)) {
+                v = v.join(",")  // url param，数组用逗号隔开模式
             }
             v = encodeURIComponent(string(v))
             params.push(k + '=' + v)

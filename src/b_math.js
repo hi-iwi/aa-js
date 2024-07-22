@@ -1,7 +1,12 @@
 //@import atype
 
 // static class
-class _aaMath {
+class math {
+
+
+    static Wan = 10000 // 万
+    static Yii = 100000000 // 亿
+
     name = 'aa-math'
 
     /**

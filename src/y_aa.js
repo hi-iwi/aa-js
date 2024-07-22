@@ -1,8 +1,10 @@
 class Aa {
     // a_
-
+    // @type typeof _aaPath
     Path = _aaPath
-    Date = _aaDate
+
+
+    //@type _aaRegistry
     registry
 
     // @type _aaStorageFactor
@@ -11,10 +13,13 @@ class Aa {
 
     // log   log 类是纯静态方法，全局直接使用
 
+    //@type typeof _aaURI
     uri = _aaURI
 
-    math = _aaMath
+
     // b_
+
+    //@type typeof _aaEnvironment
     env = _aaEnvironment
     // c_
     // @type _aaAuth
@@ -24,6 +29,7 @@ class Aa {
     // @type _aaFetch
     fetch
 
+    //@type _aaOSS
     oss
 
     constructor() {
@@ -42,9 +48,6 @@ class Aa {
         return new _aaPath(path)
     }
 
-    date(...args) {
-        return new _aaDate(...args)
-    }
 
     url(url = window.location.href, params = {}) {
         return new this.uri(url, params)

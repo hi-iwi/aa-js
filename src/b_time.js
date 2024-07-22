@@ -1,8 +1,9 @@
-// @import C.MinDatetime, C.MaxDatetime
+// @import time.MinDatetime, time.MaxDatetime
 
 class _aaDateZero extends Date {
     name = 'aa-date-zero'
-    value
+    value = '0000-00-00 00:00:00'
+
 
     // @param {string} date
     constructor(date = '0000-00-00 00:00:00') {
@@ -137,12 +138,12 @@ class _aaDateString {
     static #yearPattern = /^\d{4}$/
     static #datePattern = /^\d{4}-[01]\d-[03]\d$/
     static #datetimePattern = /^\d{4}-[01]\d-[03]\d[\sT][0-2]\d:[0-5]\d:[0-5]\d$/
-    static #minYear = C.MinDatetime.substring(0, 4) || '0000'
-    static #maxYear = C.MaxDatetime.substring(0, 4) || '9999'
-    static #minDate = C.MinDatetime.substring(0, 10) || '0000-00-00'
-    static #maxDate = C.MaxDatetime.substring(0, 10) || '9999-12-31'
-    static #minDatetime = C.MinDatetime || '0000-00-00 00:00:00'
-    static #maxDatetime = C.MaxDatetime || '9999-12-31 23:59:59'
+    static #minYear = _aaDateZero.MinDatetime.substring(0, 4) || '0000'
+    static #maxYear = _aaDateZero.MaxDatetime.substring(0, 4) || '9999'
+    static #minDate = _aaDateZero.MinDatetime.substring(0, 10) || '0000-00-00'
+    static #maxDate = _aaDateZero.MaxDatetime.substring(0, 10) || '9999-12-31'
+    static #minDatetime = _aaDateZero.MinDatetime || '0000-00-00 00:00:00'
+    static #maxDatetime = _aaDateZero.MaxDatetime || '9999-12-31 23:59:59'
 
     get value() {
         return this.#value
@@ -344,12 +345,12 @@ class _aaDateValidator {
     static ValidDate = 'valid date'
 
 
-    static #minYearTs = new _aaDateString(C.MinDatetime.substring(0, 4) || '0000').valueOf()
-    static #maxYearTs = new _aaDateString(C.MaxDatetime.substring(0, 4) || '9999').valueOf()
-    static #minDateTs = new _aaDateString(C.MinDatetime.substring(0, 10) || '0000-00-00').valueOf()
-    static #maxDateTs = new _aaDateString(C.MaxDatetime.substring(0, 10) || '9999-12-31').valueOf()
-    static #minDatetimeTs = new _aaDateString(C.MinDatetime || '0000-00-00 00:00:00').valueOf()
-    static #maxDatetimeTs = new _aaDateString(C.MaxDatetime || '9999-12-31 23:59:59').valueOf()
+    static #minYearTs = new _aaDateString(_aaDateZero.MinDatetime.substring(0, 4) || '0000').valueOf()
+    static #maxYearTs = new _aaDateString(_aaDateZero.MaxDatetime.substring(0, 4) || '9999').valueOf()
+    static #minDateTs = new _aaDateString(_aaDateZero.MinDatetime.substring(0, 10) || '0000-00-00').valueOf()
+    static #maxDateTs = new _aaDateString(_aaDateZero.MaxDatetime.substring(0, 10) || '9999-12-31').valueOf()
+    static #minDatetimeTs = new _aaDateString(_aaDateZero.MinDatetime || '0000-00-00 00:00:00').valueOf()
+    static #maxDatetimeTs = new _aaDateString(_aaDateZero.MaxDatetime || '9999-12-31 23:59:59').valueOf()
 
 
     constructor(s, strict = true) {
@@ -453,7 +454,16 @@ class _aaDateValidator {
 }
 
 
-class _aaDate {
+class time {
+    // MinDate    : '0000-00-00',
+    static MinDatetime = '0000-00-00 00:00:00' // 当作配置，可以修改; date/year 等可以通过此解析出来，不用单独配置了
+    static MaxDatetime = '9999-12-31 23:59:59'
+    static Millisecond = 1
+    static Second = 1000 * time.Millisecond
+    static Minute = 60 * time.Second
+    static Hour = 60 * time.Minute
+    static Day = 24 * time.Hour
+
     name = 'aa-date'
     // @type Date
     #date
@@ -521,7 +531,7 @@ class _aaDate {
             this.init(new Date())
             return
         }
-        if (args[0] instanceof _aaDate) {
+        if (args[0] instanceof time) {
             return args[0]
         }
         if (typeof args[0] === "undefined" || args[0] === null) {
@@ -576,7 +586,7 @@ class _aaDate {
     /**
      *
      * @param pattern   YYYY-MM-DD HH:II:SS.sssZ  or  2024-07-15 00:00:00.000+08:00
-     * @return {_aaDate}
+     * @return {time}
      */
     setPattern(pattern) {
         if (/\d/.test(pattern)) {
@@ -685,7 +695,7 @@ class _aaDate {
 
 
     timestamp() {
-        return Math.floor(this.valueOf() / C.Second)
+        return Math.floor(this.valueOf() / time.Second)
     }
 
 
@@ -697,7 +707,7 @@ class _aaDate {
     // Get week-of-the-year
     weekOfYear() {
         let d1 = new Date(this.year(), 0, 1) // 当年1月1日
-        let x = Math.round((this - d1) / C.Day);
+        let x = Math.round((this - d1) / time.Day);
         return Math.ceil((x + d1.getDay()) / 7)
     }
 
@@ -825,7 +835,7 @@ class _aaDate {
     // Calculate date difference in days or business days between 2 dates.
     /**
      * 计算两个日期相隔： 年、月、日数
-     * @param {_aaDate|Date|string|number} [d1]  default to now, a.k.a. new Date()
+     * @param {time|Date|string|number} [d1]  default to now, a.k.a. new Date()
      */
     diff(d1) {
         return new _aaDateDifference(this, d1)
@@ -854,8 +864,8 @@ class _aaDateDifference {
 
 
     constructor(d0, d1) {
-        d0 = d0 instanceof _aaDate ? d0 : new _aaDate(d0)
-        d1 = d1 instanceof _aaDate ? d1 : new _aaDate(d1)  // new _aaDate(undfined) equals to new _aaDate(new Date())
+        d0 = d0 instanceof time ? d0 : new time(d0)
+        d1 = d1 instanceof time ? d1 : new time(d1)  // new _aaDate(undfined) equals to new _aaDate(new Date())
         if (!d0.validator.isValid(true) || !d0.validator.isValid(true)) {
             log.error("date difference: invalid date", d0, d1)
             return
@@ -939,7 +949,7 @@ class _aaDateDifference {
      * @return number
      */
     inDays(round = Math.round) {
-        return round(this.diff / C.Day)
+        return round(this.diff / time.Day)
     }
 
     /**
@@ -948,7 +958,7 @@ class _aaDateDifference {
      * @return number
      */
     inHours(round = Math.round) {
-        return round(this.diff / C.Hour)
+        return round(this.diff / time.Hour)
     }
 
     /**
@@ -957,7 +967,7 @@ class _aaDateDifference {
      * @return number
      */
     inMinutes(round = Math.round) {
-        return round(this.diff / C.Minute)
+        return round(this.diff / time.Minute)
     }
 
     /**
@@ -966,7 +976,7 @@ class _aaDateDifference {
      * @return number
      */
     inSeconds(round = Math.round) {
-        return round(this.diff / C.Second)
+        return round(this.diff / time.Second)
     }
 
     inMilliseconds() {
@@ -1057,7 +1067,7 @@ class _aaDateDifference {
      */
     format(layout, noCarry = false) {
         // "{%Y年}{%M个月}{%D天}
-        if (!this.valid || this.diff < C.Second) {
+        if (!this.valid || this.diff < time.Second) {
             return ""
         }
         layout = string(layout)

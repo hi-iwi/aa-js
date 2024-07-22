@@ -8,7 +8,6 @@ A Javascript SDK of AaGo
 
 ```javascript
 const aa = new Aa()
-aa.Date.initMinDate()
 aa.storage.cookie.init(cookieStorage)
 aa.fetch.initGlobalHeaders()
 aa.oss.init

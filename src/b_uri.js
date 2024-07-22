@@ -54,17 +54,17 @@ class _aaURI {
 
 
     get protocol() {
-        const [protocol, _] = _aaURI.lookup(this.#protocol, this.queries)
+        const [protocol, ,] = _aaURI.lookup(this.#protocol, this.queries)
         return protocol.toLowerCase()
     }
 
     get hostname() {
-        const [hostname, _] = _aaURI.lookup(this.#hostname, this.queries)
+        const [hostname, ,] = _aaURI.lookup(this.#hostname, this.queries)
         return hostname
     }
 
     get port() {
-        const [port, _] = _aaURI.lookup(this.#port, this.queries)
+        const [port, ,] = _aaURI.lookup(this.#port, this.queries)
         return port
     }
 
@@ -85,20 +85,18 @@ class _aaURI {
     }
 
     get pathname() {
-        const [pathname, _] = _aaURI.lookup(this.#pathname, this.queries)
+        const [pathname, ,] = _aaURI.lookup(this.#pathname, this.queries)
         return pathname
     }
 
     get hash() {
-        const [hash, _] = _aaURI.lookup(this.#hash, this.queries)
+        const [hash, ,] = _aaURI.lookup(this.#hash, this.queries)
         return hash
     }
 
 
     get search() {
-        const [base, queries, hash, ok] = this.parse()
-        const qs = queries.toQueryString()
-        return qs ? '?' + qs : ''
+        return this.parse().search
     }
 
 
@@ -107,7 +105,7 @@ class _aaURI {
      * @param {string|*} s
      * @param {map|{[key:string]:*}}  queries
      * @param {map} [newQueries]
-     * @return {[string, map]}
+     * @return {[string, map,ok]}
      */
     static lookup(s, queries, newQueries) {
         if (!(queries instanceof map)) {
@@ -129,23 +127,33 @@ class _aaURI {
             let m = ps[i]
             let k = m.replace(/^{([\w-]+)[:}].*$/ig, '$1')
             let v = newQueries.get(k)
+            if (Array.isArray(v)) {
+                v = v.join(",")  // url param，数组用逗号隔开模式
+            }
             if (v !== "") {
                 s = s.replace(new RegExp(m, 'g'), v)
                 newQueries.delete(k)
             }
         }
-        return [s, newQueries]
+        const ok = !(/\/{[\w:-]+}/.test(s))  // 判定是否还有未替换的url param
+        return [s, newQueries, ok]
     }
 
-
+    /**
+     * Parse lookup
+     * @return {{baseUrl: string, search: string, ok: ok, queries: map, url: string, hash: string}}
+     */
     parse() {
         let newQueries = this.queries.clone(false)
         let port = this.#port ? ':' + this.#port : ''
         let s = this.#protocol + '//' + this.#hostname + port + this.#pathname
-        let baseUrl, hash;
-        [baseUrl, newQueries] = _aaURI.lookup(s, this.queries, newQueries)
+        let baseUrl, hash, ok, ok2;
+        [baseUrl, newQueries, ok] = _aaURI.lookup(s, this.queries, newQueries)
         if (this.#hash) {
-            [hash, newQueries] = _aaURI.lookup(this.#hash, this.queries, newQueries)
+            [hash, newQueries, ok2] = _aaURI.lookup(this.#hash, this.queries, newQueries)
+            if (!ok2) {
+                hash = ''
+            }
         }
         if (baseUrl.indexOf('http:') === 0 && baseUrl.indexOf(':80/')) {
             baseUrl = baseUrl.replace(':80/', '/')
@@ -153,8 +161,22 @@ class _aaURI {
         if (baseUrl.indexOf('https:') === 0 && baseUrl.indexOf(':443/')) {
             baseUrl = baseUrl.replace(':443/', '/')
         }
-        const ok = /\/{[\w:-]+}/.test(baseUrl)  // 判定是否还有未替换的url param
-        return [baseUrl, newQueries, hash, ok]
+        let search = newQueries.toQueryString()
+        if (search) {
+            search = '?' + search
+        }
+        let url = baseUrl + search
+        if (hash) {
+            url += '#' + hash
+        }
+        return {
+            ok     : ok,
+            url    : url,
+            baseUrl: baseUrl,
+            queries: newQueries,
+            search : search,
+            hash   : hash,
+        }
     }
 
     // 预留

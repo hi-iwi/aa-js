@@ -1,16 +1,20 @@
-// @import C.DecimalScale
+// @import decimal.Scale
 class decimal {
+    static Scale = 4  // 万分之一   Math.pow(10, decimal.Scale)
+    static Unit = Math.pow(10, decimal.Scale)
+    static Max = parseInt("".padEnd((Math.ceil(Number.MAX_SAFE_INTEGER / 10) + '').length, "9")) // 最多支持999亿.9999
+
+
     name = 'aa-decimal'
     type = "decimal"
-    scaleMax = C.DecimalScale
-    // https://www.splashlearn.com/math-vocabulary/decimals/decimal-point
+     // https://www.splashlearn.com/math-vocabulary/decimals/decimal-point
     // https://learn.microsoft.com/en-us/sql/t-sql/data-types/precision-scale-and-length-transact-sql?view=sql-server-ver16
     // [whole -> precision - scale][decimal point = .][mantissa -> scale]
     value     // 值
     // mantissa // 小数值
     // whole // 整数值
     //precision   // 精度，如 12345.6789.precision   ==> 9 = len('12345') + len('6789')
-    scale = C.DecimalScale// 小数位数，如 12345.6789.scale  ==> 4 = len('6789')
+    scale = decimal.Scale// 小数位数，如 12345.6789.scale  ==> 4 = len('6789')
     rounder = Math.round   // 取整方式 ceil -> round up;  floor -> round down
 
 
@@ -35,8 +39,8 @@ class decimal {
      */
     setScale(scale) {
         scale = number(scale)
-        if (scale < 0 || scale > this.scaleMax) {
-            scale = this.scaleMax
+        if (scale < 0 || scale > decimal.Scale) {
+            scale = decimal.Scale
         }
         this.scale = scale
         return this
@@ -124,7 +128,7 @@ class decimal {
         if (!segmentSize) {
             return String(w)
         }
-        return _aaMath.thousands(w, segmentSize, separator)
+        return math.thousands(w, segmentSize, separator)
     }
 
     static #mantissaOk(s, scale = 0, trimScale = false) {

@@ -1,5 +1,10 @@
-// @import C.PercentScale
+// @import percent.Scale
 class percent extends decimal {
+    static Scale = 2  // Math.pow(10, percent.Scale)
+    static Unit = Math.pow(10, percent.Scale)
+    static Percent = 100.0 // 百分比，扩大100 * 100倍 --> 这里按百分比算，而不是小数  3* Percent 为 3% = 0.03
+    static Thousandth = 10.0  // 千分比
+
     name = 'aa-percent'
     type = "percent"
 
@@ -10,8 +15,7 @@ class percent extends decimal {
      */
     constructor(vv, vk = void '') {
         super(vv, vk)
-        this.scaleMax = C.PercentScale
-        this.scale = C.PercentScale
+         this.scale = percent.Scale
         this.rounder = Math.round
     }
 
