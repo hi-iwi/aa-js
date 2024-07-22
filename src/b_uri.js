@@ -96,7 +96,7 @@ class _aaURI {
 
 
     get search() {
-        const [base, queries, hash] = this.parse()
+        const [base, queries, hash, ok] = this.parse()
         const qs = queries.toQueryString()
         return qs ? '?' + qs : ''
     }
@@ -137,6 +137,7 @@ class _aaURI {
         return [s, newQueries]
     }
 
+
     parse() {
         let newQueries = this.queries.clone(false)
         let port = this.#port ? ':' + this.#port : ''
@@ -152,7 +153,8 @@ class _aaURI {
         if (baseUrl.indexOf('https:') === 0 && baseUrl.indexOf(':443/')) {
             baseUrl = baseUrl.replace(':443/', '/')
         }
-        return [baseUrl, newQueries, hash]
+        const ok = /\/{[\w:-]+}/.test(baseUrl)  // 判定是否还有未替换的url param
+        return [baseUrl, newQueries, hash, ok]
     }
 
     // 预留
@@ -291,18 +293,8 @@ class _aaURI {
     }
 
 
-    valid() {
-        // 判定是否还有未替换的url param
-        return /\/{[\w:-]+}/.test(this.#hieraPart)
-    }
-
-    /*
-
-*/
-
-
     toString() {
-        let [base, queries, hash] = this.parse()
+        let [base, queries, hash, ok] = this.parse()
         const qs = queries.toQueryString()
         if (qs) {
             base += '?' + qs
