@@ -104,7 +104,7 @@ class XXX{
     * 注意：.init() 不能返回 this，也不能传递本对象来重新赋值。因为内部无法修改 this 指针。
 
 * 通用命名规则
-    * toJSON()    JSON.stringify() 能识别该方法
+    * toJSON()    JSON.stringify() 能识别该方法； aa fetch 也需要识别该方法序列化对象
     * toString()  '' + new Date() 会用该方法返回的string
     * valueOf()  +new Date() 会用该方法返回的number
 

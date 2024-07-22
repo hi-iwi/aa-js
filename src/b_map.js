@@ -1,10 +1,12 @@
+// @import atype
+
 // 自定义map类型  参考 Map
 class map {
     name = 'aa-map'
     object // {{[key:string]:*} | string}
 
-
-    get size() {
+    // len() 函数会识别这个
+    len() {
         return this.keys().length
     }
 
@@ -194,7 +196,7 @@ class map {
         return JSON.stringify(this.object)
     }
 
-    toQueryString(assert) {
+    toQueryString(assert, sort = true) {
         let params = [];
         this.forEach((k, v) => {
             if (k === "" || typeof v === "undefined" || v === null) {
@@ -205,7 +207,7 @@ class map {
             }
             v = encodeURIComponent(string(v))
             params.push(k + '=' + v)
-        })
+        }, sort)
         return params.join('&')
     }
 
@@ -214,10 +216,18 @@ class map {
         return Object.entries(this.object)
     }
 
-    forEach(callback) {
+    forEach(callback, sort = false) {
         // 这种方式forEach 中进行删除未遍历到的值是安全的
-        for (let [k, v] of this.entries()) {
-            callback(k, v)
+        if (!sort) {
+            for (let [k, v] of this.entries()) {
+                callback(k, v)
+            }
+            return
+        }
+        let keys = this.keys().sort()
+        for (let i = 0; i < keys.length; i++) {
+            let k = keys[i]
+            callback(k, this.get(k))
         }
     }
 
@@ -260,7 +270,17 @@ class map {
         return this.get(key)
     }
 
+    /**
+     *
+     * @param {map|{[key:string]:*}} obj
+     */
     extend(obj) {
+        if (obj instanceof map) {
+            obj.forEach((k, v) => {
+                this.set(k, v)
+            })
+            return
+        }
         if (!obj || typeof obj !== "object") {
             return this
         }
@@ -271,8 +291,9 @@ class map {
     }
 
     // 深度复制
-    clone() {
-        return new map(map.clone(this.object))
+    clone(deep = true) {
+        let obj = deep ? map.clone(this.object) : {...this.object}
+        return new map(obj)
     }
 
 }

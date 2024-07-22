@@ -1,3 +1,5 @@
+// @import atype
+
 const _aaHtmlTplLeftClose_ = '(_._._._A|A|R|I|O____[[['
 const _aaHtmlTplRightClose_ = ']]]____A|a|r|i|o_._._._)'
 const _aaHtmlEncoder_ = {

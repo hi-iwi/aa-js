@@ -1,3 +1,5 @@
+// @import atype
+
 // 基础static class
 class fmt {
     name = 'aa-fmt'

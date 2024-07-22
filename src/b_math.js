@@ -1,3 +1,5 @@
+//@import atype
+
 // static class
 class _aaMath {
     name = 'aa-math'

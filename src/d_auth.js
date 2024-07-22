@@ -1,13 +1,13 @@
-// @import aparam, _aaStorageFactor, _aaFetch
+// @import aparam, _aaStorageFactor, _aaRawFetch
 
 
 class _aaAuth {
-
-
     // @type _aaStorageFactor
     #storage
-    // @type _aaFetch
-    #fetch
+    // @type _aaRawFetch
+    #rawFetch
+
+
     // @type {{access_token: string, conflict: boolean|undefined, expires_in: number, refresh_api: string, refresh_token: string, scope: null, secure: boolean|undefined, token_type: string, validate_api: string}}
     #_token
     #tokenAuthAt = 0
@@ -52,13 +52,12 @@ class _aaAuth {
 
 
     /**
-     *
      * @param {_aaStorageFactor} storage
-     * @param {_aaFetch} fetch
+     * @param {_aaRawFetch} rawFetch
      */
-    constructor(storage, fetch) {
+    constructor(storage, rawFetch) {
         this.#storage = storage
-        this.#fetch = fetch
+        this.#rawFetch = rawFetch
         this.validate()
 
     }
@@ -81,11 +80,11 @@ class _aaAuth {
             return
         }
         const [method, api] = _aaAuth.#parseApiUrl(this.token['validate_api'])
-        this.#fetch.fetch(api, {
+        this.#rawFetch.fetch(api, {
+
+
             method: method,
-            data  : {
-                auth: true,
-            }
+            data  : {}
         }).then(_ => {
             this.#storage.session.setItem('aa:auth.checked', true)
         }).catch(err => {
@@ -203,9 +202,11 @@ class _aaAuth {
         }
         const refreshToken = token['refresh_token']
         const [method, api] = _aaAuth.#parseApiUrl(token['refresh_api'])
-        this.#fetch.fetch(api, {
-            method: method,
-            data  : {
+        this.#rawFetch.fetch(api, {
+            auth               : true,
+            preventTokenRefresh: true,
+            method             : method,
+            data               : {
                 'grant_type': 'refresh_token',
                 'code'      : refreshToken,
             }

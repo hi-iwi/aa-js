@@ -1,3 +1,4 @@
+// @import C.DecimalScale
 class decimal {
     name = 'aa-decimal'
     type = "decimal"

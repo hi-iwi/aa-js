@@ -3,6 +3,8 @@ const aparam = {
     Apollo: "apollo",
 
 
+    Authorization :"Authorization",
+
     AccessTokenType     : "token_type",
     AccessToken         : "access_token",  // header/query/cookie
     AccessTokenExpiresIn: "expires_in",

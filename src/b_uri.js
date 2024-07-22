@@ -1,3 +1,4 @@
+// @import map
 /*
                     hierarchical part
         ┌───────────────────┴───────────────────┐
@@ -16,7 +17,7 @@ scheme  user information     host     port                  query      fragm
 
                  hierarchical part
           ┌────────────────┴───────────────┐
-                domain             path                query        fragment
+                domain             path                query        hash(fragment)
                ┌───┴───┐    ┌───────┴───────┐ ┌──────────┴────────┐┌──┴──┐
   https://test.luexu.com:888/w/10894051115023?key=value&key2=value2#fragm0
   └─┬─┘   └─────┬──────┘ └┬┘                  └┬┘ └─┬─┘             └─┬──┘
@@ -34,19 +35,129 @@ const UrlRemoveRedirect = {redirect: null}
 class _aaURI {
     name = 'aa-uri'
 
-    baseUrl  // ? 之前的部分
-    scheme  //  e.g. http/tcp  or empty
-    protocol
-    hierarchicalPart
-    authority
-    path
-    // @type {_aaMap}
+
+    // @type boolean
+    #isTemplate = false   // is using template
+    // @type string e.g. {scheme:string}, https:, tcp:
+    #protocol
+    // @type string
+    #hostname
+    // @type string
+    #port
+    // @type string
+    #pathname
+    // @type {map}
     queries
-    fragment
+
+    // @type string
+    #hash  // alias to location.hash
+
+
+    get protocol() {
+        const [protocol, _] = _aaURI.lookup(this.#protocol, this.queries)
+        return protocol.toLowerCase()
+    }
+
+    get hostname() {
+        const [hostname, _] = _aaURI.lookup(this.#hostname, this.queries)
+        return hostname
+    }
+
+    get port() {
+        const [port, _] = _aaURI.lookup(this.#port, this.queries)
+        return port
+    }
+
+    // 非80/443端口，则带上端口 如 luexu.com:8080"
+    get host() {
+        let hostname = this.hostname
+        const protocol = this.protocol
+        const port = this.port
+        if (!port || (protocol === 'http:' && port === '80') || (protocol === 'https:' && this.port === '443')) {
+            return hostname
+        }
+        return hostname + ":" + port
+    }
+
+    // e.g. http://luexu.com
+    get origin() {
+        return this.protocol + "//" + this.host
+    }
+
+    get pathname() {
+        const [pathname, _] = _aaURI.lookup(this.#pathname, this.queries)
+        return pathname
+    }
+
+    get hash() {
+        const [hash, _] = _aaURI.lookup(this.#hash, this.queries)
+        return hash
+    }
+
+
+    get search() {
+        const [base, queries, hash] = this.parse()
+        const qs = queries.toQueryString()
+        return qs ? '?' + qs : ''
+    }
+
+
+    /**
+     * replace parameters in url string
+     * @param {string|*} s
+     * @param {map|{[key:string]:*}}  queries
+     * @param {map} [newQueries]
+     * @return {[string, map]}
+     */
+    static lookup(s, queries, newQueries) {
+        if (!(queries instanceof map)) {
+            queries = new map(queries)
+        }
+        s = string(s)
+        if (!s) {
+            return [s, queries]
+        }
+        const ps = s.match(/{[\w:-]+}/ig)
+        if (!ps) {
+            return [s, queries]
+        }
+        if (!newQueries) {
+            //  对data进行了局部删除，一定要深度拷贝一下，避免一些不必要的麻烦
+            newQueries = queries.clone(false)
+        }
+        for (let i = 0; i < ps.length; i++) {
+            let m = ps[i]
+            let k = m.replace(/^{([\w-]+)[:}].*$/ig, '$1')
+            let v = newQueries.get(k)
+            if (v !== "") {
+                s = s.replace(new RegExp(m, 'g'), v)
+                newQueries.delete(k)
+            }
+        }
+        return [s, newQueries]
+    }
+
+    parse() {
+        let newQueries = this.queries.clone(false)
+        let port = this.#port ? ':' + this.#port : ''
+        let s = this.#protocol + '//' + this.#hostname + port + this.#pathname
+        let baseUrl, hash;
+        [baseUrl, newQueries] = _aaURI.lookup(s, this.queries, newQueries)
+        if (this.#hash) {
+            [hash, newQueries] = _aaURI.lookup(this.#hash, this.queries, newQueries)
+        }
+        if (baseUrl.indexOf('http:') === 0 && baseUrl.indexOf(':80/')) {
+            baseUrl = baseUrl.replace(':80/', '/')
+        }
+        if (baseUrl.indexOf('https:') === 0 && baseUrl.indexOf(':443/')) {
+            baseUrl = baseUrl.replace(':443/', '/')
+        }
+        return [baseUrl, newQueries, hash]
+    }
 
     // 预留
     static encode(s) {
-        return encodeURIComponent(uri)
+        return encodeURIComponent(s)
     }
 
     // 多次转码后，解析到底
@@ -61,6 +172,33 @@ class _aaURI {
     }
 
     /**
+     * Split host to hostname and port
+     * @param {string} host
+     * @return {[string,string ]}
+     */
+    // e.g. luexu.com:8080, {hostname}:{port:uint},    {aab}.com:{port:uint}
+    static splitHost(host) {
+        const matches = [...host.matchAll(/{[\w:]+}/g)]
+        if (matches.length === 0) {
+            return host.split(':')
+        }
+
+        for (let i = 0; i < matches.length; i++) {
+            host = host.replace(matches[i][0], "#" + i)  // # is not allowed in host
+        }
+        let [hostname, port] = host.split(':')
+        if (!port) {
+            return [hostname, port]
+        }
+
+        for (let i = 0; i < matches.length; i++) {
+            hostname = hostname.replace('#' + i, matches[i][0])
+            port = port.replace('#' + i, matches[i][0])
+        }
+        return [hostname, port]
+    }
+
+    /**
      *
      * @param url
      */
@@ -70,31 +208,29 @@ class _aaURI {
 
     /**
      * @param {string} url
-     * @param {{[key:string]:*}} [params]
-     * @param {string} [fragment]
+     * @param {map|{[key:string]:*}} [params]
+     * @param {string} [hash]
      */
-    constructor(url = window.location.href, params, fragment) {
-        this.init(url, params, fragment)
+    constructor(url = window.location.href, params, hash) {
+        this.init(url, params, hash)
     }
 
 
     /*
+        {protocol:string}//{hostname}:{port:uint}/{path1:string}/{path2:int}#{hash}
      ① //luexu.com
      ② //luexu.com/hi
      ③ https://luexu.com
-     ④ http://192.168.0.1
+     ④ http://192.168.0.1:8080
      ⑤ //localhost   --> https://localhost
      ⑥ /home/me  --> https://xxx.xx/home/me
-     @TODO 支持相对路径
      */
     /**
      * @param {string} url
      * @param {{[key:string]:*}} [params]
-     * @param {string} [fragment]
+     * @param {string} [hash]
      */
-    init(url = location.href, params, fragment) {
-
-        // 绝对路径URL
+    init(url = location.href, params, hash = '') {
         if (url.substring(0, 1) === '/') {
             if (url.substring(1, 2) === '/') {
                 url = window.location.protocol + url
@@ -103,29 +239,21 @@ class _aaURI {
             }
         }
 
-        let b = url.split('?');
-        let baseUrl = b[0];
-        let qs = b.length > 1 ? b[1] : ''
-        if (typeof fragment === "undefined") {
-            if (qs.indexOf('#') > 0) {
-                b = qs.split('#')
-                qs = b[0]
-                fragment = b[1]
+        let b = url.split('?')
+        let baseUrl = b[0]
+        let queryStr = b.length > 1 ? b[1] : ''
+        // fragment
+        if (typeof hash === "undefined") {
+            if (queryStr.indexOf('#') > 0) {
+                b = queryStr.split('#')
+                queryStr = b[0]
+                hash = b[1]
             }
         }
-        b = baseUrl.split('//');
-        let protocol = b[0]  // https:
-        let scheme = protocol.replace(':', '')    // https
-
-        let hierarchicalPart = b.length > 1 ? b[1] : ''
-        b = hierarchicalPart.indexOf('/')
-
-        let authority = hierarchicalPart.substring(0, b)
-        let path = hierarchicalPart.substring(b)
-
+        // query string
         let queries = new map();
-        if (qs.length > 1) {
-            let q = qs.split('&');
+        if (queryStr.length > 1) {
+            let q = queryStr.split('&');
             for (let i = 0; i < q.length; i++) {
                 if (q[i] === '') {
                     continue;
@@ -134,15 +262,26 @@ class _aaURI {
                 queries.set(p[0], p.length > 1 ? _aaURI.decode(p[1]) : '')
             }
         }
-        this.baseUrl = baseUrl   // ? 之前的部分
-        this.scheme = scheme  //  e.g. http/tcp  or empty
-        this.protocol = protocol
-        this.hierarchicalPart = hierarchicalPart
-        this.authority = authority
-        this.path = path
-        //this.queryString = queryString
+
+        // must greater than 0,  a://xxxx
+        if (baseUrl.indexOf('://') <= 0) {
+            return
+        }
+        b = baseUrl.split('://')
+        let protocol = b[0]    //  e.g. {scheme:string}, https:, tcp:,  or empty
+        let hierPart = b[1]
+        const x = hierPart.indexOf('/')
+        const host = hierPart.substring(0, x)
+        const pathname = hierPart.substring(x)
+        const [hostname, port] = _aaURI.splitHost(host)
+
+        this.#protocol = protocol  //  e.g. {scheme:string}: http/tcp  or empty
+        this.hostname = hostname
+        this.port = port
+        this.#pathname = pathname
         this.queries = queries
-        this.fragment = fragment
+
+        this.hash = string(hash)
 
         // 一定要在 queries 实例化后
         if (len(params) > 0) {
@@ -154,50 +293,28 @@ class _aaURI {
 
     valid() {
         // 判定是否还有未替换的url param
-        return /\/{[\w:-]+}/.test(this.baseUrl)
+        return /\/{[\w:-]+}/.test(this.#hieraPart)
     }
 
     /*
 
 */
 
-    /**
-     *
-     * 根据 iris 路由规则来
-     * /api/v1/{name:uint64}/hello
-     * /api/v1/{name}
-     */
-    lookup() {
-        let url = this.baseUrl
-        let queries = this.queries
-        const ps = url.match(/{[\w:-]+}/ig)
-        if (ps === null) {
-            return [url, queries]
-        }
-//  对data进行了局部删除，一定要深度拷贝一下，避免一些不必要的麻烦
-        let q = queries.clone()
-        for (let i = 0; i < ps.length; i++) {
-            let m = ps[i]
-            let k = m.replace(/^{([\w-]+)[:}].*$/ig, '$1')
-            let v = q.get(k)
-            if (v !== "") {
-                url = url.replace(new RegExp(m, 'g'), v)
-                q.delete(k)
-            }
-        }
-        return [url, q]
-    }
 
     toString() {
-        let [s, q] = this.lookup()
-        const qs = q.toQueryString()
+        let [base, queries, hash] = this.parse()
+        const qs = queries.toQueryString()
         if (qs) {
-            s += '?' + qs
+            base += '?' + qs
         }
-        if (this.fragment) {
-            s += '#' + this.fragment
+        if (hash) {
+            base += '#' + this.hash
         }
-        return s
+        return base
+    }
+
+    toJSON() {
+        return this.toString()
     }
 
     sort() {
@@ -230,6 +347,11 @@ class _aaURI {
         return this
     }
 
+    /**
+     *
+     * @param {map|{[key:string]:*}} params
+     * @return {_aaURI}
+     */
     extend(params) {
         this.queries.extend(params)
         return this

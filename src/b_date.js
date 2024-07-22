@@ -1,6 +1,4 @@
-/**
- * @import C.MinDatetime, C.MaxDatetime
- */
+// @import C.MinDatetime, C.MaxDatetime
 
 class _aaDateZero extends Date {
     name = 'aa-date-zero'

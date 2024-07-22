@@ -1,6 +1,7 @@
-class percent extends decimal {
-    name = 'aa-percent'
-    type = "percent"
+// @import C.MoneyScale
+class money extends decimal {
+    name = 'aa-money'
+    type = "money"
 
     /**
      *
@@ -9,9 +10,12 @@ class percent extends decimal {
      */
     constructor(vv, vk = void '') {
         super(vv, vk)
-        this.scaleMax = C.PercentScale
-        this.scale = C.PercentScale
+        this.scaleMax = C.MoneyScale
+        this.scale = C.MoneyScale
         this.rounder = Math.round
     }
 
+    toCent() {
+
+    }
 }

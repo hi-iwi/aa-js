@@ -318,10 +318,17 @@ function len(vv, kk) {
     }
     // 这个作为基础函数，不要被其他函数调用。特别是 AaLib.Val() / AaType.Of()，否则死循环调用
     if (typeof v === "number") {
-        v = v + ''
+        return String(v).length
     }
     if (Array.isArray(v)) {
         return v.length    // s.match() 必须不可用下面，否则长度会多
+    }
+    // 特定 .len(): number
+    if (typeof v.len === "function") {
+        const l = v.len()
+        if (typeof l === "number") {
+            return l
+        }
     }
     return Object.keys(v).length  // 支持string,array, object
 }

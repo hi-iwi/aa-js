@@ -1,14 +1,14 @@
-/**
- * @import _aaStorage
- */
+// @import _aaStorageFactor, _aaURI
 
-/**
- * Ajax 包括：XMLHttpRequest 、fetch 等
- */
-class _aaFetch {
-    name = 'aa-fetch'
-    // @type _aaStorage
+class _aaRawFetch {
+    name = 'aa-raw-fetch'
+
+    // @type _aaStorageFactor
     #storage
+    // @type _aaURI
+    #uri
+
+
     #headers = {
         'Content-Type': "application/json",
         'Accept'      : "application/json"
@@ -16,12 +16,12 @@ class _aaFetch {
 
     #requestInit = {
         // 对 RequestInit 扩展了:
-        auth: true,    //  check access_token before fetching
+        mustAuthed: false,    //  must validate access_token before fetching
         // @param {AError} err
         onAuthError        : err => alert(err.toString()),
-        data               : {}, // 扩展了一个 data, map, body所有属性
+        data               : null, // 扩展了一个 data, map, body所有属性
         debounce           : true,   // debounce 节流：n秒内只运行一次，重复操作无效；throttle 防抖：n秒后执行事件，期间被重复触发，则重新计时
-        dictionaries       : {},  // 扩展了一个字典
+        dictionaries       : null,  // 扩展了一个字典
         preventTokenRefresh: false,
 
         // RequestInit:
@@ -41,11 +41,12 @@ class _aaFetch {
     }
 
     /**
-     *
      * @param {_aaStorageFactor} storage
+     * @param {_aaURI} uri
      */
-    constructor(storage = new _aaStorageFactor()) {
+    constructor(storage, uri) {
         this.#storage = storage
+        this.#uri = uri
     }
 
     initGlobalHeaders(headers) {
@@ -64,7 +65,7 @@ class _aaFetch {
     #fillUpHeaders(headers) {
         // 填充以  X- 开头的自定义header
         headers = struct(headers)
-        this.#storage.forEachAll((key, value) => {
+        this.#storage.forEachEntire((key, value) => {
             if (key.indexOf('X-') === 0) {
                 headers[key] = value
             }
@@ -81,45 +82,100 @@ class _aaFetch {
         return headers
     }
 
+    // 默认对 image/images/audio/audios/video/videos 等类型进行替换
+    fillSettings(settings) {
+        settings = map.fillUp(settings, this.#requestInit)
+        settings.headers = this.#fillUpHeaders(settings.headers)
+        return settings
+    }
+
+    // @TODO support other content-types
+    serializeData(data, contentType = 'application/json') {
+        //  这里会识别对象的 .toJSON() 方法
+        return JSON.stringify(data)
+    }
+
+
+    handleData(url, settings) {
+        const data = settings.data
+        if (settings.body || len(data) === 0) {
+            return [url, settings]
+        }
+
+        // String, ArrayBuffer, TypedArray, DataView, Blob, File, URLSearchParams, FormData
+        if (!atype.isStruct(data)) {
+            settings.body = data
+            return settings
+        }
+        const contentType = string(settings.headers, 'Content-Type')
+        settings.body = this.serializeData(data, contentType)
+    }
+
+    lookup(method, url, data) {
+        if (len(data) === 0) {
+            return [url, data]
+        }
+
+        /*
+           根据 iris 路由规则来
+            /api/v1/{name:uint64}/hello
+            /api/v1/{name}
+          */
+        // const uri =
+        // let queries;
+        // [url, queries] = new this.#uri(url, data).lookup()
+        // data = queries.object
+        // 判定是否还有未替换的url param
+        // if (/\/{[\w:]+}/.test(url)) {
+        //     AaEffect.Alert("unreplaced url parameters " + params.url)
+        //     return
+        // }
+
+
+        if (len(data) === 0) {
+            return [url, data]
+        }
+        if (["GET", "HEAD", "OPTION"].includes(method)) {
+            for (let [k, v] of Object.entries(data)) {
+                if (Array.isArray(v)) {
+                    data[k] = v.join(",")  // GET 下，数组用逗号隔开模式
+                }
+            }
+
+            url = new this.#uri(url, data).toString()
+            data = null   // 这里不重置，会传递两次
+        }
+        return [url, data]
+    }
+
     /**
      *
-     * @param {RequestInfo} input
-     * @param {{[key:string]:*}} [init]
+     * @param {RequestInfo} url
+     * @param {{[key:string]:any}|*} [settings]
      * 对 RequestInit 扩展了:
-     *      auth:true      自动判断并添加access_token
+     *      mustAuthed:false      must validate access_token before fetching
      *      onAuthError: err:AError=>void
      *      data:{}
-     *      debounce:bool    debounce 节流：n秒内只运行一次，重复操作无效；throttle 防抖：n秒后执行事件，期间被重复触发，则重新计时
+     *      debounce:true    debounce 节流：n秒内只运行一次，重复操作无效；throttle 防抖：n秒后执行事件，期间被重复触发，则重新计时
      *      dictionaries:{}
      *      preventTokenRefresh:false
      *
      * RequestInit:
      *      method: "GET"
+     * @param {function} [hook]
      * @return {Promise<Response>}
      */
-    async fetch(input, init) {
-        init = struct(init)
-        init.headers = this.#fillUpHeaders(struct(init, 'headers'))
+    async fetch(url, settings, hook) {
 
-        map.fillUp(init, this.#requestInit)
+        settings = this.fillSettings(settings)
 
-        if (!init.preventTokenRefresh) {
-            // try to refresh access token
-
+        if (hook) {
+            const h = hook(settings)
+            if (h instanceof Promise) {
+                return h
+            }
         }
-        if (init.auth) {
-            // check access token before fetching
-
-        }
-
-
-        let method = init['method']
-        if (len(init, 'data') > 0) {
-
-        }
-
-
-        const response = await fetch(url, init)
+        const response = await fetch(url, settings)
         return response.json().then(resp => {
             // 捕获返回数据，修改为 resp.data
             const err = new AError(resp['code'], resp['msg'])
