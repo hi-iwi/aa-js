@@ -1,29 +1,13 @@
-# aa.js  基础库
+# aa.js  AaGo 后端 JS SDK
 
 A Javascript SDK of AaGo
 
 这里要依赖于抽象，而不具体实现。实现尽量通过外部注入。
 
-## Entry
-
-```javascript
-const aa = new Aa()
-aa.storage.cookie.init(cookieStorage)
-aa.fetch.initGlobalHeaders()
-aa.oss.init
-
-
-```
-
 ## 入口方法
 
 * aa = new Aa()
-    * .uri: typeof _aaUri
-    * .math: typeof _aaMath
-    * .env: _aaEnv
-    * .url(): _aaUrl
-    * .fetch(): _aaFetch
-    * .apollo(): _aaApollo
+
 
 ## base class interface
 

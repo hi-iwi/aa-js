@@ -54,12 +54,12 @@ class map {
     }
 
     /**
-     * Clone an object 深度复制一个对象
+     * Clone an object 深度复制一个对象；浅复制，就自行  newObj  = {...obj}
      * @param obj
      * @returns {any}
      */
     static clone(obj) {
-        return JSON.parse(JSON.stringify(obj))
+        return obj ? JSON.parse(JSON.stringify(obj)) : obj
     }
 
     /**
@@ -119,7 +119,7 @@ class map {
      * @returns {{[key:string]:*}}      C = A ∪ B
      */
     static spread(target, source) {
-        return {...struct(target), ...struct(source)} // Object.assign({}, target, ...sources)
+        return Object.assign({}, struct(target), struct(source))// 等同于{...struct(target), ...struct(source)}
     }
 
     /**

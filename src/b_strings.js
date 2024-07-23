@@ -1,8 +1,8 @@
 // @import atype
 
 // a static class
-class slice {
-    name = "aa-slice"
+class strings {
+    name = "aa-strings"
 
     /**
      * Replaces the last matched text in a string, using a regular expression or search string.
@@ -79,7 +79,7 @@ class slice {
     }
 
     static countLen(s, lentype = "utf8") {
-        return lentype === "utf8" ? Math.ceil(slice.utf8Len(s) / 3) : string(s).length
+        return lentype === "utf8" ? Math.ceil(strings.utf8Len(s) / 3) : string(s).length
     }
 
     /**
@@ -96,7 +96,7 @@ class slice {
         }
         let s = '', l = 0;
         for (let i = 0; i < str.length; i++) {
-            l += slice.utf8Len(str[i]);
+            l += strings.utf8Len(str[i]);
             if (l >= length) {
                 break;
             }
@@ -119,7 +119,7 @@ class slice {
         }
         let ss = '', l = 0;
         for (let i = 0; i < s.length; i++) {
-            l += slice.placeLen(s[i]);
+            l += strings.placeLen(s[i]);
             if (l >= len) {
                 break;
             }
@@ -135,7 +135,7 @@ class slice {
      * @return {([]|{}|null)}
      * @constructor
      */
-    static JSON(o) {
+    static unjson(o) {
         try {
             if (typeof o !== "string") {
                 return o

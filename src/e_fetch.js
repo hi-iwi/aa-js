@@ -8,9 +8,14 @@ class _aaFetch {
     #rawFetch
     // @type _aaAuth
     #auth
+    // @type function  外部可以修改
     #unauthorizedHandler
+    // @type function  外部可以修改
+    #defaultAErrorHandler
     // @type typeof _aaURI
     #uri
+
+    enableRedirect = true  // 是否允许自动跳转
 
     /**
      * 对 _aaRawFetch settings 扩展
@@ -28,25 +33,29 @@ class _aaFetch {
      * @param {_aaURI} uri
      * @param {_aaRawFetch} rawFetch
      * @param {_aaAuth} auth
-     * @param {function} [unauthorizedHandler]
      */
-    constructor(uri, rawFetch, auth, unauthorizedHandler) {
+    constructor(uri, rawFetch, auth) {
         this.#uri = uri
         this.#rawFetch = rawFetch
         this.#auth = auth
-        this.#unauthorizedHandler = typeof unauthorizedHandler === "function" ? unauthorizedHandler : void nif
     }
 
-    setUnauthorizedHandler(unauthorizedHandler) {
-        this.#unauthorizedHandler = typeof unauthorizedHandler === "function" ? unauthorizedHandler : void nif
+    initUnauthorizedHandler(handler){
+        this.#unauthorizedHandler  =handler
+        return this
     }
-
+    initDefaultAErrorHandler(handler){
+        this.#defaultAErrorHandler = handler
+        return this
+    }
     initGlobalHeaders(headers) {
         this.#rawFetch.initGlobalHeaders(headers)
+        return this
     }
 
     addGlobalHeaders(headers) {
         this.#rawFetch.addGlobalHeaders(headers)
+        return this
     }
 
 
@@ -69,6 +78,7 @@ class _aaFetch {
      *
      * @param url
      * @param settings
+     * @param {boolean} noThrown?  No Error/AError thrown
      * @return {*}
      * @exmaple async mode 异步模式，返回结果顺序不固定
      *  aa.fetch.fetch(urlA).then().catch()
@@ -84,21 +94,41 @@ class _aaFetch {
      *  }
      *  x()
      */
-    fetch(url, settings) {
+    fetch(url, settings, noThrown = false) {
         settings = map.fillUp(settings, this.#defaultSettingsExt)
         const response = this.#rawFetch.fetch(url, settings, this.fetchHook)
         return response.then(data => data).catch(err => {
-            if (err.isRetryWith()) {
+            if (this.enableRedirect && err.isRetryWith()) {
                 location.href = err.message // 特殊跳转
-            } else if (err.isUnauthorized() && typeof this.#unauthorizedHandler === "function") {
-                this.#unauthorizedHandler()
+                return
+            }
+            if (err.isUnauthorized() && typeof this.#unauthorizedHandler === "function") {
+                if (this.#unauthorizedHandler(err)) {
+                    return
+                }
+            }
+            if (noThrown && typeof this.#defaultAErrorHandler === "function") {
+                if (this.#defaultAErrorHandler(err)) {
+                    return
+                }
             }
             throw err
         })
     }
-    status(url,settings){
+
+    /**
+     * Fetch without Error/AError thrown
+     * @param url
+     * @param settings
+     * @return {*}
+     */
+    fetchN(url, settings) {
+        return this.fetch(url, settings, true)
+    }
+
+    statusN(url, settings) {
         settings = map.fillUp(settings, this.#defaultSettingsExt)
-        const response = this.#rawFetch.status(url, settings, this.fetchHook)
+        const response = this.#rawFetch.statusN(url, settings, this.fetchHook)
         return response.then(code => code)   // 不用 catch error
     }
 
@@ -116,34 +146,39 @@ class _aaFetch {
      * @param {string} url
      * @param {{[key:string]:any}} [params]
      * @param {{[key:string]:any}} [dictionary]
+     * @param {boolean} noThrown?  No Error/AError thrown
      * @return {Promise<*>}
      */
-    get(url, params, dictionary) {
+    get(url, params, dictionary, noThrown = false) {
         const settings = {
             method    : "GET",
             dictionary: dictionary,
         }
         url = new this.#uri(url, params)
-        return this.fetch(url, settings)
+        return this.fetch(url, settings, noThrown)
     }
 
+    getN(url, params, dictionary) {
+        return this.get(url, params, dictionary, true)
+    }
 
     /**
-     * HTTP HEAD
+     * HTTP HEAD without Error/AError thrown
      * @param {string} url
      * @param {{[key:string]:any}} [params]
      * @param {{[key:string]:any}} [dictionary]
+     * @param {boolean} noThrown?  No Error/AError thrown
      * @return {Promise<*>}
      * @warn Warning: A response to a HEAD method should not have a body. If it has one anyway, that body must be ignored
      *  HEAD只返回 resp['code'] 或 HTTP状态码，忽略 resp['data'] 数据
      */
-    head(url, params, dictionary) {
+    headN(url, params, dictionary, noThrown = false) {
         const settings = {
             method    : 'HEAD',
             data      : data,
             dictionary: dictionary,
         }
-        return this.status(url, settings)     // 不用 catch error
+        return this.statusN(url, settings, noThrown)     // 不用 catch error
     }
 
     /**
@@ -151,16 +186,21 @@ class _aaFetch {
      * @param {string} url
      * @param {{[key:string]:any}} [params]
      * @param {{[key:string]:any}} [dictionary]
+     * @param {boolean} noThrown?  No Error/AError thrown
      * @return {Promise<*>}
      */
-    delete(url, params, dictionary) {
+    delete(url, params, dictionary, noThrown = false) {
         const settings = {
             method    : 'DELETE',
             data      : data,
             dictionary: dictionary,
             mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
-        return this.fetch(url, settings)
+        return this.fetch(url, settings, noThrown)
+    }
+
+    deleteN(url, params, dictionary) {
+        return this.delete(url, params, dictionary, true)
     }
 
     /**
@@ -168,16 +208,21 @@ class _aaFetch {
      * @param {string} url
      * @param {{[key:string]:any}} [data]
      * @param {{[key:string]:any}} [dictionary]
+     * @param {boolean} noThrown?  No Error/AError thrown
      * @return {Promise<*>}
      */
-    post(url, data, dictionary) {
+    post(url, data, dictionary, noThrown = false) {
         const settings = {
             method    : 'POST',
             data      : data,
             dictionary: dictionary,
             mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
-        return this.fetch(url, settings)
+        return this.fetch(url, settings, noThrown)
+    }
+
+    postN(url, data, dictionary) {
+        return this.post(url, data, dictionary, true)
     }
 
     /**
@@ -185,16 +230,21 @@ class _aaFetch {
      * @param {string} url
      * @param {{[key:string]:any}} [data]
      * @param {{[key:string]:any}} [dictionary]
+     * @param {boolean} noThrown?  No Error/AError thrown
      * @return {Promise<*>}
      */
-    put(url, data, dictionary) {
+    put(url, data, dictionary, noThrown = false) {
         const settings = {
             method    : 'PUT',
             data      : data,
             dictionary: dictionary,
             mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
-        return this.fetch(url, settings)
+        return this.fetch(url, settings, noThrown)
+    }
+
+    putN(url, data, dictionary) {
+        return this.put(url, data, dictionary, true)
     }
 
     /**
@@ -202,15 +252,20 @@ class _aaFetch {
      * @param {string} url
      * @param {{[key:string]:any}} [data]
      * @param {{[key:string]:any}} [dictionary]
+     * @param {boolean} noThrown?  No Error/AError thrown
      * @return {Promise<*>}
      */
-    patch(url, data, dictionary) {
+    patch(url, data, dictionary, noThrown = false) {
         const settings = {
             method    : 'PATCH',
             data      : data,
             dictionary: dictionary,
             mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
-        return this.fetch(url, settings)
+        return this.fetch(url, settings, noThrown)
+    }
+
+    patchN(url, data, dictionary) {
+        return this.patch(url, data, dictionary, true)
     }
 }

@@ -160,11 +160,6 @@ class AaImgSrc {
     height
     allowed
 
-    // aaFetch 层会处理该数据
-    toJSON() {
-        return this.path
-    }
-
 
     /**
      *
@@ -301,12 +296,16 @@ class AaImgSrc {
         }
     }
 
+    // aaFetch 层会处理该数据
+    toJSON() {
+        return this.path
+    }
+
 }
 
 
 class _aaOSS {
     name = 'aa-oss'
-
 
     constructor() {
     }

@@ -301,13 +301,13 @@ class _aaRawFetch {
     }
 
     /**
-     * HTTP status code
+     * Get HTTP status code without Error/AError thrown
      * @param {RequestInfo} url
      * @param {{[key:string]:any}|*} [settings]
      * @param {function} [hook]
      * @return {Promise<*>}
      */
-    status(url, settings, hook) {
+    statusN(url, settings, hook) {
         const mw = this.middleware(url, settings, hook)
         if (mw instanceof Promise) {
             return mw
