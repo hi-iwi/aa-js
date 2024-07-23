@@ -54,17 +54,20 @@ class _aaURI {
 
 
     get protocol() {
-        const [protocol, ,] = _aaURI.lookup(this.#protocol, this.queries)
+        const self = _aaURI
+        const [protocol, ,] = self.lookup(this.#protocol, this.queries)
         return protocol.toLowerCase()
     }
 
     get hostname() {
-        const [hostname, ,] = _aaURI.lookup(this.#hostname, this.queries)
+        const self = _aaURI
+        const [hostname, ,] = self.lookup(this.#hostname, this.queries)
         return hostname
     }
 
     get port() {
-        const [port, ,] = _aaURI.lookup(this.#port, this.queries)
+        const self = _aaURI
+        const [port, ,] = self.lookup(this.#port, this.queries)
         return port
     }
 
@@ -85,12 +88,14 @@ class _aaURI {
     }
 
     get pathname() {
-        const [pathname, ,] = _aaURI.lookup(this.#pathname, this.queries)
+        const self = _aaURI
+        const [pathname, ,] = self.lookup(this.#pathname, this.queries)
         return pathname
     }
 
     get hash() {
-        const [hash, ,] = _aaURI.lookup(this.#hash, this.queries)
+        const self = _aaURI
+        const [hash, ,] = self.lookup(this.#hash, this.queries)
         return hash
     }
 
@@ -144,13 +149,14 @@ class _aaURI {
      * @return {{baseUrl: string, search: string, ok: ok, queries: map, url: string, hash: string}}
      */
     parse() {
+        const self = _aaURI
         let newQueries = this.queries.clone(false)
         let port = this.#port ? ':' + this.#port : ''
         let s = this.#protocol + '//' + this.#hostname + port + this.#pathname
         let baseUrl, hash, ok, ok2;
-        [baseUrl, newQueries, ok] = _aaURI.lookup(s, this.queries, newQueries)
+        [baseUrl, newQueries, ok] = self.lookup(s, this.queries, newQueries)
         if (this.#hash) {
-            [hash, newQueries, ok2] = _aaURI.lookup(this.#hash, this.queries, newQueries)
+            [hash, newQueries, ok2] = self.lookup(this.#hash, this.queries, newQueries)
             if (!ok2) {
                 hash = ''
             }
@@ -255,6 +261,7 @@ class _aaURI {
      * @param {string} [hash]
      */
     init(url = location.href, params, hash = '') {
+        const self = _aaURI
         if (url.substring(0, 1) === '/') {
             if (url.substring(1, 2) === '/') {
                 url = window.location.protocol + url
@@ -283,7 +290,7 @@ class _aaURI {
                     continue;
                 }
                 let p = q[i].split('=');
-                queries.set(p[0], p.length > 1 ? _aaURI.decode(p[1]) : '')
+                queries.set(p[0], p.length > 1 ? self.decode(p[1]) : '')
             }
         }
 
@@ -297,7 +304,7 @@ class _aaURI {
         const x = hierPart.indexOf('/')
         const host = hierPart.substring(0, x)
         const pathname = hierPart.substring(x)
-        const [hostname, port] = _aaURI.splitHost(host)
+        const [hostname, port] = self.splitHost(host)
 
         this.#protocol = protocol  //  e.g. {scheme:string}: http/tcp  or empty
         this.hostname = hostname

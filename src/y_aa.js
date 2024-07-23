@@ -37,7 +37,7 @@ class Aa {
         this.storage = new _aaStorageFactor()
 
         const rawFetch = new _aaRawFetch(this.storage, this.uri)
-        this.fetch = new _aaFetch(rawFetch, this.auth)
+        this.fetch = new _aaFetch(this.uri, rawFetch, this.auth)
         this.auth = new _aaAuth(this.storage, rawFetch)
 
         this.oss = new _aaOSS()

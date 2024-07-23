@@ -61,8 +61,10 @@ const AErrorEnum = {
     NoRows          : 444,
     Locked          : 423,
     FailedDependency: 424,// 之前发生错误
+    TooEarly        : 425, // 表示服务器不愿意冒险处理可能被重播的请求。
+    TooManyRequests:429, // 用户在给定的时间内发送了太多请求（"限制请求速率"）
     RetryWith       : 449,  // 特殊错误码，msg 用于跳转
-    Illegal         : 451,// 该请求因法律原因不可用。
+    Illegal         : 451,// 该请求因政策法律原因不可用。
 
     InternalServerError   : 500,
     NotImplemented        : 501, // 服务器不支持当前请求所需要的某个功能。当服务器无法识别请求的方法，
@@ -220,9 +222,21 @@ class AError extends Error {
         return new AError(AErrorEnum.ServerException, "", dict)
     }
 
-    // 创建的时候更接近业务，而输出的时候往往由框架或底层完成。因此字典创建时期提供更合理
+
+    /**
+     *
+     * @param code
+     * @param {string|{[key:string]:string}} [msg]
+     * @param {{[key:string]:string}} [dict] 创建的时候更接近业务，而输出的时候往往由框架或底层完成。因此字典创建时期提供更合理
+     * @example
+     *  new AError(code)
+     *  new AError(code, dict)        new AError(400, {})
+     */
     constructor(code, msg, dict) {
-        msg = string(msg)
+        if (!dict && typeof msg === "object") {
+            dict = msg
+            msg = ''
+        }
         super(msg)
         this.code = code
         this.message = msg
@@ -326,6 +340,12 @@ class AError extends Error {
         return this.is(AErrorEnum.FailedDependency)
     }
 
+    isTooEarly() {
+        return this.is(AErrorEnum.TooEarly)
+    }
+    isTooManyRequests() {
+        return this.is(AErrorEnum.TooManyRequests)
+    }
     isRetryWith() {
         return this.is(AErrorEnum.RetryWith)
     }

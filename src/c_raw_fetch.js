@@ -19,15 +19,22 @@ class _aaRawFetch {
         'Content-Type': "application/json",
         'Accept'      : "application/json"
     }
-
+    /**
+     *
+     * @type {{redirect: string, data: null, method: string, referrerPolicy: string, credentials: string, keepalive: boolean, mustAuthed: boolean, preventTokenRefresh: boolean, body: null, onAuthError: function(*): void, mode: string, debounce: boolean, referrer: string, dictionary: null, signal: null}}
+     */
     #requestInit = {
         // 对 RequestInit 扩展了:
         mustAuthed: false,    //  must validate access_token before fetching
         // @param {AError} err
-        onAuthError        : err => alert(err.toString()),
-        data               : null, // 扩展了一个 data, map
-        debounce           : true,   // debounce 节流：n秒内只运行一次，重复操作无效；throttle 防抖：n秒后执行事件，期间被重复触发，则重新计时
-        dictionaries       : null,  // 扩展了一个字典
+        onAuthError: err => alert(err.toString()),
+        data       : null, // 扩展了一个 data, map
+        /**
+         * debounce 防抖：延时间隔内，触发相同事件，则忽略之前未执行的事件，重新计算间隔
+         * throttle 节流：每个延时间隔内，相同事件无论触发多少次，都仅执行一次
+         */
+        debounce           : true,
+        dictionary         : null,  // 扩展了一个字典
         preventTokenRefresh: false,
 
         // RequestInit:
@@ -125,27 +132,25 @@ class _aaRawFetch {
         return JSON.stringify(data)
     }
 
-
-    // 默认对 image/images/audio/audios/video/videos 等类型进行替换
-    fillSettings(settings) {
+    /**
+     *
+     * @param url
+     * @param {{redirect: string, data: null, method: string, referrerPolicy: string, credentials: string, keepalive: boolean, mustAuthed: boolean, preventTokenRefresh: boolean, body: null, onAuthError: function(*): void, mode: string, debounce: boolean, referrer: string, dictionary: null, signal: null}|*} settings
+     * @return {(*|Object)[]|(*|Object)[]}
+     */
+    formatSettings(url, settings) {
         settings = map.fillUp(settings, this.#requestInit)
         settings.headers = this.#fillUpHeaders(settings.headers)
-        return settings
-    }
-
-    formatSettings(url, settings) {
+        settings.method = settings.method.toUpperCase()
         const data = settings.data
         if (len(data) === 0) {
             return [url, settings]
         }
-
         let queries;
         [url, queries] = this.lookup(settings.method, url, data, !!settings.body)
-
         if (len(queries) > 0 && !settings.body) {
             const contentType = string(settings.headers, 'Content-Type')
             settings.body = this.serializeData(data, contentType)
-
         }
         return [url, settings]
     }
@@ -154,11 +159,11 @@ class _aaRawFetch {
      * @param {File} file
      * @return {string}
      */
-    fileChecksum(file) {
+    static fileChecksum(file) {
         return `#${file.size}|${file.type}|${file.lastModified}|${file.name}|${file.webkitRelativePath}`
     }
 
-    stringChecksum(s) {
+    static stringChecksum(s) {
         const length = s.length
         if (length < 1024) {
             return `#${length}|${s}`
@@ -176,6 +181,7 @@ class _aaRawFetch {
      * @todo support ArrayBuffer, TypedArray, DataView, Blob, File, URLSearchParams, FormData
      */
     static generateChecksum(method, url, body) {
+        const self = _aaRawFetch
         let checksum = `${method} ${url}`
         if (!body) {
             return checksum
@@ -183,16 +189,16 @@ class _aaRawFetch {
 
         let content = ''
         if (body instanceof File) {
-            content = this.fileChecksum(body)
+            content = self.fileChecksum(body)
         } else if (body instanceof FormData) {
             for (const pair of body) {
-                let v = pair[1] instanceof File ? this.fileChecksum(pair[1]) : pair[1]
+                let v = pair[1] instanceof File ? self.fileChecksum(pair[1]) : pair[1]
                 content = '&' + pair[0] + '=' + v
             }
             content = content.substring(1)
             content = `#${content.length}|${content}`
         } else if (typeof body === "string") {
-            content = this.stringChecksum(body)
+            content = self.stringChecksum(body)
         }
         return `${method} ${url} {${content}}`
     }
@@ -214,32 +220,19 @@ class _aaRawFetch {
     }
 
     debounce(method, url, body) {
-        const checksum = _aaRawFetch.generateChecksum(method, url, body)
+        const self = _aaRawFetch
+        this.autoClean()
+
+        const checksum = self.generateChecksum(method, url, body)
         // 0.4秒内不能重复提交相同数据
-        // const now = new Date().valueOf()  // in milliseconds
-        // const prev = this.#requests.get(checksum)
-        // if (!prev || prev + 400*time.Millisecond > now) {
-        //     this.#requests.set(checksum, now)
-        //
-        //
-        //     return
-        // }
-        //
-        //
-        // this.autoClean()
-        //
-        // const duration = 1
-        // const now = Math.floor(new Date().getTime() / 400)
-        // const prev = intMax(_aaUrlsFetchedAt, hash)
-        // const dur = prev + duration - now
-        // if (dur > 0) {
-        //     XmlAjax.handleAjaxError(params, new AError(AErrorEnum.Timeout, '', dict))
-        //     console.error(params.method + " " + params.url + ' data: ' + d + " too frequent, please retry in " + dur + " seconds")
-        //     return
-        // }
-        //
-        // this.#requests.set(checksum, now)
-        // _aaUrlsFetchedAt[hash] = now
+        const interval = 400 * time.Millisecond
+        const now = new Date().valueOf()  // in milliseconds
+        const prev = this.#requests.get(checksum)
+        if (!prev || prev + interval > now) {
+            this.#requests.set(checksum, now)
+            return true
+        }
+        return false
     }
 
 
@@ -251,8 +244,8 @@ class _aaRawFetch {
      *      mustAuthed:false      must validate access_token before fetching
      *      onAuthError: err:AError=>void
      *      data:{}
-     *      debounce:true    debounce 节流：n秒内只运行一次，重复操作无效；throttle 防抖：n秒后执行事件，期间被重复触发，则重新计时
-     *      dictionaries:{}
+     *      debounce:true
+     *      dictionary:{}
      *      preventTokenRefresh:false
      *
      * RequestInit:
@@ -261,19 +254,23 @@ class _aaRawFetch {
      * @return {Promise<Response>}
      */
     async fetch(url, settings, hook) {
-        settings = this.fillSettings(settings)
+        [url, settings] = this.formatSettings(url, settings)
+
         if (hook) {
             const h = hook(settings)
             if (h instanceof Promise) {
                 return h
             }
         }
-        [url, settings] = this.formatSettings(url, settings)
         if (settings.debounce) {
-
+            if (!this.debounce(settings.method, url, settings.body)) {
+                return new Promise((resolve, reject) => {
+                    log.warn(`${settings.method} ${url} is blocked by debounce`)
+                    reject(new AError(AErrorEnum.TooManyRequests, settings.dictionary))
+                })
+            }
         }
-
-
+        url = new this.#uri(url, {"_stringify": booln(true)}).toString()
         const response = await fetch(url, settings)
         return response.json().then(resp => {
             // 捕获返回数据，修改为 resp.data
@@ -291,39 +288,5 @@ class _aaRawFetch {
         })
     }
 
-    /**
-     * @param {string} url
-     * @param {{[key:string]:*}} [params]
-     * @param {string} [fragment]
-     * @return {Promise<Response>}
-     */
-    async get(url, params, fragment) {
-        let headers = this.#fillUpHeaders(init)
-        url = new _aaURI(url, params, fragment).toString()
-        const response = await fetch(url, {
-            method     : "GET", // body:{},
-            cache      : "default", //
-            credentials: "omit", // omit 不发送cookie；same-origin 仅同源发送cookie；include 发送cookie
-            headers    : headers,
-
-            mode    : "no-cors",  // same-origin 同源；cors 允许跨域；no-cors; navigate
-            redirect: "error", // follow 自动跳转；manual 手动跳转；error 报错
-            // integrity:"",
-            referrerPolicy: "no-referrer",
-        })
-        return response.json().then(resp => {
-            // 捕获返回数据，修改为 resp.data
-            const err = new AError(resp['code'], resp['msg'])
-            if (err.isOK()) {
-                return resp['data']
-            }
-            throw err.addHeading(url)
-        }).catch(err => {
-            if (err instanceof AError) {
-                throw err
-            } else {
-                throw  new AError(AErrorEnum.ClientThrow, err.toString())
-            }
-        })
-    }
+ 
 }

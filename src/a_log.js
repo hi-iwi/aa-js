@@ -88,7 +88,8 @@ class log {
      * @param args
      */
     static print(style = "", ...args) {
-        if (_aaDebug.disabled()) {
+        const dbg = _aaDebug
+        if (dbg.disabled()) {
             return
         }
         if (!(style instanceof AaLoggerStyle)) {
@@ -97,7 +98,7 @@ class log {
         if (args.length === 0) {
             return
         }
-        if (_aaDebug.isAlert()) {
+        if (dbg.isAlert()) {
             log.alert(...args)
             return
         }

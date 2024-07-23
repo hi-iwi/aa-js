@@ -133,7 +133,7 @@ class map {
     static fillUp(target, defaults, handler) {
         target = struct(target)
         if (typeof handler !== "function") {
-            handler = (k, v, target, defaults) => {
+            handler = (k, v, target) => {
                 if (typeof target[k] === "undefined") {
                     target[k] = v
                 }
