@@ -13,29 +13,25 @@ class _aaRawFetch {
     #requests
 
     #cleanTimer
-
-
     #headers = {
         'Content-Type': "application/json",
         'Accept'      : "application/json"
     }
-    /**
-     *
-     * @type {{redirect: string, data: null, method: string, referrerPolicy: string, credentials: string, keepalive: boolean, mustAuthed: boolean, preventTokenRefresh: boolean, body: null, onAuthError: function(*): void, mode: string, debounce: boolean, referrer: string, dictionary: null, signal: null}}
-     */
-    #requestInit = {
+
+    #defaultSettings = {
         // 对 RequestInit 扩展了:
-        mustAuthed: false,    //  must validate access_token before fetching
+        // mustAuth: false,    //  must validate access_token before fetching
         // @param {AError} err
-        onAuthError: err => alert(err.toString()),
-        data       : null, // 扩展了一个 data, map
+        //onAuthError: err => alert(err.toString()),
+        data: null, // 扩展了一个 data, map
         /**
+         * 这里是后端限流、防止短时间重复提交的意思，只是借用防抖的名词，跟前端点击防抖不一样
          * debounce 防抖：延时间隔内，触发相同事件，则忽略之前未执行的事件，重新计算间隔
          * throttle 节流：每个延时间隔内，相同事件无论触发多少次，都仅执行一次
          */
-        debounce           : true,
-        dictionary         : null,  // 扩展了一个字典
-        preventTokenRefresh: false,
+        debounce  : true,
+        dictionary: null,  // 扩展了一个字典
+        //preventTokenRefresh: false,
 
         // RequestInit:
         body: null, //  String, ArrayBuffer, TypedArray, DataView, Blob, File, URLSearchParams, FormData
@@ -70,31 +66,6 @@ class _aaRawFetch {
         this.#headers = {...this.#headers, ...headers}
     }
 
-    /**
-     * Merge headers with global headers
-     * @param {{[key:string]}} [headers]
-     * @return {{[key:string]:*}}
-     */
-    #fillUpHeaders(headers) {
-        // 填充以  X- 开头的自定义header
-        headers = struct(headers)
-        this.#storage.forEachEntire((key, value) => {
-            if (key.indexOf('X-') === 0) {
-                headers[key] = value
-            }
-        })
-        map.fillUp(headers, this.#headers, (k, v, target) => {
-            if (!target.hasOwnProperty(k)) {
-                target[k] = v
-            } else {
-                if (typeof target[k] === "undefined" || target[k] === null) {
-                    delete target[k]
-                }
-            }
-        })
-        return headers
-    }
-
     /*
     根据 iris 路由规则来
     /api/v1/{name:uint64}/hello
@@ -105,7 +76,7 @@ class _aaRawFetch {
             return [url, null]
         }
 
-        if (isDataAllQueryString || ["GET", "HEAD", "OPTION"].includes(method)) {
+        if (isDataAllQueryString || ["GET", "HEAD", "OPTION", "DELETE"].includes(method)) {
             const p = new this.#uri(url, data).parse()
             if (!p.ok) {
                 throw new SyntaxError("miss parameter(s) in url: " + p.url)
@@ -132,14 +103,41 @@ class _aaRawFetch {
         return JSON.stringify(data)
     }
 
+
+    /**
+     * Merge headers with global headers
+     * @param {{[key:string]}} [headers]
+     * @return {{[key:string]:*}}
+     */
+    #fillUpHeaders(headers) {
+        // 填充以  X- 开头的自定义header
+        headers = struct(headers)
+        this.#storage.forEachEntire((key, value) => {
+            if (key.indexOf('X-') === 0) {
+                headers[key] = value
+            }
+        })
+        map.fillUp(headers, this.#headers, (k, v, target) => {
+            if (!target.hasOwnProperty(k)) {
+                target[k] = v
+            } else {
+                if (typeof target[k] === "undefined" || target[k] === null) {
+                    delete target[k]
+                }
+            }
+        })
+        return headers
+    }
+
+
     /**
      *
      * @param url
-     * @param {{redirect: string, data: null, method: string, referrerPolicy: string, credentials: string, keepalive: boolean, mustAuthed: boolean, preventTokenRefresh: boolean, body: null, onAuthError: function(*): void, mode: string, debounce: boolean, referrer: string, dictionary: null, signal: null}|*} settings
+     * @param {{[key:string]:any}} settings
      * @return {(*|Object)[]|(*|Object)[]}
      */
     formatSettings(url, settings) {
-        settings = map.fillUp(settings, this.#requestInit)
+        settings = map.fillUp(settings, this.#defaultSettings)   // 要允许外面扩展配置
         settings.headers = this.#fillUpHeaders(settings.headers)
         settings.method = settings.method.toUpperCase()
         const data = settings.data
@@ -235,25 +233,14 @@ class _aaRawFetch {
         return false
     }
 
-
     /**
      *
      * @param {RequestInfo} url
      * @param {{[key:string]:any}|*} [settings]
-     * 对 RequestInit 扩展了:
-     *      mustAuthed:false      must validate access_token before fetching
-     *      onAuthError: err:AError=>void
-     *      data:{}
-     *      debounce:true
-     *      dictionary:{}
-     *      preventTokenRefresh:false
-     *
-     * RequestInit:
-     *      method: "GET"
      * @param {function} [hook]
-     * @return {Promise<Response>}
+     * @return {[string, any ]|Promise}
      */
-    async fetch(url, settings, hook) {
+    middleware(url, settings, hook) {
         [url, settings] = this.formatSettings(url, settings)
 
         if (hook) {
@@ -265,20 +252,45 @@ class _aaRawFetch {
         if (settings.debounce) {
             if (!this.debounce(settings.method, url, settings.body)) {
                 return new Promise((resolve, reject) => {
-                    log.warn(`${settings.method} ${url} is blocked by debounce`)
+                    log.debug(`${settings.method} ${url} is blocked by debounce`)
                     reject(new AError(AErrorEnum.TooManyRequests, settings.dictionary))
                 })
             }
         }
         url = new this.#uri(url, {"_stringify": booln(true)}).toString()
-        const response = await fetch(url, settings)
-        return response.json().then(resp => {
+        return [url, settings]
+    }
+
+    /**
+     * Fetch data
+     * @param {RequestInfo} url
+     * @param {{[key:string]:any}|*} [settings]
+     * @param {function} [hook]
+     * @return {Promise<*>}
+     */
+    fetch(url, settings, hook) {
+        const mw = this.middleware(url, settings, hook)
+        if (mw instanceof Promise) {
+            return mw
+        }
+        [url, settings] = [mw[0], mw[1]]
+
+        // 如果使用 response = await fetch();  json= await response.json() 必须要await，阻塞等待response返回
+        // 这里就不用await最好，外面使用的时候，再自行 await
+        return fetch(url, settings).then(resp => {
+            let err = new AError(resp.status)
+            if (!err.isOK()) {
+                throw err
+            }
+            // @TODO 支持其他格式
+            return resp.json()
+        }).then(resp => {
             // 捕获返回数据，修改为 resp.data
             const err = new AError(resp['code'], resp['msg'])
-            if (err.isOK()) {
-                return resp['data']
+            if (!err.isOK()) {
+                throw err.addHeading(url)
             }
-            throw err.addHeading(url)
+            return resp['data']
         }).catch(err => {
             if (err instanceof AError) {
                 throw err
@@ -288,5 +300,31 @@ class _aaRawFetch {
         })
     }
 
- 
+    /**
+     * HTTP status code
+     * @param {RequestInfo} url
+     * @param {{[key:string]:any}|*} [settings]
+     * @param {function} [hook]
+     * @return {Promise<*>}
+     */
+    status(url, settings, hook) {
+        const mw = this.middleware(url, settings, hook)
+        if (mw instanceof Promise) {
+            return mw
+        }
+        [url, settings] = [mw[0], mw[1]]
+        return fetch(url, settings).then(resp => {
+            let err = new AError(resp.status)
+            if (!err.isOK()) {
+                return Number(resp.status)
+            }
+            // @TODO 支持其他格式
+            return resp.json()
+        }).then(resp => typeof resp === "number" ? resp : number(resp, 'code')
+        ).catch(err => {
+            log.error(`${settings.method} ${url} status error: ${err.message}`)
+            return AErrorEnum.ClientThrow   // 后面再也不用 catch 了
+        })
+
+    }
 }
