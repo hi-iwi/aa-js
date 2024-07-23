@@ -11,38 +11,6 @@ class _aaDateZero extends Date {
         this.value = date
     }
 
-    toString() {
-        return this.value
-    }
-
-    toDateString() {
-        return this.value
-    }
-
-    toTimeString() {
-        return this.value
-    }
-
-    toLocaleString() {
-        return this.value
-    }
-
-
-    toLocaleDateString() {
-        return this.value
-    }
-
-    toLocaleTimeString() {
-        return this.value
-    }
-
-    valueOf() {
-        return 0
-    }
-
-    getTime() {
-        return 0
-    }
 
     getFullYear() {
         return 0
@@ -121,6 +89,41 @@ class _aaDateZero extends Date {
         return this.value
     }
 
+
+    toDateString() {
+        return this.value
+    }
+
+    toTimeString() {
+        return this.value
+    }
+
+    toLocaleString() {
+        return this.value
+    }
+
+
+    toLocaleDateString() {
+        return this.value
+    }
+
+    toLocaleTimeString() {
+        return this.value
+    }
+
+
+    getTime() {
+        return 0
+    }
+
+    valueOf() {
+        return 0
+    }
+
+    toString() {
+        return this.value
+    }
+
     toJSON() {
         return this.value
     }
@@ -128,10 +131,8 @@ class _aaDateZero extends Date {
 
 class _aaDateString {
     name = 'aa-date-string'
-    timezoneOffset
-    #value = ""
-    raw = ""
 
+    static localTimezoneOffsetString = _aaDateString.parseTimezoneOffsetString()
     static #yearLen = 4 // len('0000')
     static #dateLen = 10  // len('0000-00-00')
     static #datetimeLen = 19   // len('0000-00-00 00:00:00')
@@ -145,54 +146,16 @@ class _aaDateString {
     static #minDatetime = _aaDateZero.MinDatetime || '0000-00-00 00:00:00'
     static #maxDatetime = _aaDateZero.MaxDatetime || '9999-12-31 23:59:59'
 
+    timezoneOffset
+    #value = ""
+    raw = ""
+
     get value() {
         return this.#value
     }
 
     set value(value) {
         this.init(value)
-    }
-
-    static localTimezoneOffsetString = _aaDateString.parseTimezoneOffsetString()
-
-    /**
-     * 将秒数转为 II:SS 格式，或者把分钟数转为 HH:II格式
-     * @param {number} t
-     * @return {string}
-     */
-    static formatTime(t) {
-        let s = t < 0 ? "-" : ""
-        t = Math.abs(t)
-        let hm = Math.floor(t / 60)
-        t %= 60
-        s += String(hm).padStart(2, "0")
-        s += ":"
-        s += String(t).padStart(2, "0")
-        return s
-    }
-
-    static parseTimezoneOffsetString(offset) {
-        if (offset && typeof offset === "string") {
-            if (!['-', '+'].includes(offset[0])) {
-                offset = '+' + offset
-            }
-            return offset
-        }
-        if (offset instanceof Date) {
-            offset = offset.getTimezoneOffset()
-        } else if (typeof offset !== "number") {
-            offset = new Date().getTimezoneOffset()
-        }
-        return offset < 0 ? "+" + _aaDateString.formatTime(-offset) : "-" + _aaDateString.formatTime(offset)
-    }
-
-    /**
-     *
-     * @param {string} s  {YYYY|YYYY-MM-DD|YYYY-MM-DD HH:II:SS}
-     * @param {string} [zone]
-     */
-    constructor(s, zone = _aaDateString.localTimezoneOffsetString) {
-        this.init(s, zone)
     }
 
     /**
@@ -225,6 +188,16 @@ class _aaDateString {
         this.timezoneOffset = zone
         this.#value = s
     }
+
+    /**
+     *
+     * @param {string} s  {YYYY|YYYY-MM-DD|YYYY-MM-DD HH:II:SS}
+     * @param {string} [zone]
+     */
+    constructor(s, zone = _aaDateString.localTimezoneOffsetString) {
+        this.init(s, zone)
+    }
+
 
     isYear() {
         return _aaDateString.#yearPattern.test(this.raw)
@@ -297,9 +270,6 @@ class _aaDateString {
         return this.#value.substring(19)
     }
 
-    toString() {
-        return this.#value
-    }
 
     #toZero() {
         if (this.isYear()) {
@@ -319,17 +289,51 @@ class _aaDateString {
         return this.date().valueOf()
     }
 
+    toString() {
+        return this.#value
+    }
+
+    toJSON() {
+        return this.#value
+    }
+
+    /**
+     * 将秒数转为 II:SS 格式，或者把分钟数转为 HH:II格式
+     * @param {number} t
+     * @return {string}
+     */
+    static formatTime(t) {
+        let s = t < 0 ? "-" : ""
+        t = Math.abs(t)
+        let hm = Math.floor(t / 60)
+        t %= 60
+        s += String(hm).padStart(2, "0")
+        s += ":"
+        s += String(t).padStart(2, "0")
+        return s
+    }
+
+    static parseTimezoneOffsetString(offset) {
+        if (offset && typeof offset === "string") {
+            if (!['-', '+'].includes(offset[0])) {
+                offset = '+' + offset
+            }
+            return offset
+        }
+        if (offset instanceof Date) {
+            offset = offset.getTimezoneOffset()
+        } else if (typeof offset !== "number") {
+            offset = new Date().getTimezoneOffset()
+        }
+        return offset < 0 ? "+" + _aaDateString.formatTime(-offset) : "-" + _aaDateString.formatTime(offset)
+    }
+
 }
 
+// 253402271999000 = new Date("9999-12-31 23:59:59")
+// 253402214400000 = new Date("9999-12-31")
 class _aaDateValidator {
     name = 'aa-date-validator'
-
-    #type
-
-
-    // 253402271999000 = new Date("9999-12-31 23:59:59")
-    // 253402214400000 = new Date("9999-12-31")
-
 
     // support '1000-01-01' to '9999-12-31'
     static InvalidDate = 'invalid date'
@@ -353,9 +357,8 @@ class _aaDateValidator {
     static #maxDatetimeTs = new _aaDateString(_aaDateZero.MaxDatetime || '9999-12-31 23:59:59').valueOf()
 
 
-    constructor(s, strict = true) {
-        this.init(s, strict)
-    }
+    #type
+
 
     /**
      *
@@ -422,6 +425,11 @@ class _aaDateValidator {
         return this
     }
 
+    constructor(s, strict = true) {
+        this.init(s, strict)
+    }
+
+
     setInvalid() {
         this.#type = _aaDateValidator.InvalidDate
     }
@@ -455,6 +463,8 @@ class _aaDateValidator {
 
 
 class time {
+    name = 'aa-time'
+
     // MinDate    : '0000-00-00',
     static MinDatetime = '0000-00-00 00:00:00' // 当作配置，可以修改; date/year 等可以通过此解析出来，不用单独配置了
     static MaxDatetime = '9999-12-31 23:59:59'
@@ -464,7 +474,7 @@ class time {
     static Hour = 60 * time.Minute
     static Day = 24 * time.Hour
 
-    name = 'aa-date'
+
     // @type Date
     #date
     // @type AaDateValidator
@@ -489,25 +499,36 @@ class time {
     }
 
 
-    /**
-     * Extract the date string to YYYYMM style number
-     * @param {string} date
-     * @return number
-     */
-    static toYearMonthNumber(date) {
-        let ds = new _aaDateString(date)
-        return parseInt(ds.year() + '' + ds.month())
-    }
+    // @param {Date|string|number} date
+    init(date, strict = true) {
+        this.resetPatter()
+        let zone = this.timezoneOffset
+        // timestamp
+        if (typeof date === "number") {
+            date = new Date(date)
+        } else if (typeof date === "string") {
+            this.setPattern(date)
+            let ds = new _aaDateString(date, this.timezoneOffset)
+            this.validator.init(ds, strict)
+            if (this.validator.isMin() || this.validator.isMax()) {
+                return
+            }
+            date = new Date(ds.toString())
+        }
 
-    /**
-     * Compose Number(YYYYMM) to YYYY-MM string
-     * @param {number} num
-     * @return {string}
-     */
-    static toYearMonthString(num) {
-        return num / 100 + "-" + num % 100
-    }
+        if (date instanceof Date) {
+            this.#date = date
+            this.validator.init(date, strict)
+            if (this.validator.isValid(true)) {
+                this.timezoneOffset = zone  // set after valid date
+            }
+            return
+        }
+        date = new Date("Invalid Date")
+        this.#date = date
+        this.validator.setInvalid()
 
+    }
 
     /**
      *
@@ -548,37 +569,6 @@ class time {
         this.init(arg)
     }
 
-    // @param {Date|string|number} date
-    init(date, strict = true) {
-        this.resetPatter()
-        let zone = this.timezoneOffset
-        // timestamp
-        if (typeof date === "number") {
-            date = new Date(date)
-        } else if (typeof date === "string") {
-            this.setPattern(date)
-            let ds = new _aaDateString(date, this.timezoneOffset)
-            this.validator.init(ds, strict)
-            if (this.validator.isMin() || this.validator.isMax()) {
-                return
-            }
-            date = new Date(ds.toString())
-        }
-
-        if (date instanceof Date) {
-            this.#date = date
-            this.validator.init(date, strict)
-            if (this.validator.isValid(true)) {
-                this.timezoneOffset = zone  // set after valid date
-            }
-            return
-        }
-        date = new Date("Invalid Date")
-        this.#date = date
-        this.validator.setInvalid()
-
-    }
-
     resetPatter() {
         this.pattern = 'YYYY-MM-DD HH:II:SS'
     }
@@ -607,15 +597,6 @@ class time {
         }
         this.pattern = pattern
         return this
-    }
-
-    // 只保留特殊常用的函数，其他的如果需要用。就调用 xxx.date.xxxx 直接调用即可
-    // @return {string}
-    toString(invalidString = void '') {
-        if (typeof invalidString !== "undefined" && !this.validator.isValid()) {
-            return invalidString
-        }
-        return this.format(this.pattern)
     }
 
 
@@ -694,7 +675,12 @@ class time {
     //
 
 
-    timestamp() {
+    /**
+     * Unix timestamp  https://en.wikipedia.org/wiki/Unix_time
+     * @description the number of seconds which have passed since 1970-01-01 00:00:00
+     * @return {number}
+     */
+    unix() {
         return Math.floor(this.valueOf() / time.Second)
     }
 
@@ -841,15 +827,54 @@ class time {
         return new _aaDateDifference(this, d1)
     }
 
+    // 只保留特殊常用的函数，其他的如果需要用。就调用 xxx.date.xxxx 直接调用即可
+    // @return {string}
+    toString(invalidString = void '') {
+        if (typeof invalidString !== "undefined" && !this.validator.isValid()) {
+            return invalidString
+        }
+        return this.format(this.pattern)
+    }
+
     // 用于json序列号
     toJSON() {
         return this.toString()
+    }
+
+    /**
+     * Unix timestamp  https://en.wikipedia.org/wiki/Unix_time
+     * @description the number of seconds which have passed since 1970-01-01 00:00:00
+     * @param {Date|string} date?
+     * @return {number}
+     */
+    static unix(date = new Date()) {
+        return new time(date).unix()
+    }
+
+    /**
+     * Extract the date string to YYYYMM style number
+     * @param {string} date
+     * @return number
+     */
+    static toYearMonthNumber(date) {
+        let ds = new _aaDateString(date)
+        return parseInt(ds.year() + '' + ds.month())
+    }
+
+    /**
+     * Compose Number(YYYYMM) to YYYY-MM string
+     * @param {number} num
+     * @return {string}
+     */
+    static toYearMonthString(num) {
+        return num / 100 + "-" + num % 100
     }
 }
 
 
 class _aaDateDifference {
     name = 'aa-date-difference'
+
     // differences in milliseconds
     valid = false
     diff
@@ -983,82 +1008,6 @@ class _aaDateDifference {
         return this.diff
     }
 
-    valueOf() {
-        return this.diff
-    }
-
-    static loadDiff(layout, p) {
-        let ls = {
-            'Y': false,
-            'M': false,
-            'D': false,
-            'H': false,
-            'I': false,
-            'S': false,
-        }
-        let n = layout.length
-        let start = false
-        for (let i = 0; i < n; i++) {
-            let c = layout[i]
-            if (start) {
-                if (c === '}') {
-                    start = false
-                }
-                continue
-            }
-            if (c !== '{' || i > n - 3 || layout[i + 1] !== '%') {
-                continue
-            }
-            let r = layout[i + 2]
-            if (p.hasOwnProperty(r) && typeof p[r] === "number") {
-                ls[r] = true
-                i += 2
-                start = true
-            }
-        }
-        return ls
-    }
-
-    static carryTimeDiff(p, ls) {
-        const arr = ['S', 'I', 'H', 'D', 'M', 'Y']
-        let g = false
-        for (let i = 0; i < arr.length; i++) {
-            let a = arr[i]
-            if (ls[a]) {
-                if (g) {
-                    p[a]++
-                }
-                break
-            }
-            if (p[a] > 0) {
-                g = true
-            }
-        }
-
-        if (p['S'] > 59) {
-            p['S'] -= 60
-            p['I']++
-        }
-        if (p['I'] > 59) {
-            p['I'] -= 60
-            p['H']++
-        }
-        if (p['H'] > 23) {
-            p['H'] -= 24
-            p['D']++
-        }
-        if (p['D'] > 30) {
-            p['D'] -= 31
-            p['M']++
-        }
-        if (p['M'] > 11) {
-            p['M'] -= 12
-            p['Y']++
-        }
-
-        return p
-    }
-
     /**
      * Format date with specified formats
      * @param layout
@@ -1186,5 +1135,82 @@ class _aaDateDifference {
             return Timeline.translate('%sy ago', n)
         }
     }
+
+    valueOf() {
+        return this.diff
+    }
+
+    static loadDiff(layout, p) {
+        let ls = {
+            'Y': false,
+            'M': false,
+            'D': false,
+            'H': false,
+            'I': false,
+            'S': false,
+        }
+        let n = layout.length
+        let start = false
+        for (let i = 0; i < n; i++) {
+            let c = layout[i]
+            if (start) {
+                if (c === '}') {
+                    start = false
+                }
+                continue
+            }
+            if (c !== '{' || i > n - 3 || layout[i + 1] !== '%') {
+                continue
+            }
+            let r = layout[i + 2]
+            if (p.hasOwnProperty(r) && typeof p[r] === "number") {
+                ls[r] = true
+                i += 2
+                start = true
+            }
+        }
+        return ls
+    }
+
+    static carryTimeDiff(p, ls) {
+        const arr = ['S', 'I', 'H', 'D', 'M', 'Y']
+        let g = false
+        for (let i = 0; i < arr.length; i++) {
+            let a = arr[i]
+            if (ls[a]) {
+                if (g) {
+                    p[a]++
+                }
+                break
+            }
+            if (p[a] > 0) {
+                g = true
+            }
+        }
+
+        if (p['S'] > 59) {
+            p['S'] -= 60
+            p['I']++
+        }
+        if (p['I'] > 59) {
+            p['I'] -= 60
+            p['H']++
+        }
+        if (p['H'] > 23) {
+            p['H'] -= 24
+            p['D']++
+        }
+        if (p['D'] > 30) {
+            p['D'] -= 31
+            p['M']++
+        }
+        if (p['M'] > 11) {
+            p['M'] -= 12
+            p['Y']++
+        }
+
+        return p
+    }
+
 
 }

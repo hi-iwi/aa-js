@@ -105,44 +105,6 @@ class _aaURI {
     }
 
 
-    /**
-     * replace parameters in url string
-     * @param {string|*} s
-     * @param {map|{[key:string]:*}}  queries
-     * @param {map} [newQueries]
-     * @return {[string, map,ok]}
-     */
-    static lookup(s, queries, newQueries) {
-        if (!(queries instanceof map)) {
-            queries = new map(queries)
-        }
-        s = string(s)
-        if (!s) {
-            return [s, queries]
-        }
-        const ps = s.match(/{[\w:-]+}/ig)
-        if (!ps) {
-            return [s, queries]
-        }
-        if (!newQueries) {
-            //  对data进行了局部删除，一定要深度拷贝一下，避免一些不必要的麻烦
-            newQueries = queries.clone(false)
-        }
-        for (let i = 0; i < ps.length; i++) {
-            let m = ps[i]
-            let k = m.replace(/^{([\w-]+)[:}].*$/ig, '$1')
-            let v = newQueries.get(k)
-            if (Array.isArray(v)) {
-                v = v.join(",")  // url param，数组用逗号隔开模式
-            }
-            if (v !== "") {
-                s = s.replace(new RegExp(m, 'g'), v)
-                newQueries.delete(k)
-            }
-        }
-        const ok = !(/\/{[\w:-]+}/.test(s))  // 判定是否还有未替换的url param
-        return [s, newQueries, ok]
-    }
 
     /**
      * Parse lookup
@@ -184,68 +146,6 @@ class _aaURI {
             hash   : hash,
         }
     }
-
-    // 预留
-    static encode(s) {
-        return encodeURIComponent(s)
-    }
-
-    // 多次转码后，解析到底
-    static decode(s) {
-        let d = ''
-        s = string(s)
-        while (d !== s) {
-            decodeURIComponent(s)
-            s = d
-        }
-        return s
-    }
-
-    /**
-     * Split host to hostname and port
-     * @param {string} host
-     * @return {[string,string ]}
-     */
-    // e.g. luexu.com:8080, {hostname}:{port:uint},    {aab}.com:{port:uint}
-    static splitHost(host) {
-        const matches = [...host.matchAll(/{[\w:]+}/g)]
-        if (matches.length === 0) {
-            return host.split(':')
-        }
-
-        for (let i = 0; i < matches.length; i++) {
-            host = host.replace(matches[i][0], "#" + i)  // # is not allowed in host
-        }
-        let [hostname, port] = host.split(':')
-        if (!port) {
-            return [hostname, port]
-        }
-
-        for (let i = 0; i < matches.length; i++) {
-            hostname = hostname.replace('#' + i, matches[i][0])
-            port = port.replace('#' + i, matches[i][0])
-        }
-        return [hostname, port]
-    }
-
-    /**
-     *
-     * @param url
-     */
-    static split(url) {
-
-    }
-
-    /**
-     * @param {string} url
-     * @param {map|{[key:string]:*}} [params]
-     * @param {string} [hash]
-     */
-    constructor(url = window.location.href, params, hash) {
-        this.init(url, params, hash)
-    }
-
-
     /*
         {protocol:string}//{hostname}:{port:uint}/{path1:string}/{path2:int}#{hash}
      ① //luexu.com
@@ -320,23 +220,18 @@ class _aaURI {
         }
 
     }
-
-
-    toString() {
-        let [base, queries, hash, ok] = this.parse()
-        const qs = queries.toQueryString()
-        if (qs) {
-            base += '?' + qs
-        }
-        if (hash) {
-            base += '#' + this.hash
-        }
-        return base
+    /**
+     * @param {string} url
+     * @param {map|{[key:string]:*}} [params]
+     * @param {string} [hash]
+     */
+    constructor(url = window.location.href, params, hash) {
+        this.init(url, params, hash)
     }
 
-    toJSON() {
-        return this.toString()
-    }
+
+
+
 
     sort() {
         this.queries.sort()
@@ -419,5 +314,110 @@ class _aaURI {
         return this.query(key, uint32)
     }
 
+    toString() {
+        let [base, queries, hash, ok] = this.parse()
+        const qs = queries.toQueryString()
+        if (qs) {
+            base += '?' + qs
+        }
+        if (hash) {
+            base += '#' + this.hash
+        }
+        return base
+    }
 
+    toJSON() {
+        return this.toString()
+    }
+
+
+    // 预留
+    static encode(s) {
+        return encodeURIComponent(s)
+    }
+
+    // 多次转码后，解析到底
+    static decode(s) {
+        let d = ''
+        s = string(s)
+        while (d !== s) {
+            decodeURIComponent(s)
+            s = d
+        }
+        return s
+    }
+
+    /**
+     * Split host to hostname and port
+     * @param {string} host
+     * @return {[string,string ]}
+     */
+    // e.g. luexu.com:8080, {hostname}:{port:uint},    {aab}.com:{port:uint}
+    static splitHost(host) {
+        const matches = [...host.matchAll(/{[\w:]+}/g)]
+        if (matches.length === 0) {
+            return host.split(':')
+        }
+
+        for (let i = 0; i < matches.length; i++) {
+            host = host.replace(matches[i][0], "#" + i)  // # is not allowed in host
+        }
+        let [hostname, port] = host.split(':')
+        if (!port) {
+            return [hostname, port]
+        }
+
+        for (let i = 0; i < matches.length; i++) {
+            hostname = hostname.replace('#' + i, matches[i][0])
+            port = port.replace('#' + i, matches[i][0])
+        }
+        return [hostname, port]
+    }
+
+    /**
+     *
+     * @param url
+     */
+    static split(url) {
+
+    }
+
+    /**
+     * replace parameters in url string
+     * @param {string|*} s
+     * @param {map|{[key:string]:*}}  queries
+     * @param {map} [newQueries]
+     * @return {[string, map,ok]}
+     */
+    static lookup(s, queries, newQueries) {
+        if (!(queries instanceof map)) {
+            queries = new map(queries)
+        }
+        s = string(s)
+        if (!s) {
+            return [s, queries]
+        }
+        const ps = s.match(/{[\w:-]+}/ig)
+        if (!ps) {
+            return [s, queries]
+        }
+        if (!newQueries) {
+            //  对data进行了局部删除，一定要深度拷贝一下，避免一些不必要的麻烦
+            newQueries = queries.clone(false)
+        }
+        for (let i = 0; i < ps.length; i++) {
+            let m = ps[i]
+            let k = m.replace(/^{([\w-]+)[:}].*$/ig, '$1')
+            let v = newQueries.get(k)
+            if (Array.isArray(v)) {
+                v = v.join(",")  // url param，数组用逗号隔开模式
+            }
+            if (v !== "") {
+                s = s.replace(new RegExp(m, 'g'), v)
+                newQueries.delete(k)
+            }
+        }
+        const ok = !(/\/{[\w:-]+}/.test(s))  // 判定是否还有未替换的url param
+        return [s, newQueries, ok]
+    }
 }

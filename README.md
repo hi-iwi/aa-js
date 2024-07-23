@@ -8,7 +8,6 @@ A Javascript SDK of AaGo
 
 * aa = new Aa()
 
-
 ## base class interface
 
 ```
@@ -86,8 +85,94 @@ class XXX{
 * .init(data)   ===> 重置数据
     * 注意：.init() 不能返回 this，也不能传递本对象来重新赋值。因为内部无法修改 this 指针。
 
+
 * 通用命名规则
     * toJSON()    JSON.stringify() 能识别该方法； aa fetch 也需要识别该方法序列化对象
     * toString()  '' + new Date() 会用该方法返回的string
     * valueOf()  +new Date() 会用该方法返回的number
+
+### class 属性顺序
+
+1. variable keep word `name`, to name this class
+2. static Constants
+3. static variables
+4. private static #variables
+5. variables
+6. private #variables
+7. get
+8. set
+9. len()
+10. initXXX()
+11. init()
+12. constructor()
+13. other methods()
+14. valueOf()
+15. toString()
+16. toJSON()
+17. log()
+18. static methods()
+
+```js
+class Demo {
+    name = 'demo'   // keep word to name the class
+
+    static ConstantData = 1   // static constant starts with biggercase, and list in front of other properties/methods
+    static Name = "constant"  // constant is unmodifable
+
+    static name = 'Aario'    // static variables starts with lowercase, it's changable
+    static #age = 18   // private static variables start with #
+
+    hundsome = true
+    #nationality = 'China'
+
+    get nationality() {
+        return this.#nationality
+    }
+
+    set nationality(nationality) {
+        this.#nationality = nationality
+    }
+
+    len() {   // a special method
+
+    }
+
+    initAge(age) {
+        this.#age = age
+    }
+
+    init() {                // a special method
+
+    }
+
+    constructor() {
+        this.init()
+     }
+
+    otherMethod() {
+
+    }
+
+    valueOf() {
+
+    }
+
+    toString() {
+
+    }
+
+    toJSON() {
+
+    }
+
+    log() {
+
+    }
+
+    static sayHello() {
+        alert("Hello")
+    }
+}
+```
+
 

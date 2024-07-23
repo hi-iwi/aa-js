@@ -1,9 +1,12 @@
+/**
+ * Keep-names of URL parameters 路由URL参数名
+ */
 const aparam = {
     Debug : "_debug", // 0 o debug; 1/true debug via console; 2/alert debug via alert
     Apollo: "apollo",
 
 
-    Authorization :"Authorization",
+    Authorization: "Authorization",
 
     AccessTokenType     : "token_type",
     AccessToken         : "access_token",  // header/query/cookie
@@ -19,7 +22,9 @@ const aparam = {
 }
 
 
-// 为了方便 log 类，debug状态一律用全局
+/**
+ * 为了方便 log 类，debug状态一律用全局
+ */
 var _aaDebug = new (class {
     name = 'aa-debug'
     type = 0

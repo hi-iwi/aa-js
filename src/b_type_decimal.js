@@ -1,11 +1,12 @@
 // @import decimal.Scale
 class decimal {
+    name = 'aa-decimal'
+
     static Scale = 4  // 万分之一   Math.pow(10, decimal.Scale)
     static Unit = Math.pow(10, decimal.Scale)
     static Max = parseInt("".padEnd((Math.ceil(Number.MAX_SAFE_INTEGER / 10) + '').length, "9")) // 最多支持999亿.9999
 
 
-    name = 'aa-decimal'
     type = "decimal"
      // https://www.splashlearn.com/math-vocabulary/decimals/decimal-point
     // https://learn.microsoft.com/en-us/sql/t-sql/data-types/precision-scale-and-length-transact-sql?view=sql-server-ver16
@@ -131,19 +132,6 @@ class decimal {
         return math.thousands(w, segmentSize, separator)
     }
 
-    static #mantissaOk(s, scale = 0, trimScale = false) {
-        if (trimScale || scale === 0) {
-            s = s.replace(/0+$/g, '')
-        } else if (len(s) < scale) {
-            s = s.padEnd(scale, '0')
-        }
-        if (s === "") {
-            return ["", false]
-        } else if (scale === 0 || len(s) <= scale) {
-            return ["." + s, false]
-        }
-        return [s, true]
-    }
 
 
     /**
@@ -188,6 +176,14 @@ class decimal {
 
     /**
      * @param {number|{segmentSize?: number, scale?: number, separator?: string, trimScale?: boolean, scaleRound?: ("floor"|"round"|"ceil")}} [style]
+     * @returns {string}
+     */
+    format(style = void null) {
+        style = decimal.#newStyle(style)
+        return this.formatWhole(style.segmentSize, style.separator) + this.formatMantissa(style.scale, style.trimScale, style.scaleRound)
+    }
+    /**
+     * @param {number|{segmentSize?: number, scale?: number, separator?: string, trimScale?: boolean, scaleRound?: ("floor"|"round"|"ceil")}} [style]
      * @returns {{segmentSize: number, scale: number, separator: string, trimScale: boolean, scaleRound: ('floor'|'round'|'ceil')}}
      */
     static #newStyle(style = void null) {
@@ -208,12 +204,19 @@ class decimal {
         return map.strictMerge(t, style)
     }
 
-    /**
-     * @param {number|{segmentSize?: number, scale?: number, separator?: string, trimScale?: boolean, scaleRound?: ("floor"|"round"|"ceil")}} [style]
-     * @returns {string}
-     */
-    format(style = void null) {
-        style = decimal.#newStyle(style)
-        return this.formatWhole(style.segmentSize, style.separator) + this.formatMantissa(style.scale, style.trimScale, style.scaleRound)
+
+    static #mantissaOk(s, scale = 0, trimScale = false) {
+        if (trimScale || scale === 0) {
+            s = s.replace(/0+$/g, '')
+        } else if (len(s) < scale) {
+            s = s.padEnd(scale, '0')
+        }
+        if (s === "") {
+            return ["", false]
+        } else if (scale === 0 || len(s) <= scale) {
+            return ["." + s, false]
+        }
+        return [s, true]
     }
+
 }

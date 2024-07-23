@@ -48,6 +48,9 @@ class _aaRawFetch {
         signal        : null, // window        : null,
     }
 
+    initGlobalHeaders(headers) {
+        this.#headers = headers ? headers : {}
+    }
     /**
      * @param {_aaStorageFactor} storage
      * @param {typeof _aaURI} uri
@@ -58,9 +61,6 @@ class _aaRawFetch {
         this.#requests = new map()
     }
 
-    initGlobalHeaders(headers) {
-        this.#headers = headers ? headers : {}
-    }
 
     addGlobalHeaders(headers) {
         this.#headers = {...this.#headers, ...headers}
@@ -153,53 +153,6 @@ class _aaRawFetch {
         return [url, settings]
     }
 
-    /**
-     * @param {File} file
-     * @return {string}
-     */
-    static fileChecksum(file) {
-        return `#${file.size}|${file.type}|${file.lastModified}|${file.name}|${file.webkitRelativePath}`
-    }
-
-    static stringChecksum(s) {
-        const length = s.length
-        if (length < 1024) {
-            return `#${length}|${s}`
-        }
-        const l = Math.floor(length / 2)
-        let s2 = s.substring(0, 256) + s.substring(l - 256, l + 256) + s.substring(length - 256)
-        return `#${length}>|${s2}`
-    }
-
-    /**
-     *
-     * @param method
-     * @param url
-     * @param body
-     * @todo support ArrayBuffer, TypedArray, DataView, Blob, File, URLSearchParams, FormData
-     */
-    static generateChecksum(method, url, body) {
-        const self = _aaRawFetch
-        let checksum = `${method} ${url}`
-        if (!body) {
-            return checksum
-        }
-
-        let content = ''
-        if (body instanceof File) {
-            content = self.fileChecksum(body)
-        } else if (body instanceof FormData) {
-            for (const pair of body) {
-                let v = pair[1] instanceof File ? self.fileChecksum(pair[1]) : pair[1]
-                content = '&' + pair[0] + '=' + v
-            }
-            content = content.substring(1)
-            content = `#${content.length}|${content}`
-        } else if (typeof body === "string") {
-            content = self.stringChecksum(body)
-        }
-        return `${method} ${url} {${content}}`
-    }
 
     autoClean() {
         if (this.#cleanTimer) {
@@ -282,7 +235,6 @@ class _aaRawFetch {
             if (!err.isOK()) {
                 throw err
             }
-            // @TODO 支持其他格式
             return resp.json()
         }).then(resp => {
             // 捕获返回数据，修改为 resp.data
@@ -318,7 +270,6 @@ class _aaRawFetch {
             if (!err.isOK()) {
                 return Number(resp.status)
             }
-            // @TODO 支持其他格式
             return resp.json()
         }).then(resp => typeof resp === "number" ? resp : number(resp, 'code')
         ).catch(err => {
@@ -326,5 +277,54 @@ class _aaRawFetch {
             return AErrorEnum.ClientThrow   // 后面再也不用 catch 了
         })
 
+    }
+
+
+    /**
+     * @param {File} file
+     * @return {string}
+     */
+    static fileChecksum(file) {
+        return `#${file.size}|${file.type}|${file.lastModified}|${file.name}|${file.webkitRelativePath}`
+    }
+
+    static stringChecksum(s) {
+        const length = s.length
+        if (length < 1024) {
+            return `#${length}|${s}`
+        }
+        const l = Math.floor(length / 2)
+        let s2 = s.substring(0, 256) + s.substring(l - 256, l + 256) + s.substring(length - 256)
+        return `#${length}>|${s2}`
+    }
+
+    /**
+     *
+     * @param method
+     * @param url
+     * @param body
+     * @todo support ArrayBuffer, TypedArray, DataView, Blob, File, URLSearchParams, FormData
+     */
+    static generateChecksum(method, url, body) {
+        const self = _aaRawFetch
+        let checksum = `${method} ${url}`
+        if (!body) {
+            return checksum
+        }
+
+        let content = ''
+        if (body instanceof File) {
+            content = self.fileChecksum(body)
+        } else if (body instanceof FormData) {
+            for (const pair of body) {
+                let v = pair[1] instanceof File ? self.fileChecksum(pair[1]) : pair[1]
+                content = '&' + pair[0] + '=' + v
+            }
+            content = content.substring(1)
+            content = `#${content.length}|${content}`
+        } else if (typeof body === "string") {
+            content = self.stringChecksum(body)
+        }
+        return `${method} ${url} {${content}}`
     }
 }

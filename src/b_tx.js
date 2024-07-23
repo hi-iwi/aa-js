@@ -8,10 +8,6 @@ class AaTx {
     #lock  // bool, 锁状态
     #timer // 超时自动解锁
 
-    static atomicId() {
-        return ++_aaTxIncr_
-    }
-
 
     constructor() {
         this.#id = AaTx.atomicId()
@@ -19,12 +15,6 @@ class AaTx {
         this.#timer = null
     }
 
-    log(msg) {
-        let dbg = false
-        if (dbg) {
-            log.info("#" + this.#id + " " + msg)
-        }
-    }
 
     notFree() {
         return this.#lock
@@ -65,5 +55,16 @@ class AaTx {
     unmount() {
         this.log('Unmount')
         clearTimeout(this.#timer)
+    }
+
+    log(msg) {
+        let dbg = false
+        if (dbg) {
+            log.info("#" + this.#id + " " + msg)
+        }
+    }
+
+    static atomicId() {
+        return ++_aaTxIncr_
     }
 }

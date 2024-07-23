@@ -338,7 +338,7 @@ function func(...args) {
     if (typeof v === "function") {
         return v
     }
-    return nif  // 空函数，用这种写法
+    return nif
 }
 
 // 使用  f && f()   即可；或者  func(p,'func')()
@@ -356,8 +356,6 @@ function _inRange(x, min, max, name) {
         }
         let msg = x + " can't be converted to " + name
         throw new RangeError(msg)
-        // console.warn(x + " is out of range [" + min + "," + max + "]")
-        // return x < min ? min : max
     }
     return x
 }

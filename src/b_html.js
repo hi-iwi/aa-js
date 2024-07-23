@@ -30,10 +30,12 @@ const _aaHtmlDecoder_ = {
 class html {
     name = 'aa-html'
 
+    static fuzzyTag = '<i class="f8 f94b"></i>'
+
     // 对文章中敏感词进行马赛克化
-    static fuzzy(s) {
+    static fuzzy(s, tag = html.fuzzyTag) {
         s = s.replace(/[\r\n]+/g, '<br>')
-        s = s.replace(/<s>\s*\d+\s*:\s*(\d+)\s*<\/s>/ig, (m, l) => '<i class="f8 f94b"></i>'.repeat(l))
+        s = s.replace(/<s>\s*\d+\s*:\s*(\d+)\s*<\/s>/ig, (m, l) => tag.repeat(l))
         return s
     }
 

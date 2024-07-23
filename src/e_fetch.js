@@ -4,14 +4,12 @@
  */
 class _aaFetch {
     name = 'aa-fetch'
+
     // @type _aaRawFetch
     #rawFetch
     // @type _aaAuth
     #auth
-    // @type function  外部可以修改
-    #unauthorizedHandler
-    // @type function  外部可以修改
-    #defaultAErrorHandler
+
     // @type typeof _aaURI
     #uri
 
@@ -24,8 +22,12 @@ class _aaFetch {
     #defaultSettingsExt = {
         mustAuth: false,    //  must validate access_token before fetching
         // @param {AError} err
-        onAuthError        : err => alert(err.toString()),
+        onAuthError        : void nif,
         preventTokenRefresh: false,
+    }
+    initGlobalHeaders(headers) {
+        this.#rawFetch.initGlobalHeaders(headers)
+        return this
     }
 
 
@@ -40,18 +42,7 @@ class _aaFetch {
         this.#auth = auth
     }
 
-    initUnauthorizedHandler(handler){
-        this.#unauthorizedHandler  =handler
-        return this
-    }
-    initDefaultAErrorHandler(handler){
-        this.#defaultAErrorHandler = handler
-        return this
-    }
-    initGlobalHeaders(headers) {
-        this.#rawFetch.initGlobalHeaders(headers)
-        return this
-    }
+
 
     addGlobalHeaders(headers) {
         this.#rawFetch.addGlobalHeaders(headers)
@@ -102,15 +93,16 @@ class _aaFetch {
                 location.href = err.message // 特殊跳转
                 return
             }
-            if (err.isUnauthorized() && typeof this.#unauthorizedHandler === "function") {
-                if (this.#unauthorizedHandler(err)) {
+            if (err.isUnauthorized()) {
+                if (typeof settings.onAuthError === "function" && settings.onAuthError(err)) {
+                    return
+                }
+                if (this.#auth.triggerUnauthorized(err)) {
                     return
                 }
             }
-            if (noThrown && typeof this.#defaultAErrorHandler === "function") {
-                if (this.#defaultAErrorHandler(err)) {
-                    return
-                }
+            if (noThrown && err.triggerDisplay()) {
+                return
             }
             throw err
         })

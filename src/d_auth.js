@@ -2,11 +2,15 @@
 
 
 class _aaAuth {
+    name = 'aa-auth'
+
     // @type _aaStorageFactor
     #storage
     // @type _aaRawFetch
     #rawFetch
 
+    // @type function  外部可以使用、修改
+    #unauthorizedHandler
 
     // @type {{access_token: string, conflict: boolean|undefined, expires_in: number, refresh_api: string, refresh_token: string, scope: null, secure: boolean|undefined, token_type: string, validate_api: string}}
     #_token
@@ -33,7 +37,6 @@ class _aaAuth {
                 "secure"       : r.getItem("aa:auth.secure"),
                 "token_type"   : r.getItem("aa:auth.token_type"),
                 "validate_api" : r.getItem("aa:auth.validate_api"),
-
             }
             this.#tokenAuthAt = r.getItem("aa:auth._localAuthAt")
         }
@@ -50,6 +53,10 @@ class _aaAuth {
         this.setToken(token)
     }
 
+    initUnauthorizedHandler(handler) {
+        this.#unauthorizedHandler = handler
+        return this
+    }
 
     /**
      * @param {_aaStorageFactor} storage
@@ -62,17 +69,31 @@ class _aaAuth {
 
     }
 
-    static #parseApiUrl(s) {
-        let [method, api] = string(s).split(' ')  // GET xxxx
-        if (!api) {
-            api = method
-            method = 'GET'
+
+    /**
+     * Trigger to handle Unauthorized
+     * @return {boolean}
+     */
+    triggerUnauthorized() {
+        if (typeof this.#unauthorizedHandler !== "function") {
+            return false
         }
-        return [method, api]
+        const result = this.#unauthorizedHandler()
+        return typeof result === "boolean" ? result : true
     }
 
     /**
-     * validate the availability of local access token with remote api
+     * Prepare checking login status before doing something
+     */
+    prepare() {
+        if (this.authed()) {
+            return
+        }
+        this.triggerUnauthorized()
+    }
+
+    /**
+     * Validate the availability of local access token with remote api
      */
     validate() {
         let checked = bool(this.#storage.session.getItem('aa:auth.checked'))
@@ -190,7 +211,6 @@ class _aaAuth {
         this.#storage.local.setItem("aa:auth.secure", this.#_token['secure'])
         this.#storage.local.setItem("aa:auth.validate_api", this.#_token['validate_api'], expiresIn * time.Second)
 
-
         this.#storage.local.setItem("aa:auth._localAuthAt", this.#tokenAuthAt)
         this.#storage.session.setItem('aa:auth.checked', true)
     }
@@ -248,4 +268,14 @@ class _aaAuth {
         this.#tryStoreCookie(aparam.Logout, 1, 5 * time.Minute)
         callback()
     }
+
+    static #parseApiUrl(s) {
+        let [method, api] = string(s).split(' ')  // GET xxxx
+        if (!api) {
+            api = method
+            method = 'GET'
+        }
+        return [method, api]
+    }
+
 }

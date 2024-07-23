@@ -2,12 +2,10 @@
 
 // static class
 class math {
-
+    name = 'aa-math'
 
     static Wan = 10000 // 万
     static Yii = 100000000 // 亿
-
-    name = 'aa-math'
 
     /**
      * Convert rem to px

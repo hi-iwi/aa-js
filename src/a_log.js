@@ -1,5 +1,6 @@
 class AaLoggerStyle {
     name = 'aa-logger-style'
+
     color
     fontWeight
     background

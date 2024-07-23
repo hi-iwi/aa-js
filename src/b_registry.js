@@ -1,3 +1,6 @@
+/**
+ * Registry
+ */
 class _aaRegistry {
     name = 'aa-registry'
 

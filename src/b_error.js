@@ -62,7 +62,7 @@ const AErrorEnum = {
     Locked          : 423,
     FailedDependency: 424,// 之前发生错误
     TooEarly        : 425, // 表示服务器不愿意冒险处理可能被重播的请求。
-    TooManyRequests:429, // 用户在给定的时间内发送了太多请求（"限制请求速率"）
+    TooManyRequests : 429, // 用户在给定的时间内发送了太多请求（"限制请求速率"）
     RetryWith       : 449,  // 特殊错误码，msg 用于跳转
     Illegal         : 451,// 该请求因政策法律原因不可用。
 
@@ -180,15 +180,18 @@ const AErrorEnum = {
  */
 class AError extends Error {
     name = "AError"
-    code
-    message // 原始数据。部分错误会把msg当作有效信息。比如 449 RetryWith 会通过该数据传递跳转URL等
 
+    // @type function to display to client
+    static display
+
+    #code
+    message // 原始数据。部分错误会把msg当作有效信息。比如 449 RetryWith 会通过该数据传递跳转URL等
     #dict = {}
     #heading = ''
     #ending = ''
 
     get code() {
-        return this.code
+        return this.#code
     }
 
     get msg() {
@@ -197,29 +200,6 @@ class AError extends Error {
 
     set msg(value) {
         this.message = value
-    }
-
-    static newBadRequest(param, dict) {
-        return new AError(AErrorEnum.BadRequest, "Bad request `" + param + "`", dict)
-
-    }
-
-    static parseResp(resp, dict) {
-        if (!resp) {
-            return new AError(AErrorEnum.ServerException, "", dict)
-        }
-        if (typeof resp === "string") {
-            try {
-                resp = JSON.parse(resp.trim())
-            } catch (e) {
-                return new AError(AErrorEnum.ServerException, "", dict)
-            }
-        }
-        if (resp && typeof resp === "object" && resp.hasOwnProperty("code") && resp.hasOwnProperty("msg")) {
-            return new AError(resp['code'], resp['msg'], dict)
-        }
-
-        return new AError(AErrorEnum.ServerException, "", dict)
     }
 
 
@@ -238,15 +218,23 @@ class AError extends Error {
             msg = ''
         }
         super(msg)
-        this.code = code
+        this.#code = code
         this.message = msg
         this.#dict = dict
     }
 
-
-    toString() {
-        return this.getMsg() + " [code:" + this.code + "]"
+    /**
+     * Trigger to display
+     * @return {boolean}
+     */
+    triggerDisplay() {
+        if (typeof AError.display !== "function") {
+            return false
+        }
+        const result = AError.display(this)
+        return typeof result === "boolean" ? result : true
     }
+
 
     getMsg(dict = 'zh-CN') {
         if (len(this.#dict) > 0) {
@@ -259,7 +247,7 @@ class AError extends Error {
 
         dict = AErrorEnum.getDictionary(dict)
         let heading = fmt.translate(dict, this.#heading)
-        let msg = AErrorEnum.translate(this.code, this.message)
+        let msg = AErrorEnum.translate(this.#code, this.message)
         let ending = fmt.translate(dict, this.#ending)
         if (heading) {
             heading += ' '
@@ -281,15 +269,15 @@ class AError extends Error {
     }
 
     is(code) {
-        return code === this.code
+        return code === this.#code
     }
 
     isOK() {
-        return this.code >= 200 && this.code < 300
+        return this.#code >= 200 && this.#code < 300
     }
 
     isServerErrors() {
-        return this.code >= 500
+        return this.#code >= 500
     }
 
     isNoContent() {
@@ -313,7 +301,7 @@ class AError extends Error {
     }
 
     noMatched() {
-        return [AErrorEnum.NoRows, AErrorEnum.NotFound, AErrorEnum.Gone].includes(this.code)
+        return [AErrorEnum.NoRows, AErrorEnum.NotFound, AErrorEnum.Gone].includes(this.#code)
     }
 
     isTimeout() {
@@ -343,9 +331,11 @@ class AError extends Error {
     isTooEarly() {
         return this.is(AErrorEnum.TooEarly)
     }
+
     isTooManyRequests() {
         return this.is(AErrorEnum.TooManyRequests)
     }
+
     isRetryWith() {
         return this.is(AErrorEnum.RetryWith)
     }
@@ -397,4 +387,30 @@ class AError extends Error {
         }
     }
 
+    toString() {
+        return this.getMsg() + " [code:" + this.#code + "]"
+    }
+
+    static newBadRequest(param, dict) {
+        return new AError(AErrorEnum.BadRequest, "Bad request `" + param + "`", dict)
+
+    }
+
+    static parseResp(resp, dict) {
+        if (!resp) {
+            return new AError(AErrorEnum.ServerException, "", dict)
+        }
+        if (typeof resp === "string") {
+            try {
+                resp = JSON.parse(resp.trim())
+            } catch (e) {
+                return new AError(AErrorEnum.ServerException, "", dict)
+            }
+        }
+        if (resp && typeof resp === "object" && resp.hasOwnProperty("code") && resp.hasOwnProperty("msg")) {
+            return new AError(resp['code'], resp['msg'], dict)
+        }
+
+        return new AError(AErrorEnum.ServerException, "", dict)
+    }
 }

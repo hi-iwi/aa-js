@@ -1,11 +1,13 @@
 // 不要  extends Storage，会报错
 const _aaPseudoStorage_ = new class {
-    constructor() {
-    }
+    name = 'aa-pseudo-storage'
 
     get length() {
         log.warn("it's a pseudo storage!")
         return Object.keys(this).length
+    }
+
+    constructor() {
     }
 
     // 不用报错，正常人也不会这么操作
@@ -20,17 +22,18 @@ const _aaPseudoStorage_ = new class {
         return keys.length > index ? keys[index] : null
     }
 
-    setItem(key, value, options) {
+
+    setItem(key, value, _) {
         log.warn("it's a pseudo storage!")
         cookieStorage[key] = string(value)
     }
 
-    getItem(key, options) {
+    getItem(key, _) {
         log.warn("it's a pseudo storage!")
         return typeof this[key] === "string" ? this[key] : null
     }
 
-    removeItem(key, options) {
+    removeItem(key, _) {
         log.warn("it's a pseudo storage!")
         if (typeof this[key] === "string") {
             delete this[key]
@@ -49,6 +52,8 @@ const _aaPseudoStorage_ = new class {
 
 
 class _aaStorage {
+    name = 'aa-storage'
+
     #storage
     #persistentNames = []
     #withOptions = false
@@ -65,48 +70,6 @@ class _aaStorage {
     //     throw new SyntaxError("storage length is readonly")
     // }
 
-    static #makeValue(value, persistent = false) {
-        let ok = true;
-        const type = atype.of(value)
-        switch (type) {
-            case 'number':
-                value += ''
-                break;
-            case 'boolean':
-                value = booln(value)
-                break;
-            case 'array':
-            case 'object':
-            case 'struct':
-                value = JSON.stringify(value)
-                break;
-            case 'date':
-                break;
-            case 'function':
-            case 'undefined':
-                ok = false
-                break;
-        }
-        if (ok) {
-            let st = atype.aliasOf(type)
-            if (bool(persistent)) {
-                st = st.toUpperCase()
-            }
-            value = st + ':' + value
-        }
-        return value
-    }
-
-    /**
-     * @param storage
-     * @param {[string]} [persistentNames]
-     * @param {boolean} [withOptions]
-     * @param {boolean} [encapsulate]
-     */
-    constructor(storage, persistentNames, withOptions, encapsulate) {
-        this.init(...arguments)
-    }
-
     /**
      * @param storage
      * @param {[string]} [persistentNames]
@@ -121,6 +84,17 @@ class _aaStorage {
         this.#withOptions = bool(withOptions)
         this.#encapsulate = bool(encapsulate)
     }
+
+    /**
+     * @param storage
+     * @param {[string]} [persistentNames]
+     * @param {boolean} [withOptions]
+     * @param {boolean} [encapsulate]
+     */
+    constructor(storage, persistentNames, withOptions, encapsulate) {
+        this.init(...arguments)
+    }
+
 
     isPseudo() {
         return this.#storage instanceof _aaPseudoStorage_
@@ -161,6 +135,7 @@ class _aaStorage {
     /**
      * Iterate storage
      * @param {function(key:string,value:string)} callback
+     * @param [options]
      */
     forEach(callback, options) {
         for (let i = 0; i < this.length; i++) {
@@ -237,11 +212,11 @@ class _aaStorage {
     /**
      * Remove item from this storage
      * @param {string|RegExp} key
-     * @param options
+     * @param options?
      */
     removeItem(key, options) {
         if (key instanceof RegExp) {
-            this.forEach((k, v) => {
+            this.forEach((k, _) => {
                 if (key.test(k)) {
                     const args = this.#withOptions && options ? [k, options] : [k]
                     this.#storage.removeItem(...args)
@@ -266,7 +241,7 @@ class _aaStorage {
             this.#storage.clear()
             return
         }
-        this.forEach((key, value) => {
+        this.forEach((key, _) => {
             if (typeof keep[key] === "undefined") {
                 this.#storage.removeItem(key)
             }
@@ -280,11 +255,43 @@ class _aaStorage {
         this.clearExcept()
     }
 
+    static #makeValue(value, persistent = false) {
+        let ok = true;
+        const type = atype.of(value)
+        switch (type) {
+            case 'number':
+                value += ''
+                break;
+            case 'boolean':
+                value = booln(value)
+                break;
+            case 'array':
+            case 'object':
+            case 'struct':
+                value = JSON.stringify(value)
+                break;
+            case 'date':
+                break;
+            case 'function':
+            case 'undefined':
+                ok = false
+                break;
+        }
+        if (ok) {
+            let st = atype.aliasOf(type)
+            if (bool(persistent)) {
+                st = st.toUpperCase()
+            }
+            value = st + ':' + value
+        }
+        return value
+    }
+
 }
 
-class _aaStorageFactor {
-    name = 'aa-storage'
 
+class _aaStorageFactor {
+    name = 'aa-storage-factor'
 
     // @type _aaStorage
     local
@@ -304,12 +311,11 @@ class _aaStorageFactor {
         this.cookie = new _aaStorage(cookieStorage || _aaPseudoStorage_, [], true, false)
     }
 
-    // @param {Storage} cookieStorage
-    initCookieStorage(cookieStorage) {
-        this.cookie.init(cookieStorage)
-        return this
-    }
-
+    /**
+     * Get item from all storages
+     * @param {string} key
+     * @param [options]
+     */
     getEntire(key, options) {
         let value = this.cookie.getItem(key, options)
         if (value) {
@@ -322,6 +328,11 @@ class _aaStorageFactor {
         return this.local.getItem(key, options)
     }
 
+    /**
+     * Remove items from all storages
+     * @param key
+     * @param options
+     */
     removeEntire(key, options) {
         this.local.removeItem(key, options)
         this.session.removeItem(key, options)

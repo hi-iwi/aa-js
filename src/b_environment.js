@@ -2,11 +2,8 @@
 
 class _aaEnvironment {
     name = 'aa-environment'
-    debug = _aaDebug
 
-
-    constructor() {
-    }
+    static debug = _aaDebug
 
     static isLocalhost() {
         return _aaDebug.isLocalhost()
@@ -58,5 +55,6 @@ class _aaEnvironment {
     static isAppleTouch() {
         return _aaEnvironment.isIphone() || _aaEnvironment.isIpad()
     }
+
 
 }

@@ -2,6 +2,7 @@
 
 class _aaApollo {
     name = 'aa-apollo'
+
     // @type _aaFetch
     #fetcher
     #fingerprintGenerator

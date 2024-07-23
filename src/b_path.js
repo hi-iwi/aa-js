@@ -9,6 +9,39 @@ class _aaPath {
     // @property {string} the file name of path, e.g.  "a/b/c.jpg" => c
     filename
 
+    init(path) {
+        path = _aaPath.clean(path)
+        if (!path) {
+            this.dir = ''
+            this.base = ''
+            this.ext = ''
+            this.filename = ''
+            return
+        }
+        const a = path.split('/')
+        this.dir = a.slice(0, a.length - 1).join('/') || '/'
+        this.base = a[a.length - 1] || '/'
+        this.filename = this.base.replace(/\.[a-zA-Z\d]+$/g, '')
+        this.ext = this.base.replace(this.filename, '')
+    }
+
+    constructor(path) {
+        this.init(path)
+    }
+
+    // Report whether the path is absolute
+    isAbs() {
+        return this.dir[0] === '/'
+    }
+
+    toSlash(separator = '\\') {
+        return this.toString().replace(/\//g, separator)
+    }
+
+    toString() {
+        return _aaPath.join(this.dir, this.base)
+    }
+
     /**
      *
      * @param paths
@@ -54,37 +87,5 @@ class _aaPath {
         return path !== '/' ? path.replace(/\/$/, '') : path
     }
 
-    constructor(path) {
-        this.init(path)
-    }
-
-    init(path) {
-        path = _aaPath.clean(path)
-        if (!path) {
-            this.dir = ''
-            this.base = ''
-            this.ext = ''
-            this.filename = ''
-            return
-        }
-        const a = path.split('/')
-        this.dir = a.slice(0, a.length - 1).join('/') || '/'
-        this.base = a[a.length - 1] || '/'
-        this.filename = this.base.replace(/\.[a-zA-Z\d]+$/g, '')
-        this.ext = this.base.replace(this.filename, '')
-    }
-
-    // Report whether the path is absolute
-    isAbs() {
-        return this.dir[0] === '/'
-    }
-
-    toString() {
-        return _aaPath.join(this.dir, this.base)
-    }
-
-    toSlash(separator = '\\') {
-        return this.toString().replace(/\//g, separator)
-    }
 }
 

@@ -128,6 +128,7 @@ const AaFileTypeEnum = {
 
 class _aaFileSrc {
     name = 'aa-file-src'
+
     process
     path
     filetype
@@ -141,13 +142,12 @@ class _aaFileSrc {
     toJSON() {
         return this.path
     }
-
-
 }
 
 
 class AaImgSrc {
     name = 'aa-img-src'
+
     // @property {int}
     provider
     cropPattern
@@ -160,29 +160,11 @@ class AaImgSrc {
     height
     allowed
 
-
     /**
-     *
-     * @param {string} path
-     * @return {{path: (string|*), filetype: number, size: number, width: number, height: number}}
+     * @param {{[key:string]:*}} props
      */
-    static parsePath(path) {
-        const p = new _aaPath(path)
-        let width = 0, size = 0, height = 0
-        const a = p.filename.split('_')
-        if (len(a) > 1 && len(a[0]) > 32 && len(a[1]) > 0) {
-            size = parseInt(a[0].substring(32), 36)
-            width = parseInt(a[1], 36)
-            height = len(a) === 3 ? parseInt(a[2], 36) : width
-        }
-
-        return {
-            path    : p.toString(),
-            filetype: AaFileTypeEnum.parseImage(p.ext),
-            size    : size,
-            width   : width,
-            height  : height,
-        }
+    init(props) {
+        map.overwrite(this, props, fmt.toCamelCase)
     }
 
     /**
@@ -193,12 +175,6 @@ class AaImgSrc {
         this.init(props)
     }
 
-    /**
-     * @param {{[key:string]:*}} props
-     */
-    init(props) {
-        map.overwrite(this, props, fmt.toCamelCase)
-    }
 
     /**
      * Return the nearest size
@@ -299,6 +275,30 @@ class AaImgSrc {
     // aaFetch 层会处理该数据
     toJSON() {
         return this.path
+    }
+
+    /**
+     *
+     * @param {string} path
+     * @return {{path: (string|*), filetype: number, size: number, width: number, height: number}}
+     */
+    static parsePath(path) {
+        const p = new _aaPath(path)
+        let width = 0, size = 0, height = 0
+        const a = p.filename.split('_')
+        if (len(a) > 1 && len(a[0]) > 32 && len(a[1]) > 0) {
+            size = parseInt(a[0].substring(32), 36)
+            width = parseInt(a[1], 36)
+            height = len(a) === 3 ? parseInt(a[2], 36) : width
+        }
+
+        return {
+            path    : p.toString(),
+            filetype: AaFileTypeEnum.parseImage(p.ext),
+            size    : size,
+            width   : width,
+            height  : height,
+        }
     }
 
 }

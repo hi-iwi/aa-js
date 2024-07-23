@@ -1,5 +1,7 @@
 // @import money.Scale
 class money extends decimal {
+    name = 'aa-money'
+
     static Scale = 4 // 货币 * 10000   Math.pow(10, money.Scale)
     static UnitMoney = Math.pow(10, money.Scale)
     static Min = Number.MIN_SAFE_INTEGER
@@ -17,7 +19,7 @@ class money extends decimal {
     static MillionDollar = 1000 * money.KiloDollar // 百万元    中文的话，就不要用百万、千万
     static BillionDollar = 1000 * money.MillionDollar // 十亿元
 
-    name = 'aa-money'
+
     type = "money"
 
     /**
@@ -27,7 +29,7 @@ class money extends decimal {
      */
     constructor(vv, vk = void '') {
         super(vv, vk)
-         this.scale = money.Scale
+        this.scale = money.Scale
         this.rounder = Math.round
     }
 

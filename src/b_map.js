@@ -3,6 +3,7 @@
 // 自定义map类型  参考 Map
 class map {
     name = 'aa-map'
+
     object // {{[key:string]:*} | FormData| string}
 
     // len() 函数会识别这个
@@ -10,10 +11,9 @@ class map {
         return this.keys().length
     }
 
-    // 不用报错，正常人也不会这么操作
-    // set size(value) {
-    //     throw new SyntaxError("map.size is readonly")
-    // }
+    init(o) {
+        this.object = map.parse(o)
+    }
 
     /**
      * @param {{[key:string]:*} | string} o
@@ -22,8 +22,126 @@ class map {
         this.init(...arguments)
     }
 
-    init(o) {
-        this.object = map.parse(o)
+
+    /**
+     * Sort this map
+     * @return {map}
+     */
+    sort() {
+        let ks = this.keys().sort();
+        let sortedObj = {};
+        for (let i = 0; i < ks.length; i++) {
+            sortedObj[ks[i]] = this.object[ks[i]];
+        }
+        this.object = sortedObj
+        return this
+    }
+
+    toString() {
+        return JSON.stringify(this.object)
+    }
+
+    toQueryString(assert, sort = true) {
+        let params = [];
+        this.forEach((k, v) => {
+            if (k === "" || typeof v === "undefined" || v === null) {
+                return
+            }
+            if (typeof assert === "function" && assert(k, v)) {
+                return
+            }
+            if (Array.isArray(v)) {
+                v = v.join(",")  // url param，数组用逗号隔开模式
+            }
+            v = encodeURIComponent(string(v))
+            params.push(k + '=' + v)
+        }, sort)
+        return params.join('&')
+    }
+
+
+    entries() {
+        return Object.entries(this.object)
+    }
+
+    forEach(callback, sort = false) {
+        // 这种方式forEach 中进行删除未遍历到的值是安全的
+        if (!sort) {
+            for (let [k, v] of this.entries()) {
+                callback(k, v)
+            }
+            return
+        }
+        let keys = this.keys().sort()
+        for (let i = 0; i < keys.length; i++) {
+            let k = keys[i]
+            callback(k, this.get(k))
+        }
+    }
+
+    has(key, allowUndefined = false) {
+        return this.object.hasOwnProperty(key) && (allowUndefined || typeof this.object[key] != "undefined")
+    }
+
+    get(key, cast = string) {
+        let v = this.has(key) ? this.object[key] : void 0
+        return cast(v)
+    }
+
+    keys() {
+        return Object.keys(this.object)
+    }
+
+    values() {
+        return Object.values(this.object)
+    }
+
+    clear() {
+        this.object = {}
+    }
+
+    delete(key) {
+        delete this.object[key]
+    }
+
+    set(key, value) {
+        if (!key) {
+            return
+        }
+        this.object[key] = value
+    }
+
+    getOrSet(key, defaultValue, allowUndefined = false) {
+        if (!this.has(key, allowUndefined)) {
+            this.set(key, defaultValue)
+        }
+        return this.get(key)
+    }
+
+    /**
+     *
+     * @param {map|{[key:string]:*}} obj
+     */
+    extend(obj) {
+        if (obj instanceof map) {
+            obj.forEach((k, v) => {
+                this.set(k, v)
+            })
+            return
+        }
+        if (!obj || typeof obj !== "object") {
+            return this
+        }
+        for (let [k, v] of Object.entries(obj)) {
+            this.set(k, v)
+        }
+        return this
+    }
+
+    // 深度复制
+    clone(deep = true) {
+        let obj = deep ? map.clone(this.object) : {...this.object}
+        return new map(obj)
     }
 
     /**
@@ -184,126 +302,4 @@ class map {
         }
         return target
     }
-
-    /**
-     * Sort this map
-     * @return {map}
-     */
-    sort() {
-        let ks = this.keys().sort();
-        let sortedObj = {};
-        for (let i = 0; i < ks.length; i++) {
-            sortedObj[ks[i]] = this.object[ks[i]];
-        }
-        this.object = sortedObj
-        return this
-    }
-
-    toString() {
-        return JSON.stringify(this.object)
-    }
-
-    toQueryString(assert, sort = true) {
-        let params = [];
-        this.forEach((k, v) => {
-            if (k === "" || typeof v === "undefined" || v === null) {
-                return
-            }
-            if (typeof assert === "function" && assert(k, v)) {
-                return
-            }
-            if (Array.isArray(v)) {
-                v = v.join(",")  // url param，数组用逗号隔开模式
-            }
-            v = encodeURIComponent(string(v))
-            params.push(k + '=' + v)
-        }, sort)
-        return params.join('&')
-    }
-
-
-    entries() {
-        return Object.entries(this.object)
-    }
-
-    forEach(callback, sort = false) {
-        // 这种方式forEach 中进行删除未遍历到的值是安全的
-        if (!sort) {
-            for (let [k, v] of this.entries()) {
-                callback(k, v)
-            }
-            return
-        }
-        let keys = this.keys().sort()
-        for (let i = 0; i < keys.length; i++) {
-            let k = keys[i]
-            callback(k, this.get(k))
-        }
-    }
-
-    has(key, allowUndefined = false) {
-        return this.object.hasOwnProperty(key) && (allowUndefined || typeof this.object[key] != "undefined")
-    }
-
-    get(key, cast = string) {
-        let v = this.has(key) ? this.object[key] : void 0
-        return cast(v)
-    }
-
-    keys() {
-        return Object.keys(this.object)
-    }
-
-    values() {
-        return Object.values(this.object)
-    }
-
-    clear() {
-        this.object = {}
-    }
-
-    delete(key) {
-        delete this.object[key]
-    }
-
-    set(key, value) {
-        if (!key) {
-            return
-        }
-        this.object[key] = value
-    }
-
-    getOrSet(key, defaultValue, allowUndefined = false) {
-        if (!this.has(key, allowUndefined)) {
-            this.set(key, defaultValue)
-        }
-        return this.get(key)
-    }
-
-    /**
-     *
-     * @param {map|{[key:string]:*}} obj
-     */
-    extend(obj) {
-        if (obj instanceof map) {
-            obj.forEach((k, v) => {
-                this.set(k, v)
-            })
-            return
-        }
-        if (!obj || typeof obj !== "object") {
-            return this
-        }
-        for (let [k, v] of Object.entries(obj)) {
-            this.set(k, v)
-        }
-        return this
-    }
-
-    // 深度复制
-    clone(deep = true) {
-        let obj = deep ? map.clone(this.object) : {...this.object}
-        return new map(obj)
-    }
-
 }

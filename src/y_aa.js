@@ -1,4 +1,5 @@
 class Aa {
+    name = 'aa'
     // a_
     // @type typeof _aaPath
     Path = _aaPath
@@ -29,6 +30,9 @@ class Aa {
     // @type _aaFetch
     fetch
 
+    // @type_aaAuthOpenid
+    openidAuth
+
     //@type _aaOSS
     oss
 
@@ -39,6 +43,8 @@ class Aa {
         const rawFetch = new _aaRawFetch(this.storage, this.uri)
         this.fetch = new _aaFetch(this.uri, rawFetch, this.auth)
         this.auth = new _aaAuth(this.storage, rawFetch)
+
+        this.openidAuth = new _aaAuthOpenid(this.storage, this.auth)
 
         this.oss = new _aaOSS()
 
