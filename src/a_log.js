@@ -140,6 +140,18 @@ class log {
         }
     }
 
+    static println(...args) {
+        const dbg = _aaDebug
+        if (dbg.disabled()) {
+            return
+        }
+        console.log('%c------------------------------------', 'background:#999;color:#fff;')
+        for (let i = 0; i < args.length; i++) {
+            console.log(i + '.', args[i])
+        }
+        console.log('%c------------------------------------', 'background:#999;color:#fff;')
+    }
+
     static breakpoint(...args) {
         log._breakpointIncr++
         // args 可能是 object

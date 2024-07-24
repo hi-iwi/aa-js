@@ -24,7 +24,7 @@ class _aaAuthOpenid {
 
 
     getOpenidCache() {
-        const k = "aa:auth.openid"
+        const k = "aa_auth_openid"
         const exp = this.#storage.session.getItem(k + '_expires_in')
         const now = time.unix()
         if (exp === null || parseInt(exp) < now + 1.8 * time.Second) {
@@ -34,7 +34,7 @@ class _aaAuthOpenid {
     }
 
     setOpenidCache(openid, expiresIn) {
-        const k = "aa:auth.openid"
+        const k = "aa_auth_openid"
         const now = time.unix()
         const exp = now + int32(expiresIn)
         this.#storage.session.setItem(k, openid)
@@ -50,7 +50,7 @@ class _aaAuthOpenid {
         if (!forceRefresh) {
             let openid = this.getOpenidCache()
             if (openid) {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve, _) => {
                     resolve(openid)
                 })
             }

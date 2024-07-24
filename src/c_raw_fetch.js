@@ -39,9 +39,13 @@ class _aaRawFetch {
         credentials: "omit", // omit 不发送cookie；same-origin 仅同源发送cookie；include 发送cookie
         //headers: headers,
         // integrity:"",
-        keepalive     : false,
-        method        : "GET",
-        mode          : "no-cors",  // same-origin 同源；cors 允许跨域；no-cors; navigate
+        keepalive: false,
+        method   : "GET",
+        /**
+         * If the mode option is set to no-cors, then method must be one of GET, POST or HEAD.
+         * By default, mode is set to cors
+         */
+        mode          : "cors",  // same-origin 同源；cors 允许跨域；no-cors ; navigate
         redirect      : "error", // follow 自动跳转；manual 手动跳转；error 报错
         referrer      : "",  //A string whose value is a same-origin URL, "about:client", or the empty string, to set request's referrer.
         referrerPolicy: "no-referrer",
@@ -49,7 +53,9 @@ class _aaRawFetch {
     }
 
     initGlobalHeaders(headers) {
-        this.#headers = headers ? headers : {}
+        if (atype.isStruct(headers)) {
+            this.#headers = headers
+        }
     }
 
     /**
@@ -134,6 +140,7 @@ class _aaRawFetch {
                 }
             }
         })
+
         return headers
     }
 
@@ -145,9 +152,18 @@ class _aaRawFetch {
      * @return {(*|Object)[]|(*|Object)[]}
      */
     formatSettings(url, settings) {
+        let headers = settings.headers
+
         settings = map.fillUp(settings, this.#defaultSettings)   // 要允许外面扩展配置
-        settings.headers = this.#fillUpHeaders(settings.headers)
+
+        headers = this.#fillUpHeaders(headers)
+        let contentType = headers['Content-Type']
+        if (!contentType) {
+            contentType = 'application/json'
+            headers['Content-Type'] = contentType
+        }
         settings.method = settings.method.toUpperCase()
+        settings.headers = headers  // 先不要使用 new Headers()， 容易出现莫名其妙的问题。直接让fetch自己去转换
         const data = settings.data
         if (len(data) === 0) {
             return [url, settings]
@@ -155,7 +171,6 @@ class _aaRawFetch {
         let queries;
         [url, queries] = this.lookup(settings.method, url, data, !!settings.body)
         if (len(queries) > 0 && !settings.body) {
-            const contentType = string(settings.headers, 'Content-Type')
             settings.body = this.serializeData(data, contentType)
         }
         return [url, settings]
@@ -202,6 +217,8 @@ class _aaRawFetch {
      * @return {[string, any ]|Promise}
      */
     middleware(url, settings, hook) {
+
+
         [url, settings] = this.formatSettings(url, settings)
         if (hook) {
             const h = hook(settings)
@@ -230,6 +247,7 @@ class _aaRawFetch {
      * @return {Promise<*>}
      */
     fetch(url, settings, hook) {
+        // 这里 settings.headers 会被转为 new Headers(settings.headers)
         const mw = this.middleware(url, settings, hook)
         if (mw instanceof Promise) {
             return mw
@@ -248,7 +266,7 @@ class _aaRawFetch {
             // 捕获返回数据，修改为 resp.data
             const err = new AError(resp['code'], resp['msg'])
             if (!err.isOK()) {
-                throw err.addHeading(url)
+                throw err
             }
             return resp['data']
         }).catch(err => {
@@ -279,8 +297,7 @@ class _aaRawFetch {
                 return Number(resp.status)
             }
             return resp.json()
-        }).then(resp => typeof resp === "number" ? resp : number(resp, 'code')
-        ).catch(err => {
+        }).then(resp => typeof resp === "number" ? resp : number(resp, 'code')).catch(err => {
             log.error(`${settings.method} ${url} status error: ${err.message}`)
             return AErrorEnum.ClientThrow   // 后面再也不用 catch 了
         })

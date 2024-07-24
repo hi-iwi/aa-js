@@ -8,7 +8,7 @@ class _aaCache {
     }
 
     tableName(table) {
-        return 'aa:db:' + table
+        return 'aa_db_' + table
     }
 
     keyname(table, key) {

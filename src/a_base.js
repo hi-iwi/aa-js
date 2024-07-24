@@ -6,7 +6,7 @@ const aparam = {
     Apollo: "apollo",
 
 
-    Authorization: "Authorization",
+    Authorization: "Authorization",  // 由 token_type access_token 组合而成
 
     AccessTokenType     : "token_type",
     AccessToken         : "access_token",  // header/query/cookie
@@ -29,7 +29,7 @@ var _aaDebug = new (class {
     name = 'aa-debug'
     value = 0
 
-    #storageKeyname = "aa:" + aparam.Debug
+    #storageKeyname = "aa_" + aparam.Debug
     #disabled = 0
     #console = 1
     #alert = 2

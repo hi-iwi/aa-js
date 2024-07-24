@@ -255,7 +255,7 @@ class AError extends Error {
         if (ending) {
             ending = ' ' + ending
         }
-        return heading + ' ' + msg + ' ' + ending
+        return heading + msg + ending
     }
 
     /**
@@ -264,7 +264,7 @@ class AError extends Error {
      * @return {AError}
      */
     addHeading(heading) {
-        this.#heading += ' ' + heading
+        this.#heading += '#[' + heading + ']#'
         return this
     }
 
@@ -388,7 +388,7 @@ class AError extends Error {
     }
 
     toString() {
-        return this.getMsg() + " [code:" + this.#code + "]"
+        return this.getMsg()
     }
 
     static newBadRequest(param, dict) {

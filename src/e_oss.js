@@ -304,13 +304,31 @@ class AaImgSrc {
 }
 
 
-
 class _aaOSS {
     name = 'aa-oss'
+
+    #assetLibHandler
+    #assetHandler
+
+    initAssetLibHandler(handler) {
+        this.#assetLibHandler = handler
+    }
+
+
+    initAssetHandler(handler) {
+        this.#assetHandler = handler
+    }
 
     constructor() {
     }
 
+    assetLib(path){
+        return typeof this.#assetLibHandler === "function" ? this.#assetLibHandler(path) : path
+    }
+
+    asset(path) {
+        return typeof this.#assetHandler === "function" ? this.#assetHandler(path) : path
+    }
 
     /**
      * New AaImgSrc

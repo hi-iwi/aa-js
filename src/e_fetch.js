@@ -15,6 +15,8 @@ class _aaFetch {
 
     enableRedirect = true  // 是否允许自动跳转
 
+    deleteHasBody = false  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/DELETE
+
     /**
      * 对 _aaRawFetch settings 扩展
      * @type {{mustAuth?:boolean, onAuthError?:function, preventTokenRefresh?:boolean}}
@@ -51,16 +53,14 @@ class _aaFetch {
     // 一定要用static，防止传递过程中this指向问题
     fetchHook(settings) {
         // API不判断cookie，就不用考虑CSRF攻击
-        if (!settings.preventTokenRefresh) {
-            // try to refresh access token
-            let authorization = this.#auth.getAuthorization()
-            if (authorization) {
-                settings.headers[aparam.Authorization] = authorization
-            } else if (settings.mustAuth) {
-                return new Promise((resolve, reject) => {
-                    reject(new AError(AErrorEnum.Unauthorized, settings.dictionary))
-                })
-            }
+        let authorization = this.#auth.getAuthorization()
+
+        if (authorization) {
+            settings.headers[aparam.Authorization] = authorization
+        } else if (settings.mustAuth) {
+            return new Promise((resolve, reject) => {
+                reject(new AError(AErrorEnum.Unauthorized, settings.dictionary))
+            })
         }
     }
 
@@ -171,7 +171,6 @@ class _aaFetch {
         }
         // @type _aaURI
         const uri = new this.#uri(url, params)
-
         return this.fetch(uri.toString(), settings, noThrown)
     }
 
@@ -207,12 +206,19 @@ class _aaFetch {
      * @return {Promise<*>}
      */
     delete(url, params, dictionary, noThrown = false) {
-        const settings = {
+        let settings = {
             method    : 'DELETE',
-            data      : data,
+            data      : params,
             dictionary: dictionary,
             mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
+
+        if (!this.deleteHasBody) {
+            const uri = new this.#uri(url, params)
+            url = uri.toString()
+            delete settings.data
+        }
+
         return this.fetch(url, settings, noThrown)
     }
 
@@ -223,7 +229,7 @@ class _aaFetch {
     deleteA(url, params, dictionary) {
         const settings = {
             method    : 'DELETE',
-            data      : data,
+            data      : params,
             dictionary: dictionary,
             mustAuth  : false,
         }
@@ -233,7 +239,7 @@ class _aaFetch {
     deleteNA(url, params, dictionary) {
         const settings = {
             method    : 'DELETE',
-            data      : data,
+            data      : params,
             dictionary: dictionary,
             mustAuth  : false,
         }

@@ -89,7 +89,7 @@ class Aa {
      * @param {_aaStorage} [storage]
      * @return {_aaApollo}
      */
-    apollo(url, fingerprintGenerator, loginDataHandler, storage = this.storage.local) {
+    apollo(url, fingerprintGenerator, loginDataHandler, storage = this.storage.cookie) {
         return new _aaApollo(this.fetch, url, fingerprintGenerator, loginDataHandler, storage)
     }
 
