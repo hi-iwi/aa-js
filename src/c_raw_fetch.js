@@ -261,7 +261,7 @@ class _aaRawFetch {
     }
 
     /**
-     * Get HTTP status code without Error/AError thrown
+     * Get HTTP status code without AError/Error thrown
      * @param {RequestInfo} url
      * @param {{[key:string]:any}|*} [settings]
      * @param {function} [hook]

@@ -68,6 +68,10 @@ class log {
         log.print('[info]', ...args)
     }
 
+    /**
+     * Debug 浏览器默认不显示，需要在调试右上角打开 level:verbose
+     * @param args
+     */
     static debug(...args) {
         log.print('[debug]', ...args)
     }

@@ -1,9 +1,8 @@
-// 不要  extends Storage，会报错
-const _aaPseudoStorage_ = new class {
+class _aaPseudoStorage {
     name = 'aa-pseudo-storage'
 
     get length() {
-        log.warn("it's a pseudo storage!")
+        log.warn(`length: it's a pseudo storage!`)
         return Object.keys(this).length
     }
 
@@ -17,31 +16,31 @@ const _aaPseudoStorage_ = new class {
 
 
     key(index) {
-        log.warn("it's a pseudo storage!")
+        log.warn(`key(${index}): it's a pseudo storage!`)
         let keys = Object.keys(this)
         return keys.length > index ? keys[index] : null
     }
 
 
     setItem(key, value, _) {
-        log.warn("it's a pseudo storage!")
+        log.warn(`setItem(${key}, ${value}): it's a pseudo storage!`)
         cookieStorage[key] = string(value)
     }
 
     getItem(key, _) {
-        log.warn("it's a pseudo storage!")
+        log.warn(`getItem(${key}): it's a pseudo storage!`)
         return typeof this[key] === "string" ? this[key] : null
     }
 
     removeItem(key, _) {
-        log.warn("it's a pseudo storage!")
+        log.warn(`removeItem(${key}): it's a pseudo storage!`)
         if (typeof this[key] === "string") {
             delete this[key]
         }
     }
 
     clear() {
-        log.warn("it's a pseudo storage!")
+        log.warn(`clear(): it's a pseudo storage!`)
         Object.keys(this).map(key => {
             if (typeof this[key] === "string") {
                 delete this[key]
@@ -99,7 +98,7 @@ class _aaStorage {
 
 
     isPseudo() {
-        return this.#storage instanceof _aaPseudoStorage_
+        return this.#storage instanceof _aaPseudoStorage
     }
 
     /**
@@ -342,7 +341,7 @@ class _aaStorageFactor {
     constructor(cookieStorage, localStorage, sessionStorage) {
         this.local = new _aaStorage(localStorage || window.localStorage, [], false, true)
         this.session = new _aaStorage(sessionStorage || window.sessionStorage, [], false, true)
-        this.cookie = new _aaStorage(cookieStorage || _aaPseudoStorage_, [], true, false)
+        this.cookie = new _aaStorage(cookieStorage || new _aaPseudoStorage(), [], true, false)
     }
 
     /**
@@ -351,15 +350,20 @@ class _aaStorageFactor {
      * @param [options]
      */
     getEntire(key, options) {
-        let value = this.cookie.getItem(key, options)
-        if (value) {
-            return value
+        let value
+        if (!this.cookie.isPseudo()) {
+            value = this.cookie.getItem(key, options)
+            if (value) {
+                return value
+            }
         }
-        value = this.session.getItem(key, options)
-        if (value) {
-            return value
+        if (!this.session.isPseudo()) {
+            value = this.session.getItem(key, options)
+            if (value) {
+                return value
+            }
         }
-        return this.local.getItem(key, options)
+        return this.local.isPseudo() ? null : this.local.getItem(key, options)
     }
 
     /**

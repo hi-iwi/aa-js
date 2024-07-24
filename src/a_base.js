@@ -27,7 +27,7 @@ const aparam = {
  */
 var _aaDebug = new (class {
     name = 'aa-debug'
-    type = 0
+    value = 0
 
     #storageKeyname = "aa:" + aparam.Debug
     #disabled = 0
@@ -46,7 +46,7 @@ var _aaDebug = new (class {
         if (ok) {
             return
         }
-        this.type = this.isLocalhost() ? this.#console : this.#disabled
+        this.value = this.isLocalhost() ? this.#console : this.#disabled
     }
 
     isLocalhost() {
@@ -64,29 +64,29 @@ var _aaDebug = new (class {
         }
 
         // C类局域网IP
-        return /^192\.168\.\d+\d+$/.test(h);
+        return /^192\.168\.\d+\.\d+$/.test(h);
 
     }
 
     init(type, store = false) {
         type = string(type).toUpperCase()
         if (['1', 'TRUE'].includes(type)) {
-            this.type = this.#console
+            this.value = this.#console
         }
         if (['2', 'ALERT'].includes(type)) {
-            this.type = this.#alert
+            this.value = this.#alert
         }
         if (!['0', 'FALSE', 'DISABLED'].includes(type)) {
             console.error("RangeError: set debug error " + type)
         } else if (store) {
             this.store()
         }
-        this.type = this.#disabled
+        this.value = this.#disabled
     }
 
 
     store() {
-        const value = atype.aliasOf(this.type).toUpperCase() + ":" + this.type  // N:1, add N: make this storage persistent
+        const value = atype.aliasOf(this.value).toUpperCase() + ":" + this.value  // N:1, add N: make this storage persistent
         localStorage.setItem(this.#storageKeyname, value)
     }
 
@@ -98,15 +98,19 @@ var _aaDebug = new (class {
     }
 
     disabled() {
-        return this.type === this.#disabled
+        return this.value === this.#disabled
     }
 
     isConsole() {
-        return this.type === this.#console
+        return this.value === this.#console
     }
 
     isAlert() {
-        return this.type === this.#alert
+        return this.value === this.#alert
+    }
+
+    toValue() {
+        return this.value
     }
 })()
 

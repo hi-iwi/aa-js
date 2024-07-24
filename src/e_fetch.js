@@ -68,7 +68,7 @@ class _aaFetch {
      *
      * @param url
      * @param settings
-     * @param {boolean} noThrown?  No Error/AError thrown
+     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {*}
      * @exmaple async mode 异步模式，返回结果顺序不固定
      *  aa.fetch.fetch(urlA).then().catch()
@@ -96,10 +96,11 @@ class _aaFetch {
                 if (typeof settings.onAuthError === "function" && settings.onAuthError(err)) {
                     return
                 }
-                if (this.#auth.triggerUnauthorized()) {
+                if (this.#auth.triggerUnauthorized(`${settings.method} ${url}`)) {
                     return
                 }
             }
+
             if (noThrown && err.triggerDisplay()) {
                 return
             }
@@ -108,12 +109,35 @@ class _aaFetch {
     }
 
     /**
-     * Fetch without Error/AError thrown
+     * Fetch without AError/Error thrown
      * @param url
      * @param settings
      * @return {*}
      */
     fetchN(url, settings) {
+        return this.fetch(url, settings, true)
+    }
+
+    /**
+     * Fetch without auth
+     * @param url
+     * @param settings
+     */
+    fetchA(url, settings) {
+        settings = struct(settings)
+        settings.mustAuth = false
+        return this.fetch(url, settings, false)
+    }
+
+    /**
+     * Fetch without must auth and no AError/Error thrown
+     * @param url
+     * @param settings
+     * @return {*}
+     */
+    fetchNA(url, settings) {
+        settings = struct(settings)
+        settings.mustAuth = false
         return this.fetch(url, settings, true)
     }
 
@@ -137,7 +161,7 @@ class _aaFetch {
      * @param {string} url
      * @param {{[key:string]:any}} [params]
      * @param {{[key:string]:any}} [dictionary]
-     * @param {boolean} noThrown?  No Error/AError thrown
+     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {Promise<*>}
      */
     get(url, params, dictionary, noThrown = false) {
@@ -156,11 +180,11 @@ class _aaFetch {
     }
 
     /**
-     * HTTP HEAD without Error/AError thrown
+     * HTTP HEAD without AError/Error thrown
      * @param {string} url
      * @param {{[key:string]:any}} [params]
      * @param {{[key:string]:any}} [dictionary]
-     * @param {boolean} noThrown?  No Error/AError thrown
+     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {Promise<*>}
      * @warn Warning: A response to a HEAD method should not have a body. If it has one anyway, that body must be ignored
      *  HEAD只返回 resp['code'] 或 HTTP状态码，忽略 resp['data'] 数据
@@ -179,7 +203,7 @@ class _aaFetch {
      * @param {string} url
      * @param {{[key:string]:any}} [params]
      * @param {{[key:string]:any}} [dictionary]
-     * @param {boolean} noThrown?  No Error/AError thrown
+     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {Promise<*>}
      */
     delete(url, params, dictionary, noThrown = false) {
@@ -196,12 +220,32 @@ class _aaFetch {
         return this.delete(url, params, dictionary, true)
     }
 
+    deleteA(url, params, dictionary) {
+        const settings = {
+            method    : 'DELETE',
+            data      : data,
+            dictionary: dictionary,
+            mustAuth  : false,
+        }
+        return this.fetch(url, settings, false)
+    }
+
+    deleteNA(url, params, dictionary) {
+        const settings = {
+            method    : 'DELETE',
+            data      : data,
+            dictionary: dictionary,
+            mustAuth  : false,
+        }
+        return this.fetch(url, settings, true)
+    }
+
     /**
      * HTTP POST
      * @param {string} url
      * @param {{[key:string]:any}} [data]
      * @param {{[key:string]:any}} [dictionary]
-     * @param {boolean} noThrown?  No Error/AError thrown
+     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {Promise<*>}
      */
     post(url, data, dictionary, noThrown = false) {
@@ -218,12 +262,32 @@ class _aaFetch {
         return this.post(url, data, dictionary, true)
     }
 
+    postA(url, data, dictionary) {
+        const settings = {
+            method    : 'POST',
+            data      : data,
+            dictionary: dictionary,
+            mustAuth  : false,
+        }
+        return this.fetch(url, settings, false)
+    }
+
+    postNA(url, data, dictionary) {
+        const settings = {
+            method    : 'POST',
+            data      : data,
+            dictionary: dictionary,
+            mustAuth  : false,
+        }
+        return this.fetch(url, settings, true)
+    }
+
     /**
      * HTTP PUT
      * @param {string} url
      * @param {{[key:string]:any}} [data]
      * @param {{[key:string]:any}} [dictionary]
-     * @param {boolean} noThrown?  No Error/AError thrown
+     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {Promise<*>}
      */
     put(url, data, dictionary, noThrown = false) {
@@ -240,12 +304,32 @@ class _aaFetch {
         return this.put(url, data, dictionary, true)
     }
 
+    putA(url, data, dictionary) {
+        const settings = {
+            method    : 'PUT',
+            data      : data,
+            dictionary: dictionary,
+            mustAuth  : false,
+        }
+        return this.fetch(url, settings, false)
+    }
+
+    putNA(url, data, dictionary) {
+        const settings = {
+            method    : 'PUT',
+            data      : data,
+            dictionary: dictionary,
+            mustAuth  : false,
+        }
+        return this.fetch(url, settings, true)
+    }
+
     /**
      * HTTP PATCH
      * @param {string} url
      * @param {{[key:string]:any}} [data]
      * @param {{[key:string]:any}} [dictionary]
-     * @param {boolean} noThrown?  No Error/AError thrown
+     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {Promise<*>}
      */
     patch(url, data, dictionary, noThrown = false) {
@@ -260,5 +344,25 @@ class _aaFetch {
 
     patchN(url, data, dictionary) {
         return this.patch(url, data, dictionary, true)
+    }
+
+    patchA(url, data, dictionary) {
+        const settings = {
+            method    : 'PATCH',
+            data      : data,
+            dictionary: dictionary,
+            mustAuth  : false,
+        }
+        return this.fetch(url, settings, false)
+    }
+
+    patchNA(url, data, dictionary) {
+        const settings = {
+            method    : 'PATCH',
+            data      : data,
+            dictionary: dictionary,
+            mustAuth  : false,
+        }
+        return this.fetch(url, settings, true)
     }
 }

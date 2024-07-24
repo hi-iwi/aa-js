@@ -65,19 +65,22 @@ class _aaAuth {
     constructor(storage, rawFetch) {
         this.#storage = storage
         this.#rawFetch = rawFetch
-        this.validate()
-
+        setTimeout(() => {
+            this.validate()
+        }, 400 * time.Millisecond)
     }
 
 
     /**
      * Trigger to handle Unauthorized
+     * @param {any} msg
      * @return {boolean}
      */
-    triggerUnauthorized() {
+    triggerUnauthorized(msg = '') {
         if (typeof this.#unauthorizedHandler !== "function") {
             return false
         }
+        log.debug("trigger unauthorized", msg)
         const result = this.#unauthorizedHandler()
         return typeof result === "boolean" ? result : true
     }
@@ -102,8 +105,6 @@ class _aaAuth {
         }
         const [method, api] = this.#parseApiUrl(this.token['validate_api'])
         this.#rawFetch.fetch(api, {
-
-
             method: method,
             data  : {}
         }).then(_ => {
