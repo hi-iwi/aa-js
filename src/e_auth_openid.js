@@ -9,6 +9,8 @@ class _aaAuthOpenid {
     // @type {function:Promise}
     #fetchPromise
 
+    #openid
+
     /**
      *
      * @param {function:Promise} handler
@@ -48,6 +50,9 @@ class _aaAuthOpenid {
      */
     fetch(forceRefresh = false) {
         if (!forceRefresh) {
+            if (!this.#openid) {
+                return this.#openid
+            }
             let openid = this.getOpenidCache()
             if (openid) {
                 return new Promise((resolve, _) => {
@@ -67,6 +72,8 @@ class _aaAuthOpenid {
             }
             const expiresIn = int32(data['expires_in'])
             this.setOpenidCache(openid, expiresIn)
+            this.#openid = openid
+            return openid
         })
     }
 
