@@ -1,5 +1,92 @@
 # Code Style Guide
 
+
+### class 属性顺序
+
+1. variable keep word `name`, to name this class
+2. static Constants
+3. static variables
+4. private static #variables
+5. variables
+6. private #variables
+7. get
+8. set
+9. len()
+10. initXXX()
+11. init()
+12. constructor()
+13. other methods()
+14. valueOf()
+15. toString()
+16. toJSON()
+17. log()
+18. static methods()
+
+```js
+class Demo {
+    name = 'demo'   // keep word to name the class
+
+    static ConstantData = 1   // static constant starts with biggercase, and list in front of other properties/methods
+    static Name = "constant"  // constant is unmodifable
+
+    static name = 'Aario'    // static variables starts with lowercase, it's changable
+    static #age = 18   // private static variables start with #
+
+    hundsome = true
+    #nationality = 'China'
+
+    get nationality() {
+        return this.#nationality
+    }
+
+    set nationality(nationality) {
+        this.#nationality = nationality
+    }
+
+    len() {   // a special method
+
+    }
+
+    initAge(age) {
+        this.#age = age
+    }
+
+    init() {                // a special method
+
+    }
+
+    constructor() {
+        this.init()
+     }
+
+    otherMethod() {
+
+    }
+
+    valueOf() {
+
+    }
+
+    toString() {
+
+    }
+
+    toJSON() {
+
+    }
+
+    log() {
+
+    }
+
+    static sayHello() {
+        alert("Hello")
+    }
+}
+```
+
+
+
 ## Use sentence-case style to comment or print
 
 ```javascript

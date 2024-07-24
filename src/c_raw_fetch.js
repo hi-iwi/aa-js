@@ -51,6 +51,7 @@ class _aaRawFetch {
     initGlobalHeaders(headers) {
         this.#headers = headers ? headers : {}
     }
+
     /**
      * @param {_aaStorageFactor} storage
      * @param {typeof _aaURI} uri
@@ -66,11 +67,18 @@ class _aaRawFetch {
         this.#headers = {...this.#headers, ...headers}
     }
 
-    /*
-    根据 iris 路由规则来
-    /api/v1/{name:uint64}/hello
-    /api/v1/{name}
-    */
+
+    /**
+     *
+     *     根据 iris 路由规则来
+     *     /api/v1/{name:uint64}/hello
+     *     /api/v1/{name}
+     * @param method
+     * @param url
+     * @param data
+     * @param isDataAllQueryString
+     * @return {[string, any]}
+     */
     lookup(method, url, data, isDataAllQueryString = false) {
         if (len(data) === 0) {
             return [url, null]
@@ -195,7 +203,6 @@ class _aaRawFetch {
      */
     middleware(url, settings, hook) {
         [url, settings] = this.formatSettings(url, settings)
-
         if (hook) {
             const h = hook(settings)
             if (h instanceof Promise) {
@@ -210,8 +217,9 @@ class _aaRawFetch {
                 })
             }
         }
-        url = new this.#uri(url, {"_stringify": booln(true)}).toString()
-        return [url, settings]
+
+        const uri = new this.#uri(url, {"_stringify": booln(true)})
+        return [uri.toString(), settings]
     }
 
     /**

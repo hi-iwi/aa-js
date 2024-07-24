@@ -6,9 +6,16 @@ class _aaAuthOpenid {
     #auth
 
 
-    // @type function
+    // @type {function:Promise}
     #fetchPromise
 
+    /**
+     *
+     * @param {function:Promise} handler
+     */
+    initFetchPromise(handler) {
+        this.#fetchPromise = handler
+    }
 
     constructor(storage, auth) {
         this.#storage = storage

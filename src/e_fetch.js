@@ -25,14 +25,14 @@ class _aaFetch {
         onAuthError        : void nif,
         preventTokenRefresh: false,
     }
+
     initGlobalHeaders(headers) {
         this.#rawFetch.initGlobalHeaders(headers)
         return this
     }
 
-
     /**
-     * @param {_aaURI} uri
+     * @param {typeof _aaURI} uri
      * @param {_aaRawFetch} rawFetch
      * @param {_aaAuth} auth
      */
@@ -43,13 +43,12 @@ class _aaFetch {
     }
 
 
-
     addGlobalHeaders(headers) {
         this.#rawFetch.addGlobalHeaders(headers)
         return this
     }
 
-
+    // 一定要用static，防止传递过程中this指向问题
     fetchHook(settings) {
         // API不判断cookie，就不用考虑CSRF攻击
         if (!settings.preventTokenRefresh) {
@@ -87,7 +86,7 @@ class _aaFetch {
      */
     fetch(url, settings, noThrown = false) {
         settings = map.fillUp(settings, this.#defaultSettingsExt)
-        const response = this.#rawFetch.fetch(url, settings, this.fetchHook)
+        const response = this.#rawFetch.fetch(url, settings, this.fetchHook.bind(this))
         return response.then(data => data).catch(err => {
             if (this.enableRedirect && err.isRetryWith()) {
                 location.href = err.message // 特殊跳转
@@ -97,7 +96,7 @@ class _aaFetch {
                 if (typeof settings.onAuthError === "function" && settings.onAuthError(err)) {
                     return
                 }
-                if (this.#auth.triggerUnauthorized(err)) {
+                if (this.#auth.triggerUnauthorized()) {
                     return
                 }
             }
@@ -120,7 +119,7 @@ class _aaFetch {
 
     statusN(url, settings) {
         settings = map.fillUp(settings, this.#defaultSettingsExt)
-        const response = this.#rawFetch.statusN(url, settings, this.fetchHook)
+        const response = this.#rawFetch.statusN(url, settings, this.fetchHook.bind(this))
         return response.then(code => code)   // 不用 catch error
     }
 
@@ -146,8 +145,10 @@ class _aaFetch {
             method    : "GET",
             dictionary: dictionary,
         }
-        url = new this.#uri(url, params)
-        return this.fetch(url, settings, noThrown)
+        // @type _aaURI
+        const uri = new this.#uri(url, params)
+
+        return this.fetch(uri.toString(), settings, noThrown)
     }
 
     getN(url, params, dictionary) {

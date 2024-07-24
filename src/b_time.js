@@ -132,6 +132,14 @@ class _aaDateZero extends Date {
 class _aaDateString {
     name = 'aa-date-string'
 
+    static minDatetime = '0000-00-00 00:00:00' // 当作配置，可以修改; date/year 等可以通过此解析出来，不用单独配置了
+    static maxDatetime = '9999-12-31 23:59:59'
+
+    static #minYear = _aaDateString.minDatetime.substring(0, 4)
+    static #minDate = _aaDateString.minDatetime.substring(0, 10)
+    static #maxYear = _aaDateString.maxDatetime.substring(0, 4)
+    static #maxDate = _aaDateString.maxDatetime.substring(0, 10)
+
     static localTimezoneOffsetString = _aaDateString.parseTimezoneOffsetString()
     static #yearLen = 4 // len('0000')
     static #dateLen = 10  // len('0000-00-00')
@@ -139,12 +147,7 @@ class _aaDateString {
     static #yearPattern = /^\d{4}$/
     static #datePattern = /^\d{4}-[01]\d-[03]\d$/
     static #datetimePattern = /^\d{4}-[01]\d-[03]\d[\sT][0-2]\d:[0-5]\d:[0-5]\d$/
-    static #minYear = _aaDateZero.MinDatetime.substring(0, 4) || '0000'
-    static #maxYear = _aaDateZero.MaxDatetime.substring(0, 4) || '9999'
-    static #minDate = _aaDateZero.MinDatetime.substring(0, 10) || '0000-00-00'
-    static #maxDate = _aaDateZero.MaxDatetime.substring(0, 10) || '9999-12-31'
-    static #minDatetime = _aaDateZero.MinDatetime || '0000-00-00 00:00:00'
-    static #maxDatetime = _aaDateZero.MaxDatetime || '9999-12-31 23:59:59'
+
 
     timezoneOffset
     #value = ""
@@ -227,7 +230,7 @@ class _aaDateString {
         if (this.isDate()) {
             return v.substring(0, d.#dateLen) === d.#minDate
         }
-        return v.substring(0, d.#datetimeLen) === d.#minDatetime
+        return v.substring(0, d.#datetimeLen) === d.minDatetime
     }
 
     isMax() {
@@ -239,7 +242,7 @@ class _aaDateString {
         if (this.isDate()) {
             return v.substring(0, d.#dateLen) === d.#maxDate
         }
-        return v.substring(0, d.#datetimeLen) === d.#maxDatetime
+        return v.substring(0, d.#datetimeLen) === d.maxDatetime
     }
 
     year() {
@@ -297,6 +300,20 @@ class _aaDateString {
         return this.#value
     }
 
+    static setMinDatetime(datetime) {
+        const self = _aaDateString
+        self.minDatetime = datetime
+        self.#minYear = datetime.substring(0, 4)
+        self.#minDate = datetime.substring(0, 10)
+    }
+
+    static setMaxDatetime(datetime) {
+        const self = _aaDateString
+        self.maxDatetime = datetime
+        self.#maxYear = datetime.substring(0, 4)
+        self.#maxDate = datetime.substring(0, 10)
+    }
+
     /**
      * 将秒数转为 II:SS 格式，或者把分钟数转为 HH:II格式
      * @param {number} t
@@ -349,12 +366,12 @@ class _aaDateValidator {
     static ValidDate = 'valid date'
 
 
-    static #minYearTs = new _aaDateString(_aaDateZero.MinDatetime.substring(0, 4) || '0000').valueOf()
-    static #maxYearTs = new _aaDateString(_aaDateZero.MaxDatetime.substring(0, 4) || '9999').valueOf()
-    static #minDateTs = new _aaDateString(_aaDateZero.MinDatetime.substring(0, 10) || '0000-00-00').valueOf()
-    static #maxDateTs = new _aaDateString(_aaDateZero.MaxDatetime.substring(0, 10) || '9999-12-31').valueOf()
-    static #minDatetimeTs = new _aaDateString(_aaDateZero.MinDatetime || '0000-00-00 00:00:00').valueOf()
-    static #maxDatetimeTs = new _aaDateString(_aaDateZero.MaxDatetime || '9999-12-31 23:59:59').valueOf()
+    static #minYearTs = new _aaDateString(_aaDateString.minDatetime.substring(0, 4) || '0000').valueOf()
+    static #maxYearTs = new _aaDateString(_aaDateString.maxDatetime.substring(0, 4) || '9999').valueOf()
+    static #minDateTs = new _aaDateString(_aaDateString.minDatetime.substring(0, 10) || '0000-00-00').valueOf()
+    static #maxDateTs = new _aaDateString(_aaDateString.maxDatetime.substring(0, 10) || '9999-12-31').valueOf()
+    static #minDatetimeTs = new _aaDateString(_aaDateString.minDatetime || '0000-00-00 00:00:00').valueOf()
+    static #maxDatetimeTs = new _aaDateString(_aaDateString.maxDatetime || '9999-12-31 23:59:59').valueOf()
 
 
     #type
@@ -466,8 +483,6 @@ class time {
     name = 'aa-time'
 
     // MinDate    : '0000-00-00',
-    static MinDatetime = '0000-00-00 00:00:00' // 当作配置，可以修改; date/year 等可以通过此解析出来，不用单独配置了
-    static MaxDatetime = '9999-12-31 23:59:59'
     static Millisecond = 1
     static Second = 1000 * time.Millisecond
     static Minute = 60 * time.Second
@@ -839,6 +854,22 @@ class time {
     // 用于json序列号
     toJSON() {
         return this.toString()
+    }
+
+    static minDatetime() {
+        return _aaDateString.minDatetime
+    }
+
+    static setMinDatetime(datetime) {
+        _aaDateString.setMinDatetime(datetime)
+    }
+
+    static maxDatetime() {
+        return _aaDateString.maxDatetime
+    }
+
+    static setMaxDatetime(datetime) {
+        _aaDateString.setMaxDatetime(datetime)
     }
 
     /**

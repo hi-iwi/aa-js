@@ -8,7 +8,7 @@ class decimal {
 
 
     type = "decimal"
-     // https://www.splashlearn.com/math-vocabulary/decimals/decimal-point
+    // https://www.splashlearn.com/math-vocabulary/decimals/decimal-point
     // https://learn.microsoft.com/en-us/sql/t-sql/data-types/precision-scale-and-length-transact-sql?view=sql-server-ver16
     // [whole -> precision - scale][decimal point = .][mantissa -> scale]
     value     // 值
@@ -133,7 +133,6 @@ class decimal {
     }
 
 
-
     /**
      *
      * @param {number} scale    是否截断小数尾部0
@@ -149,7 +148,7 @@ class decimal {
         }
         let ok = false;
 
-        [s, ok] = decimal.#mantissaOk(s, scale, trimScale)
+        [s, ok] = this.#mantissaOk(s, scale, trimScale)
         if (!ok) {
             return s
         }
@@ -166,7 +165,7 @@ class decimal {
                 }
             }
             // s 发生变化
-            [s, ok] = decimal.#mantissaOk(s, scale, trimScale)
+            [s, ok] = this.#mantissaOk(s, scale, trimScale)
             if (!ok) {
                 return s
             }
@@ -179,14 +178,15 @@ class decimal {
      * @returns {string}
      */
     format(style = void null) {
-        style = decimal.#newStyle(style)
+        style = this.#newStyle(style)
         return this.formatWhole(style.segmentSize, style.separator) + this.formatMantissa(style.scale, style.trimScale, style.scaleRound)
     }
+
     /**
      * @param {number|{segmentSize?: number, scale?: number, separator?: string, trimScale?: boolean, scaleRound?: ("floor"|"round"|"ceil")}} [style]
      * @returns {{segmentSize: number, scale: number, separator: string, trimScale: boolean, scaleRound: ('floor'|'round'|'ceil')}}
      */
-    static #newStyle(style = void null) {
+    #newStyle(style = void null) {
         let t = {
             segmentSize: 0,  // 整数部分每segmentSize位使用separator隔开
             separator  : ",", // 整数部分分隔符，如英文每3位一个逗号；中文每4位一个空格等表示方法
@@ -205,7 +205,7 @@ class decimal {
     }
 
 
-    static #mantissaOk(s, scale = 0, trimScale = false) {
+    #mantissaOk(s, scale = 0, trimScale = false) {
         if (trimScale || scale === 0) {
             s = s.replace(/0+$/g, '')
         } else if (len(s) < scale) {

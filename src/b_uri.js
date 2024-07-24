@@ -105,47 +105,6 @@ class _aaURI {
     }
 
 
-
-    /**
-     * Parse lookup
-     * @return {{baseUrl: string, search: string, ok: ok, queries: map, url: string, hash: string}}
-     */
-    parse() {
-        const self = _aaURI
-        let newQueries = this.queries.clone(false)
-        let port = this.#port ? ':' + this.#port : ''
-        let s = this.#protocol + '//' + this.#hostname + port + this.#pathname
-        let baseUrl, hash, ok, ok2;
-        [baseUrl, newQueries, ok] = self.lookup(s, this.queries, newQueries)
-        if (this.#hash) {
-            [hash, newQueries, ok2] = self.lookup(this.#hash, this.queries, newQueries)
-            if (!ok2) {
-                hash = ''
-            }
-        }
-        if (baseUrl.indexOf('http:') === 0 && baseUrl.indexOf(':80/')) {
-            baseUrl = baseUrl.replace(':80/', '/')
-        }
-        if (baseUrl.indexOf('https:') === 0 && baseUrl.indexOf(':443/')) {
-            baseUrl = baseUrl.replace(':443/', '/')
-        }
-        let search = newQueries.toQueryString()
-        if (search) {
-            search = '?' + search
-        }
-        let url = baseUrl + search
-        if (hash) {
-            url += '#' + hash
-        }
-        return {
-            ok     : ok,
-            url    : url,
-            baseUrl: baseUrl,
-            queries: newQueries,
-            search : search,
-            hash   : hash,
-        }
-    }
     /*
         {protocol:string}//{hostname}:{port:uint}/{path1:string}/{path2:int}#{hash}
      ① //luexu.com
@@ -162,6 +121,7 @@ class _aaURI {
      */
     init(url = location.href, params, hash = '') {
         const self = _aaURI
+        url = string(url)  // will convert url:_aaURI to url.String()
         if (url.substring(0, 1) === '/') {
             if (url.substring(1, 2) === '/') {
                 url = window.location.protocol + url
@@ -207,19 +167,19 @@ class _aaURI {
         const [hostname, port] = self.splitHost(host)
 
         this.#protocol = protocol  //  e.g. {scheme:string}: http/tcp  or empty
-        this.hostname = hostname
-        this.port = port
+        this.#hostname = hostname
+        this.#port = port
         this.#pathname = pathname
         this.queries = queries
 
-        this.hash = string(hash)
 
+        this.#hash = string(hash)
         // 一定要在 queries 实例化后
         if (len(params) > 0) {
             this.extend(params)
         }
-
     }
+
     /**
      * @param {string} url
      * @param {map|{[key:string]:*}} [params]
@@ -228,9 +188,6 @@ class _aaURI {
     constructor(url = window.location.href, params, hash) {
         this.init(url, params, hash)
     }
-
-
-
 
 
     sort() {
@@ -314,16 +271,59 @@ class _aaURI {
         return this.query(key, uint32)
     }
 
-    toString() {
-        let [base, queries, hash, ok] = this.parse()
-        const qs = queries.toQueryString()
-        if (qs) {
-            base += '?' + qs
+    /**
+     * Parse lookup
+     * @return {{baseUrl: string, search: string, ok: ok, queries: map, url: string, hash: string}}
+     */
+    parse() {
+        const self = _aaURI
+        let newQueries = this.queries.clone(false)
+        let port = this.#port ? ':' + this.#port : ''
+        let s = this.#protocol + '://' + this.#hostname + port + this.#pathname
+        let baseUrl, hash, ok, ok2;
+        [baseUrl, newQueries, ok] = self.lookup(s, this.queries, newQueries)
+        if (this.#hash) {
+            [hash, newQueries, ok2] = self.lookup(this.#hash, this.queries, newQueries)
+            if (!ok2) {
+                hash = ''
+            }
         }
+        if (baseUrl.indexOf('http:') === 0 && baseUrl.indexOf(':80/')) {
+            baseUrl = baseUrl.replace(':80/', '/')
+        }
+        if (baseUrl.indexOf('https:') === 0 && baseUrl.indexOf(':443/')) {
+            baseUrl = baseUrl.replace(':443/', '/')
+        }
+        let search = newQueries.toQueryString()
+        if (search) {
+            search = '?' + search
+        }
+        let url = baseUrl + search
         if (hash) {
-            base += '#' + this.hash
+            url += '#' + hash
         }
-        return base
+        return {
+            ok     : ok,
+            url    : url,
+            baseUrl: baseUrl,
+            queries: newQueries,
+            search : search,
+            hash   : hash,
+        }
+    }
+
+
+    toString() {
+        const p = this.parse()
+        let baseUrl = p.baseUrl
+        const qs = p.queries.toQueryString()
+        if (qs) {
+            baseUrl += '?' + qs
+        }
+        if (p.hash) {
+            baseUrl += '#' + this.hash
+        }
+        return baseUrl
     }
 
     toJSON() {

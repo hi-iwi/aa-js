@@ -23,22 +23,22 @@ class _aaAuth {
         // 因此，查询变量方式效率更高，且改动相对无时差
         const r = this.#storage
         if (!this.#_token) {
-            const accessToken = r.getItem("aa:auth.access_token")
+            const accessToken = r.getEntire("aa:auth.access_token")
             if (!accessToken) {
                 return null
             }
             this.#_token = {
                 "access_token" : accessToken,
-                "conflict"     : r.getItem("aa:auth.conflict"),
-                "expires_in"   : r.getItem("aa:auth.expires_in"),
-                "refresh_api"  : r.getItem("aa:auth.refresh_api"),
-                "refresh_token": r.getItem("aa:auth.refresh_token"),
-                "scope"        : r.getItem("aa:auth.scope"),
-                "secure"       : r.getItem("aa:auth.secure"),
-                "token_type"   : r.getItem("aa:auth.token_type"),
-                "validate_api" : r.getItem("aa:auth.validate_api"),
+                "conflict"     : r.getEntire("aa:auth.conflict"),
+                "expires_in"   : r.getEntire("aa:auth.expires_in"),
+                "refresh_api"  : r.getEntire("aa:auth.refresh_api"),
+                "refresh_token": r.getEntire("aa:auth.refresh_token"),
+                "scope"        : r.getEntire("aa:auth.scope"),
+                "secure"       : r.getEntire("aa:auth.secure"),
+                "token_type"   : r.getEntire("aa:auth.token_type"),
+                "validate_api" : r.getEntire("aa:auth.validate_api"),
             }
-            this.#tokenAuthAt = r.getItem("aa:auth._localAuthAt")
+            this.#tokenAuthAt = r.getEntire("aa:auth._localAuthAt")
         }
 
 
@@ -100,7 +100,7 @@ class _aaAuth {
         if (checked || !this.token || !this.token['validate_api']) {
             return
         }
-        const [method, api] = _aaAuth.#parseApiUrl(this.token['validate_api'])
+        const [method, api] = this.#parseApiUrl(this.token['validate_api'])
         this.#rawFetch.fetch(api, {
 
 
@@ -221,7 +221,7 @@ class _aaAuth {
             return null
         }
         const refreshToken = token['refresh_token']
-        const [method, api] = _aaAuth.#parseApiUrl(token['refresh_api'])
+        const [method, api] = this.#parseApiUrl(token['refresh_api'])
         this.#rawFetch.fetch(api, {
             auth               : true,
             preventTokenRefresh: true,
@@ -269,7 +269,7 @@ class _aaAuth {
         callback()
     }
 
-    static #parseApiUrl(s) {
+    #parseApiUrl(s) {
         let [method, api] = string(s).split(' ')  // GET xxxx
         if (!api) {
             api = method

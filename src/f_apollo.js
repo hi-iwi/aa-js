@@ -7,8 +7,8 @@ class _aaApollo {
     #fetcher
     #fingerprintGenerator
     #loginDataHandler
-    #storageGetter
-    #storageSetter
+    // @type _aaStorage
+    #storage
 
     paramName = aparam.Apollo //  参数名 --> 阿波罗计划
     url
@@ -21,17 +21,15 @@ class _aaApollo {
      * @param {string} url
      * @param {(fp:string)=>void} fingerprintGenerator 设备唯一码生成器
      * @param {(data:{[key:string]:*})=>void} loginDataHandler 登录处理
-     * @param {(k:string)=>string} storageGetter 存储读取方法
-     * @param {(k:string, v:string)=>void} storageSetter 存储保存方法
+     * @param {_aaStorage} storage
      */
-    constructor(fetcher, url, fingerprintGenerator, loginDataHandler, storageGetter = localStorage.getItem, storageSetter = localStorage.setItem) {
+    constructor(fetcher, url, fingerprintGenerator, loginDataHandler, storage) {
         this.#fetcher = fetcher
         this.url = url
         this.#fingerprintGenerator = fingerprintGenerator
-        this.#loginDataHandler = loginDataHandler;
-        this.#storageGetter = storageGetter
-        this.#storageSetter = storageSetter
-        this.apollo = storageGetter(this.paramName)  // 初始化获取
+        this.#loginDataHandler = loginDataHandler
+        this.#storage = storage
+        this.apollo = storage.getItem(this.paramName)  // 初始化获取
         this.check()
         this.fetch()
     }
@@ -39,14 +37,14 @@ class _aaApollo {
 
     get(readStorage = false) {
         if (readStorage) {
-            return this.#storageGetter(this.paramName)
+            return this.#storage.getItem(this.paramName)
         }
         return this.apollo
     }
 
     set(apollo) {
         this.apollo = apollo
-        this.#storageSetter(this.paramName, apollo)
+        this.#storage.setItem(this.paramName, apollo)
     }
 
     fetch() {
@@ -54,7 +52,6 @@ class _aaApollo {
         if (!apollo) {
             return
         }
-
         this.#fetcher.get(this.url, {"apollo": apollo}).then(data => {
             if (!data['apollo']) {
                 log.error("fetch " + this.url + " response invalid")

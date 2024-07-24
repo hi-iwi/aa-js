@@ -127,7 +127,7 @@ class map {
             obj.forEach((k, v) => {
                 this.set(k, v)
             })
-            return
+            return this
         }
         if (!obj || typeof obj !== "object") {
             return this

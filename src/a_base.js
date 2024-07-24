@@ -91,7 +91,8 @@ var _aaDebug = new (class {
     }
 
     loadStorage() {
-        const value = Number(localStorage.getItem(this.#storageKeyname).replace('N:', ''))
+        const sk = localStorage.getItem(this.#storageKeyname)
+        const value = sk ? Number(sk.replace('N:', '')) : 0
         const ok = isNaN(value) || ![0, 1, 2].includes(value)
         return [value, ok]
     }

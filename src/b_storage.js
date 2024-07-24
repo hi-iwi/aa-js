@@ -57,6 +57,8 @@ class _aaStorage {
     #storage
     #persistentNames = []
     #withOptions = false
+
+    // 是否保存格式
     #encapsulate = false
 
 
@@ -158,7 +160,7 @@ class _aaStorage {
             options = void false  // set to undefined
         }
         if (this.#encapsulate) {
-            value = _aaStorage.#makeValue(value, persistent)
+            value = this.#makeValue(value, persistent)
         }
         const args = this.#withOptions && options ? [key, value, options] : [key, value]
         this.#storage.setItem(...args)
@@ -210,21 +212,53 @@ class _aaStorage {
     }
 
     /**
+     * Get items matched with key
+     * @param {RegExp} key
+     * @param [options]
+     */
+    getItems(key, options) {
+        if (!(key instanceof RegExp)) {
+            log.error('storage.getItems: key must be a RegExp', key)
+            return
+        }
+        let items = {}
+        this.forEach((k, _) => {
+            if (key.test(k)) {
+                const args = this.#withOptions && options ? [k, options] : [k]
+                items[k] = this.#storage.getItem(...args)
+            }
+        }, options)
+        return items.length === 0 ? null : items
+    }
+
+    /**
      * Remove item from this storage
-     * @param {string|RegExp} key
-     * @param options?
+     * @param {string} key
+     * @param [options]
      */
     removeItem(key, options) {
-        if (key instanceof RegExp) {
-            this.forEach((k, _) => {
-                if (key.test(k)) {
-                    const args = this.#withOptions && options ? [k, options] : [k]
-                    this.#storage.removeItem(...args)
-                }
-            }, options)
-        }
         const args = this.#withOptions && options ? [key, options] : [key]
         this.#storage.removeItem(...args)
+
+    }
+
+    /**
+     * Remove items matched with key
+     * @param {RegExp} key
+     * @param [options]
+     */
+    removeItems(key, options) {
+        if (!(key instanceof RegExp)) {
+            log.error('storage.removeItems: key must be a RegExp', key)
+            return
+        }
+
+        this.forEach((k, _) => {
+            if (key.test(k)) {
+                const args = this.#withOptions && options ? [k, options] : [k]
+                this.#storage.removeItem(...args)
+            }
+        }, options)
 
     }
 
@@ -255,7 +289,7 @@ class _aaStorage {
         this.clearExcept()
     }
 
-    static #makeValue(value, persistent = false) {
+    #makeValue(value, persistent = false) {
         let ok = true;
         const type = atype.of(value)
         switch (type) {
@@ -330,13 +364,19 @@ class _aaStorageFactor {
 
     /**
      * Remove items from all storages
-     * @param key
+     * @param {string|RegExp} key
      * @param options
      */
     removeEntire(key, options) {
-        this.local.removeItem(key, options)
-        this.session.removeItem(key, options)
-        this.cookie.removeItem(key, options)
+        if (key instanceof RegExp) {
+            this.local.removeItems(key, options)
+            this.session.removeItems(key, options)
+            this.cookie.removeItems(key, options)
+        } else {
+            this.local.removeItem(key, options)
+            this.session.removeItem(key, options)
+            this.cookie.removeItem(key, options)
+        }
     }
 
     /**
