@@ -9,6 +9,15 @@ class _aaEnvironment {
         return _aaDebug.isLocalhost()
     }
 
+    // same as $(document).height()
+    static documentHeight() {
+        const body = document.body,
+              html = document.documentElement;
+
+        return Math.max(body.scrollHeight, body.offsetHeight,
+            html.clientHeight, html.scrollHeight, html.offsetHeight);
+    }
+
     /**
      * Return the main area width
      *     核心区宽度

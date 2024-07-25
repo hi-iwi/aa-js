@@ -188,7 +188,7 @@ class _aaRawFetch {
         }
         this.#cleanTimer = setTimeout(() => {
             const now = new Date().valueOf()
-            this.#requests.forEach((key, value) => {
+            this.#requests.forEach((value, key) => {
                 if (value + 400 * time.Millisecond > now) {
                     this.#requests.delete(key)
                 }

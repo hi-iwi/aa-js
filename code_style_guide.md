@@ -1,13 +1,25 @@
 # Code Style Guide
 
+## forEach((value, key) =>{})
+
+```js
+[].forEach((value, index) => {
+})
+new Map().forEach((value, key, map) => {
+    
+})
+```
+
 ## cookie name rule
-cookie-name       = token
-* token表示的是除了分隔符和CTLs以外的ASCII字符  
-* 分隔符包括:  
-* 小中大尖括号 "("|")"|"[]"|"]"|"{"|"}"|"<"|">"  
-* 空格和水平制表符 SP | HT  
-* 逗号分号冒号引号问号等号 ","|";"|":"|"?"|"="|"\""  
-* 斜线: "\" | "/"  
+
+cookie-name = token
+
+* token表示的是除了分隔符和CTLs以外的ASCII字符
+* 分隔符包括:
+* 小中大尖括号 "("|")"|"[]"|"]"|"{"|"}"|"<"|">"
+* 空格和水平制表符 SP | HT
+* 逗号分号冒号引号问号等号 ","|";"|":"|"?"|"="|"\""
+* 斜线: "\" | "/"
 * @: "@"
 
 ### class 属性顺序
@@ -66,7 +78,7 @@ class Demo {
 
     constructor() {
         this.init()
-     }
+    }
 
     otherMethod() {
 
@@ -93,8 +105,6 @@ class Demo {
     }
 }
 ```
-
-
 
 ## Use sentence-case style to comment or print
 

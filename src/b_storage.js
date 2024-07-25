@@ -1,6 +1,7 @@
 /**
- * @import 
+ * @import
  * @typedef {{[key:string]:any}} struct
+ * @typedef {function(value:any, key:string)} IteratorCallback
  */
 class _aaCookieStorage {
     name = 'aa-cookie-storage'
@@ -42,13 +43,17 @@ class _aaCookieStorage {
         return encodeURIComponent(value).replace(/%(2[346BF]|3[AC-F]|40|5[BDE]|60|7[BCD])/g, decodeURIComponent)
     }
 
+    /**
+     *
+     * @param {IteratorCallback} callback
+     */
     forEach(callback) {
         const all = this.getAll()
         if (!all) {
             return
         }
         for (const [key, value] of Object.entries(all)) {
-            if (callback(key, value) === BreakSignal) {
+            if (callback(value, key) === BreakSignal) {
                 break
             }
         }
@@ -144,7 +149,7 @@ class _aaCookieStorage {
         if (!this.available() || !document.cookie) {
             return
         }
-        this.forEach((key, _) => {
+        this.forEach((_, key) => {
             this.removeItem(key, options)
         })
     }
@@ -252,7 +257,7 @@ class _aaStorage {
 
     /**
      * Iterate storage
-     * @param {function(key:string,value:string)} callback
+     * @param {IteratorCallback} callback
      */
     forEach(callback) {
         if (typeof this.#storage.forEach === "function") {
@@ -262,7 +267,7 @@ class _aaStorage {
         for (let i = 0; i < this.length; i++) {
             let key = this.key(i)
             let value = this.getItem(key)
-            if (callback(key, value) === BreakSignal) {
+            if (callback(value, key) === BreakSignal) {
                 break
             }
         }
@@ -276,7 +281,7 @@ class _aaStorage {
             return this.#storage.getAll()
         }
         let data = {}
-        this.forEach((key, value) => {
+        this.forEach((value, key) => {
             data[key] = value
         })
         return data
@@ -354,7 +359,7 @@ class _aaStorage {
             return
         }
         let items = {}
-        this.forEach((k, _) => {
+        this.forEach((_, k) => {
             if (key.test(k)) {
                 items[k] = this.#storage.getItem(key)
             }
@@ -384,7 +389,7 @@ class _aaStorage {
             return
         }
 
-        this.forEach((k, _) => {
+        this.forEach((_, k) => {
             if (key.test(k)) {
                 const args = this.#withOptions && options ? [k, options] : [k]
                 this.#storage.removeItem(...args)
@@ -406,7 +411,7 @@ class _aaStorage {
             this.#storage.clear()
             return
         }
-        this.forEach((key, _) => {
+        this.forEach((_, key) => {
             if (typeof keep[key] === "undefined") {
                 this.#storage.removeItem(key)
             }
@@ -533,7 +538,7 @@ class _aaStorageFactor {
 
     /**
      * Iterate all storages in the order of localStorage, sessionStorage,  CookieStorage
-     * @param {function(key:string,value:string)} callback
+     * @param {IteratorCallback} callback
      * @param {struct} [options] cookie options
      */
     forEachEntire(callback, options) {

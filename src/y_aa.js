@@ -8,6 +8,8 @@ class Aa {
     //@type _aaRegistry
     registry
 
+    scrollEvent
+
     //@type typeof _aaTx
     TX = _aaTx
 
@@ -50,6 +52,7 @@ class Aa {
         const uri = this.uri
 
         const registry = new _aaRegistry()
+        const scrollEvent = new __aaScrollEvent()
         const storage = new _aaStorageFactor()
         const cache = new _aaCache(storage.session)
         const db = new _aaCache(storage.local)
@@ -63,6 +66,7 @@ class Aa {
         const editor = new _aaEditor(oss)
 
         this.registry = registry
+        this.scrollEvent = scrollEvent
         this.storage = storage
         this.cache = cache
         this.db = db

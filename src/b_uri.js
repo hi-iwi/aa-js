@@ -196,7 +196,7 @@ class _aaURI {
     }
 
     filter(filter) {
-        this.queries.forEach((k, v) => {
+        this.queries.forEach((v,k ) => {
             if (filter(k, v)) {
                 // 这种方式forEach 中进行删除未遍历到的值是安全的
                 this.queries.delete(k)

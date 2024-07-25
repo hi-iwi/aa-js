@@ -1,7 +1,7 @@
-
 /**
  * @import atype
  * @typedef {{[key:string]:any}} struct
+ * @typedef {function(value:any, key:string)} IteratorCallback
  */
 
 // 自定义map类型  参考 Map
@@ -47,7 +47,7 @@ class map {
 
     toQueryString(assert, sort = true) {
         let params = [];
-        this.forEach((k, v) => {
+        this.forEach((v, k) => {
             if (k === "" || typeof v === "undefined" || v === null) {
                 return
             }
@@ -68,18 +68,23 @@ class map {
         return Object.entries(this.object)
     }
 
+    /**
+     *
+     * @param {IteratorCallback} callback
+     * @param sort
+     */
     forEach(callback, sort = false) {
         // 这种方式forEach 中进行删除未遍历到的值是安全的
         if (!sort) {
             for (let [k, v] of this.entries()) {
-                callback(k, v)
+                callback(v, k)
             }
             return
         }
         let keys = this.keys().sort()
         for (let i = 0; i < keys.length; i++) {
             let k = keys[i]
-            callback(k, this.get(k))
+            callback(this.get(k), k)
         }
     }
 
@@ -128,7 +133,7 @@ class map {
      */
     extend(obj) {
         if (obj instanceof map) {
-            obj.forEach((k, v) => {
+            obj.forEach((v, k) => {
                 this.set(k, v)
             })
             return this
