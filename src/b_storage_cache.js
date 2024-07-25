@@ -15,7 +15,7 @@ class _aaCache {
         return ['aa', 'db', table].join(this.#storageEngine.separator)
     }
 
-    keyname(table, key) {
+    keyName(table, key) {
         return this.tableName(table) + this.#storageEngine.subSeparator + key
     }
 
@@ -32,7 +32,7 @@ class _aaCache {
         const not = defval(pattern, 'not')
         data = new map(data)
         data.forEach((value, key) => {
-            let keyname = this.keyname(table, key)
+            let keyname = this.keyName(table, key)
             // 这个要放在最前面，抵消默认忽视下划线结尾的临时变量规则
             if ((typeof is === "string" && key === is) || (is instanceof RegExp && is.test(key))) {
                 this.#storageEngine.setItem(keyname, value, persistent)
@@ -81,7 +81,7 @@ class _aaCache {
         if (!table || !field) {
             throw new RangeError(`storage cache error: select ${array(field).join(',')} from ${table}`)
         }
-        let key = this.keyname(table, field)
+        let key = this.keyName(table, field)
         return this.#storageEngine.getItem(key)
     }
 

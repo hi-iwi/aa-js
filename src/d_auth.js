@@ -50,6 +50,26 @@ class _aaAuth {
         }, 400 * time.Millisecond)
     }
 
+    /**
+     *
+     * @param engine
+     * @param key
+     * @return {string}
+     * @warn  如果使用 #keyname() 命名，编译便会报错
+     */
+    #keyName(engine, key) {
+        return ['aa', 'auth', key].join(engine.separator)
+    }
+
+    #saveItem(engine, key, value) {
+        const keyname = this.#keyName(engine, key)
+        return engine.setItem(keyname, value)
+    }
+
+    #readItem(engine, key) {
+        const keyname = this.#keyName(engine, key)
+        return engine.getItem(keyname)
+    }
 
     #readStorage(key) {
         const r = this.#storage
@@ -65,15 +85,19 @@ class _aaAuth {
     }
 
     #localSetItem(key, value) {
-        this.#storage.local.setItem("aa_auth_" + key, value)
+        //return this.#saveItem(this.#storage.local, key, value)
+    }
+
+    #localGetItem(key) {
+        //return this.#readItem(this.#storage.local, key)
     }
 
     #sessionSetItem(key, value) {
-        this.#storage.session.setItem("aa_auth_" + key, value)
+        // return this.#saveItem(this.#storage.session, key, value)
     }
 
     #sessionGetItem(key) {
-        return this.#storage.session.getItem("aa_auth_" + key)
+        // return this.#readItem(this.#storage.session, key)
     }
 
     #tryStoreCookie(key, value, opts) {
