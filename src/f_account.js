@@ -32,12 +32,22 @@ class _aaAccount {
 
     }
 
+    saveProfile(profile) {
+        const self = _aaAccount
+        this.#profile = profile
+        this.#db.save(self.TableName, profile)
+    }
+
+    drop() {
+        this.#db.drop(self.TableName)
+    }
+
     /**
      *
      * @param {boolean} [refresh]  false on  [program cache] -> [local storage] -> [remote api]; true on [remote api] only
      * @return {null|*}
      */
-    profile(refresh = false) {
+    getProfile(refresh = false) {
         if (!this.#auth.authed()) {
             return null
         }
@@ -66,10 +76,41 @@ class _aaAccount {
             })
         }
         return fetch.fetch(url).then(profile => {
-            this.#profile = profile
-            this.#db.save(self.TableName, profile)
+            this.saveProfile(profile)
             return profile
         })
     }
 
+    getVusers() {
+        return this.getProfile().then(profile => {
+            let vusers = [profile['vuser']]
+            let doppes = array(profile, 'doppes')
+            return vusers.push(...doppes)
+        })
+    }
+
+
+
+    searchVuser(vtype) {
+        return this.getVusers().then(vusers => {
+            vtype = number(vtype)
+            for (let i = 0; i < vusers.length; i++) {
+                let vuser = vusers[i]
+                if (number(vuser['vtype']) === vtype) {
+                    return vuser
+                }
+            }
+        })
+    }
+
+    getVuser(vuid) {
+        return this.getVusers().then(vusers => {
+            for (let i = 0; i < vusers.length; i++) {
+                let vuser = vusers[i]
+                if (string(vuser['vuid']) === string(vuid)) {
+                    return vuser
+                }
+            }
+        })
+    }
 }
