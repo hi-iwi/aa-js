@@ -1,3 +1,7 @@
+/**
+ * @import 
+ * @typedef {{[key:string]:any}} struct
+ */
 class _aaCookieStorage {
     name = 'aa-cookie-storage'
 
@@ -530,7 +534,7 @@ class _aaStorageFactor {
     /**
      * Iterate all storages in the order of localStorage, sessionStorage,  CookieStorage
      * @param {function(key:string,value:string)} callback
-     * @param {{[key:string]:*}} [options] cookie options
+     * @param {struct} [options] cookie options
      */
     forEachEntire(callback, options) {
         this.local.forEach(callback)

@@ -41,6 +41,8 @@ class Aa {
 
     //@type _aaOSS
     oss
+    // @type _aaEditor
+    editor
 
     constructor() {
         const uri = this.uri
@@ -55,6 +57,7 @@ class Aa {
         const openidAuth = new _aaAuthOpenid(storage, auth)
         const fetch = new _aaFetch(uri, rawFetch, auth)
         const oss = new _aaOSS()
+        const editor = new _aaEditor(oss)
 
         this.registry = registry
         this.storage = storage
@@ -62,8 +65,9 @@ class Aa {
         this.db = db
         this.auth = auth
         this.openidAuth = openidAuth
-        this.oss = oss
         this.fetch = fetch
+        this.oss = oss
+        this.editor = editor
     }
 
     tx() {

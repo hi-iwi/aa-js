@@ -1,10 +1,14 @@
-// @import atype
+
+/**
+ * @import atype
+ * @typedef {{[key:string]:any}} struct
+ */
 
 // 自定义map类型  参考 Map
 class map {
     name = 'aa-map'
 
-    object // {{[key:string]:*} | FormData| string}
+    object // {struct | FormData| string}
 
     // len() 函数会识别这个
     len() {
@@ -16,7 +20,7 @@ class map {
     }
 
     /**
-     * @param {{[key:string]:*} | string} o
+     * @param {struct|string} o
      */
     constructor(o = {}) {
         this.init(...arguments)
@@ -120,7 +124,7 @@ class map {
 
     /**
      *
-     * @param {map|{[key:string]:*}} obj
+     * @param {map|struct} obj
      */
     extend(obj) {
         if (obj instanceof map) {
@@ -147,7 +151,7 @@ class map {
     /**
      * 解析json或{} 为 {}
      * @param obj
-     * @returns {{[key:string]:any}}
+     * @returns {struct}
      */
     static parse(obj) {
         if (!obj) {
@@ -183,9 +187,9 @@ class map {
     /**
      * Merge the contents of two objects together into the first object based on the properties of the first object
      * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名覆盖，抛弃sources对象多余属性值。常用于配置文件填充
-     * @param {{[key:string]:*}} target A --> 会污染 target。 target 可以是struct，也可以是class.
-     * @param {{[key:string]:*}} source B
-     * @return {object|{[key:string]:*}}   A = A  ∪ (A ∩ B)
+     * @param {struct} target A --> 会污染 target。 target 可以是struct，也可以是class.
+     * @param {struct} source B
+     * @return {object|struct}   A = A  ∪ (A ∩ B)
      */
     static merge(target, source) {
         for (let [k, v] of Object.entries(struct(source))) {
@@ -201,9 +205,9 @@ class map {
      * Merge the contents of two objects together into the first object based on the properties and their types of the first object
      * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名且值类型相同的覆盖，抛弃sources对象多余属性值
      *      常用于配置文件填充
-     * @param {object|{[key:string]:*}} target A --> 会污染 target。 target 可以是struct，也可以是class.
-     * @param {{[key:string]:*}}  source B
-     * @return  {object|{[key:string]:*}}     A = A ∪ (|A| ∩ |B|)
+     * @param {object|struct} target A --> 会污染 target。 target 可以是struct，也可以是class.
+     * @param {struct}  source B
+     * @return  {object|struct}     A = A ∪ (|A| ∩ |B|)
      */
     static strictMerge(target, source) {
         for (let [k, v] of Object.entries(struct(source))) {
@@ -232,9 +236,9 @@ class map {
     /**
      * Merge two objects into a new object
      * @description 合并两个对象属性，若出现相同属性，则后者b的该属性覆盖前者a的该属性。若想相反覆盖，则调换位置即可
-     * @param {{[key:string]:*}} target A
-     * @param {{[key:string]:*}} source B
-     * @returns {{[key:string]:*}}      C = A ∪ B
+     * @param {struct} target A
+     * @param {struct} source B
+     * @returns {struct}      C = A ∪ B
      */
     static spread(target, source) {
         return Object.assign({}, struct(target), struct(source))// 等同于{...struct(target), ...struct(source)}
@@ -243,10 +247,10 @@ class map {
     /**
      * Fill up the non-existent properties of the first object with the second object's
      * @description 将两个对象的差集填充进target对象。通常用于填充默认配置。
-     * @param {{[key:string]:*}} target   A --> 会污染 target
-     * @param {{[key:string]:*}} defaults B
+     * @param {struct} target   A --> 会污染 target
+     * @param {struct} defaults B
      * @param {function} [handler]
-     * @return  {object|{[key:string]:*}}    A = A ∪ (A - B)
+     * @return  {object|struct}    A = A ∪ (A - B)
      */
     static fillUp(target, defaults, handler) {
         target = struct(target)
@@ -267,10 +271,10 @@ class map {
      * Overwrite the target object's content with source object based on the target object's properties,
      *      and zeroize the target object's properties before overwriting.
      * @description 将两个对象的交集填充进target，将target其他属性设为零值。通常重新填充配置target。
-     * @param {object|{[key:string]:*}} target A --> 会污染 target。
-     * @param {{[key:string]:*}}  source B --> probably it's a configuration struct ，后者往往是配置项，覆盖掉前者
+     * @param {object|struct} target A --> 会污染 target。
+     * @param {struct}  source B --> probably it's a configuration struct ，后者往往是配置项，覆盖掉前者
      * @param {function} keynameConvertor convert properties' field names in source object
-     * @return {object|{[key:string]:*}} A = (A ∩ B) ∪ zeroize(A)
+     * @return {object|struct} A = (A ∩ B) ∪ zeroize(A)
      */
     static overwrite(target, source, keynameConvertor) {
         let fields = target.hasOwnProperty('_fields_') && target._fields_ ? target._fields_ : target.constructor['_fields_'] ? target.constructor['_fields_'] : null

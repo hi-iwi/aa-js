@@ -1,4 +1,7 @@
-// @import _aaFetch
+/**
+ * @import _aaFetch
+ * @typedef {{[key:string]:any}} struct
+ */
 
 class _aaApollo {
     name = 'aa-apollo'
@@ -20,7 +23,7 @@ class _aaApollo {
      * @param {_aaFetch} fetcher
      * @param {string} url
      * @param {(fp:string)=>void} fingerprintGenerator 设备唯一码生成器
-     * @param {(data:{[key:string]:*})=>void} loginDataHandler 登录处理
+     * @param {(data:struct)=>void} loginDataHandler 登录处理
      * @param {_aaStorage} storage
      */
     constructor(fetcher, url, fingerprintGenerator, loginDataHandler, storage) {

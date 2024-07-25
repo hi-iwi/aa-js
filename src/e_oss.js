@@ -1,5 +1,7 @@
-// @import _aaPath, _aaEnvironment, _aaAuth
-
+/**
+ * @import _aaPath, _aaEnvironment, _aaAuth
+ * @typedef {{[key:string]:any}} struct
+ */
 // filetype 统一了，方便客户端分析 path/filetype 结构类型。也方便客户端上传的格式符合标准格式。
 // .3pg 既是音频文件，也是视频文件。因此，不能单纯通过后缀知晓文件类型。需要客户端上传的时候预先知道是音频或视频。
 const AaFileTypeEnum = {
@@ -126,7 +128,8 @@ const AaFileTypeEnum = {
 
 }
 
-class _aaFileSrc {
+//@TODO
+class AaFileSrc {
     name = 'aa-file-src'
 
     process
@@ -143,8 +146,42 @@ class _aaFileSrc {
         return this.path
     }
 }
+//@TODO
+class AaVideoSrc {
+    name = 'aa-video-src'
 
+    process
+    path
+    filetype
+    ext
+    size
+    width
+    height
+    allowed
 
+    // aaFetch 层会处理该数据
+    toJSON() {
+        return this.path
+    }
+}
+//@TODO
+class AaAudioSrc {
+    name = 'aa-audio-src'
+
+    process
+    path
+    filetype
+    ext
+    size
+    width
+    height
+    allowed
+
+    // aaFetch 层会处理该数据
+    toJSON() {
+        return this.path
+    }
+}
 class AaImgSrc {
     name = 'aa-img-src'
 
@@ -161,7 +198,7 @@ class AaImgSrc {
     allowed
 
     /**
-     * @param {{[key:string]:*}} props
+     * @param {struct} props
      */
     init(props) {
         map.overwrite(this, props, fmt.toCamelCase)
@@ -169,7 +206,7 @@ class AaImgSrc {
 
     /**
      *
-     * @param {{[key:string]:*}|string|HTMLElement} props
+     * @param {struct} props
      */
     constructor(props) {
         this.init(props)
@@ -340,20 +377,19 @@ class _aaOSS {
         return typeof this.#assetHandler === "function" ? this.#assetHandler(path) : path
     }
 
-    // image/font
+    // asset image/font
     i(path) {
         return this.asset("/i/" + path)
     }
 
-    // script
+    // asset script
     x(path) {
         return this.asset("/x/" + path)
     }
 
-
     /**
      * New AaImgSrc
-     * @param {AaImgSrc|string|object} data
+     * @param {struct} data
      * @return {AaImgSrc}
      */
     imgSrc(data) {
