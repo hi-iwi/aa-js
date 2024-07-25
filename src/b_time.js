@@ -112,7 +112,7 @@ class _aaDateZero extends Date {
     }
 
 
-    getTime() {
+    valueOf() {
         return 0
     }
 
@@ -684,8 +684,8 @@ class time {
 
     // 等同于 valueOf()
     // @deprecated
-    // getTime() {
-    //     return this.#date.getTime()
+    // valueOf() {
+    //     return this.#date.valueOf()
     // }
     //
 

@@ -371,9 +371,9 @@ class _aaStorageEngine {
             return
         }
         let items = {}
-        this.forEach((_, k) => {
+        this.forEach((v, k) => {
             if (key.test(k)) {
-                items[k] = this.#storage.getItem(key)
+                items[k] = v
             }
         })
         return items.length === 0 ? null : items

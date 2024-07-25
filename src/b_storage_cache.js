@@ -11,12 +11,26 @@ class _aaCache {
         this.#storageEngine = storageEngine
     }
 
-    tableName(table) {
+    formatTableName(table) {
         return ['aa', 'db', table].join(this.#storageEngine.separator)
     }
 
-    keyName(table, key) {
-        return this.tableName(table) + this.#storageEngine.subSeparator + key
+    formatKeyname(table, key) {
+        return this.formatTableName(table) + this.#storageEngine.subSeparator + key
+    }
+
+    unformatKeyname(key) {
+        let prefix = ['aa', 'db', ''].join(this.#storageEngine.separator)
+        if (key.indexOf(prefix) !== 0) {
+            return key
+        }
+        key = key.replace(prefix, '')
+        const sub = this.#storageEngine.subSeparator
+        let keys = key.split(sub)
+        if (keys.length === 1) {
+            return key
+        }
+        return keys.slice(1).join(sub)
     }
 
     // pattern {is://, not:/(^_)|(_total)/} -->
@@ -32,7 +46,7 @@ class _aaCache {
         const not = defval(pattern, 'not')
         data = new map(data)
         data.forEach((value, key) => {
-            let keyname = this.keyName(table, key)
+            let keyname = this.formatKeyname(table, key)
             // 这个要放在最前面，抵消默认忽视下划线结尾的临时变量规则
             if ((typeof is === "string" && key === is) || (is instanceof RegExp && is.test(key))) {
                 this.#storageEngine.setItem(keyname, value, persistent)
@@ -56,7 +70,7 @@ class _aaCache {
      * @param table
      */
     drop(table) {
-        const tableName = this.tableName(table)
+        const tableName = this.formatTableName(table)
         this.#storageEngine.removeItems(new RegExp("^" + strings.escapeReg(tableName)))
     }
 
@@ -70,18 +84,27 @@ class _aaCache {
         if (!table) {
             throw new RangeError(`storage cache error: select * from ${table}`)
         }
-        let pattern = this.tableName(table) + strings.escapeReg(this.#storageEngine.subSeparator)
+        let pattern = this.formatTableName(table) + strings.escapeReg(this.#storageEngine.subSeparator)
         if (len(fields) > 0) {
             pattern += '(' + fields.join('|') + ')$'
         }
-        return this.#storageEngine.getItems(new RegExp("^" + pattern))
+        let data = this.#storageEngine.getItems(new RegExp("^" + pattern))
+        if (!data) {
+            return null
+        }
+        let items = {}
+        for (const [k, v] of Object.entries(data)) {
+            let key = this.unformatKeyname(k)
+            items[key] = v
+        }
+        return items
     }
 
     find(table, field) {
         if (!table || !field) {
             throw new RangeError(`storage cache error: select ${array(field).join(',')} from ${table}`)
         }
-        let key = this.keyName(table, field)
+        let key = this.formatKeyname(table, field)
         return this.#storageEngine.getItem(key)
     }
 

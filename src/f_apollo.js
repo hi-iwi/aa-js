@@ -126,7 +126,7 @@ class _aaApollo {
     static Encode(info) {
         let cipher = 'A'
         let swapRange = (cipher.charCodeAt(0) & 1) + 1
-        info.timestamp = new Date().getTime()
+        info.timestamp = new Date().valueOf()
         info.nonce = _aaApollo._genRandStr(8)
 
         // 屏幕逻辑宽带 window.screen.height * window.devicePixelRatio

@@ -246,7 +246,7 @@ class _aaAuth {
             "validate_api" : token["validate_api"],
 
         }
-        this.#tokenAuthAt = Math.floor(new Date().getTime() / 1000)
+        this.#tokenAuthAt = Math.floor(new Date().valueOf() / 1000)
 
         // 清空其他缓存
         this.#storage.clearAll()
