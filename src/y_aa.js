@@ -39,6 +39,8 @@ class Aa {
     // @type_aaAuthOpenid
     openidAuth
 
+    // @type _aaAccount
+    account
     //@type _aaOSS
     oss
     // @type _aaEditor
@@ -54,8 +56,9 @@ class Aa {
 
         const rawFetch = new _aaRawFetch(storage, uri)
         const auth = new _aaAuth(storage, rawFetch)
-        const openidAuth = new _aaAuthOpenid(storage, auth)
         const fetch = new _aaFetch(uri, rawFetch, auth)
+        const openidAuth = new _aaAuthOpenid(storage, auth, fetch)
+        const account = new _aaAccount(db, auth, fetch)
         const oss = new _aaOSS()
         const editor = new _aaEditor(oss)
 
@@ -66,6 +69,7 @@ class Aa {
         this.auth = auth
         this.openidAuth = openidAuth
         this.fetch = fetch
+        this.account = account
         this.oss = oss
         this.editor = editor
     }

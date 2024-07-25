@@ -48,7 +48,7 @@ class _aaCache {
     }
 
     /**
-     * Drop a table and its data
+     * Drop table
      * @param table
      */
     drop(table) {
@@ -56,7 +56,15 @@ class _aaCache {
         this.#storage.removeItems(new RegExp("^" + tableName))
     }
 
-    data(table) {
+    /**
+     * Select from table
+     * @param {string} table
+     * @return {*}
+     */
+    select(table) {
+        if (!table) {
+            throw new RangeError("storage cache select table undefined")
+        }
         const tableName = this.tableName(table)
         return this.#storage.getItems(new RegExp("^" + tableName))
     }

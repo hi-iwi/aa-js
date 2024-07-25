@@ -4,24 +4,32 @@ class _aaAuthOpenid {
     #storage
     // @type _aaAuth
     #auth
+    // @type _aaFetch
+    #fetch
 
-
-    // @type {function:Promise}
-    #fetchPromise
+    // @type {string}
+    #fetchUrl
 
     #openid
 
     /**
      *
-     * @param {function:Promise} handler
+     * @param {string} url
      */
-    initFetchPromise(handler) {
-        this.#fetchPromise = handler
+    initFetchUrl(url) {
+        this.#fetchUrl = url
     }
 
-    constructor(storage, auth) {
+    /**
+     *
+     * @param {_aaStorageFactor} storage
+     * @param {_aaAuth} auth
+     * @param {_aaFetch} fetch
+     */
+    constructor(storage, auth, fetch) {
         this.#storage = storage
         this.#auth = auth
+        this.#fetch = fetch
     }
 
 
@@ -60,12 +68,15 @@ class _aaAuthOpenid {
                 })
             }
         }
-        if (typeof this.#fetchPromise !== "function") {
+        const url = this.#fetchUrl
+        const fetch = this.#fetch
+
+        if (!url || !fetch) {
             return new Promise((resolve, reject) => {
                 reject()
             })
         }
-        return this.#fetchPromise().then(data => {
+        return fetch.fetch(url).then(data => {
             let openid = string(data['openid'])
             if (openid === "") {
                 return null

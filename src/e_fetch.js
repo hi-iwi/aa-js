@@ -66,7 +66,9 @@ class _aaFetch {
 
     /**
      *
-     * @param url
+     * @param  {RequestInfo|string} url
+     *  @example 'https://luexu.com'
+     *  @example 'GET https://luexu.com'
      * @param settings
      * @param {boolean} noThrown?  No AError/Error thrown
      * @return {*}

@@ -1,4 +1,7 @@
-// @import _aaStorageFactor, _aaURI
+/**
+ * @import _aaStorageFactor, _aaURI
+ * @typedef {{[key:string]:any}} struct
+ */
 
 class _aaRawFetch {
     name = 'aa-raw-fetch'
@@ -121,7 +124,7 @@ class _aaRawFetch {
     /**
      * Merge headers with global headers
      * @param {{[key:string]}} [headers]
-     * @return {{[key:string]:*}}
+     * @return {struct}
      */
     #fillUpHeaders(headers) {
         // 填充以  X- 开头的自定义header
@@ -147,8 +150,8 @@ class _aaRawFetch {
 
     /**
      *
-     * @param url
-     * @param {{[key:string]:any}} settings
+     * @param {RequestInfo} url
+     * @param {struct} settings
      * @return {(*|Object)[]|(*|Object)[]}
      */
     formatSettings(url, settings) {
@@ -164,6 +167,8 @@ class _aaRawFetch {
         }
         settings.method = settings.method.toUpperCase()
         settings.headers = headers  // 先不要使用 new Headers()， 容易出现莫名其妙的问题。直接让fetch自己去转换
+
+
         const data = settings.data
         if (len(data) === 0) {
             return [url, settings]
@@ -211,13 +216,23 @@ class _aaRawFetch {
 
     /**
      *
-     * @param {RequestInfo} url
-     * @param {{[key:string]:any}|*} [settings]
+     * @param {RequestInfo|string} url
+     *  @example 'https://luexu.com'
+     *  @example 'GET https://luexu.com'
+     * @param {struct|*} [settings]
      * @param {function} [hook]
      * @return {[string, any ]|Promise}
      */
     middleware(url, settings, hook) {
-
+        settings = struct(settings)
+        const parts = url.trim().split(' ')
+        if (parts.length > 1) {
+            const method = parts[0].toUpperCase()
+            if (['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'].includes(method)) {
+                settings.method = method
+                url = parts.slice(1).join(' ')
+            }
+        }
 
         [url, settings] = this.formatSettings(url, settings)
         if (hook) {
@@ -241,8 +256,10 @@ class _aaRawFetch {
 
     /**
      * Fetch data
-     * @param {RequestInfo} url
-     * @param {{[key:string]:any}|*} [settings]
+     * @param {RequestInfo|string} url
+     *  @example 'https://luexu.com'
+     *  @example 'GET https://luexu.com'
+     * @param {struct|*} [settings]
      * @param {function} [hook]
      * @return {Promise<*>}
      */
@@ -281,7 +298,7 @@ class _aaRawFetch {
     /**
      * Get HTTP status code without AError/Error thrown
      * @param {RequestInfo} url
-     * @param {{[key:string]:any}|*} [settings]
+     * @param {struct|*} [settings]
      * @param {function} [hook]
      * @return {Promise<*>}
      */
