@@ -71,7 +71,7 @@ class _aaCache {
             throw new RangeError(`storage cache error: select * from ${table}`)
         }
         let pattern = this.tableName(table) + strings.escapeReg(this.#storageEngine.subSeparator)
-        if (len(fields) === 0) {
+        if (len(fields) > 0) {
             pattern += '(' + fields.join('|') + ')$'
         }
         return this.#storageEngine.getItems(new RegExp("^" + pattern))

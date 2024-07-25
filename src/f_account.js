@@ -8,7 +8,7 @@
 class _aaAccount {
     name = 'aa-account'
 
-    static TableName = 'aa_auth_account_profile'
+    static TableName = 'auth_account'
     #profile
     #selectedVuid
 
@@ -149,6 +149,7 @@ class _aaAccount {
     }
 
     setSelectedVuid(vuid) {
+        const  itself = _aaAccount
         this.#selectedVuid = vuid
         this.#db.save(itself.TableName, {'selected_vuid_': vuid})
     }
