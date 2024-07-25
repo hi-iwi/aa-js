@@ -301,17 +301,17 @@ class _aaDateString {
     }
 
     static setMinDatetime(datetime) {
-        const self = _aaDateString
-        self.minDatetime = datetime
-        self.#minYear = datetime.substring(0, 4)
-        self.#minDate = datetime.substring(0, 10)
+        const itself = _aaDateString
+        itself.minDatetime = datetime
+        itself.#minYear = datetime.substring(0, 4)
+        itself.#minDate = datetime.substring(0, 10)
     }
 
     static setMaxDatetime(datetime) {
-        const self = _aaDateString
-        self.maxDatetime = datetime
-        self.#maxYear = datetime.substring(0, 4)
-        self.#maxDate = datetime.substring(0, 10)
+        const itself = _aaDateString
+        itself.maxDatetime = datetime
+        itself.#maxYear = datetime.substring(0, 4)
+        itself.#maxDate = datetime.substring(0, 10)
     }
 
     /**

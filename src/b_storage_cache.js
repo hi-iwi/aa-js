@@ -64,7 +64,7 @@ class _aaCache {
      */
     selectAll(table, fields) {
         if (!table) {
-            throw new RangeError("storage cache select all from table undefined")
+            throw new RangeError(`storage cache error: select * from ${table}`)
         }
         let pattern = this.tableName(table) + '.'
         if (len(fields) === 0) {
@@ -75,7 +75,7 @@ class _aaCache {
 
     find(table, fieldName) {
         if (!table || !fieldName) {
-            throw new RangeError("storage cache select filed from table")
+            throw new RangeError(`storage cache error: select ${array(fieldName).join(',')} from ${table}`)
         }
         let key = this.tableName(table) + '.' + fieldName
         return this.#storage.getItem(key)

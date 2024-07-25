@@ -292,14 +292,14 @@ class _aaStorage {
     }
 
     setItem(key, value, options) {
-        const self = _aaStorage
+        const itself = _aaStorage
         let persistent = false
         if (typeof options === "boolean") {
             persistent = options
             options = void false  // set to undefined
         }
         if (this.#encapsulate) {
-            value = self.makeValue(value, persistent)
+            value = itself.makeValue(value, persistent)
         }
         const args = this.#withOptions && options ? [key, value, options] : [key, value]
         this.#storage.setItem(...args)

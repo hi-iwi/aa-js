@@ -129,7 +129,7 @@ class _aaRawFetch {
     #fillUpHeaders(headers) {
         // 填充以  X- 开头的自定义header
         headers = struct(headers)
-        this.#storage.forEachEntire((key, value) => {
+        this.#storage.forEachEntire((value, key) => {
             if (key.indexOf('X-') === 0) {
                 headers[key] = value
             }
@@ -199,10 +199,10 @@ class _aaRawFetch {
     }
 
     debounce(method, url, body) {
-        const self = _aaRawFetch
+        const itself = _aaRawFetch
         this.autoClean()
 
-        const checksum = self.generateChecksum(method, url, body)
+        const checksum = itself.generateChecksum(method, url, body)
         // 0.4秒内不能重复提交相同数据
         const interval = 400 * time.Millisecond
         const now = new Date().valueOf()  // in milliseconds
@@ -348,7 +348,7 @@ class _aaRawFetch {
      * @todo support ArrayBuffer, TypedArray, DataView, Blob, File, URLSearchParams, FormData
      */
     static generateChecksum(method, url, body) {
-        const self = _aaRawFetch
+        const itself = _aaRawFetch
         let checksum = `${method} ${url}`
         if (!body) {
             return checksum
@@ -356,16 +356,16 @@ class _aaRawFetch {
 
         let content = ''
         if (body instanceof File) {
-            content = self.fileChecksum(body)
+            content = itself.fileChecksum(body)
         } else if (body instanceof FormData) {
             for (const pair of body) {
-                let v = pair[1] instanceof File ? self.fileChecksum(pair[1]) : pair[1]
+                let v = pair[1] instanceof File ? itself.fileChecksum(pair[1]) : pair[1]
                 content = '&' + pair[0] + '=' + v
             }
             content = content.substring(1)
             content = `#${content.length}|${content}`
         } else if (typeof body === "string") {
-            content = self.stringChecksum(body)
+            content = itself.stringChecksum(body)
         }
         return `${method} ${url} {${content}}`
     }
