@@ -24,7 +24,7 @@ class _aaApollo {
      * @param {string} url
      * @param {(fp:string)=>void} fingerprintGenerator 设备唯一码生成器
      * @param {(data:struct)=>void} loginDataHandler 登录处理
-     * @param {_aaStorage} storage
+     * @param {_aaStorageEngine} storage
      */
     constructor(fetcher, url, fingerprintGenerator, loginDataHandler, storage) {
         this.#fetcher = fetcher

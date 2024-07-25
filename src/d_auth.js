@@ -141,10 +141,9 @@ class _aaAuth {
             return
         }
         this.#validateTried = true  // fetch 可能失败，就有可能会一直尝试；因此增加一个程序层防重
-        const [method, api] = this.#parseApiUrl(token['validate_api'])
-        this.#rawFetch.fetch(api, {
-            method: method,
-            data  : {}
+        const url = token['validate_api']
+        this.#rawFetch.fetch(url, {
+            data: {}
         }).then(_ => {
             this.#sessionSetItem('checked', true)
         }).catch(err => {
@@ -281,11 +280,10 @@ class _aaAuth {
             return null
         }
         const refreshToken = token['refresh_token']
-        const [method, api] = this.#parseApiUrl(token['refresh_api'])
-        this.#rawFetch.fetch(api, {
+        const url = token['refresh_api']
+        this.#rawFetch.fetch(url, {
             auth               : true,
             preventTokenRefresh: true,
-            method             : method,
             data               : {
                 'grant_type': 'refresh_token',
                 'code'      : refreshToken,
@@ -334,14 +332,4 @@ class _aaAuth {
     removeLogout() {
         this.#tryStoreCookie(aparam.Logout, 0, -time.Day)
     }
-
-    #parseApiUrl(s) {
-        let [method, api] = string(s).split(' ')  // GET xxxx
-        if (!api) {
-            api = method
-            method = 'GET'
-        }
-        return [method, api]
-    }
-
 }

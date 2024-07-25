@@ -6,13 +6,15 @@
 class _aaCookieStorage {
     name = 'aa-cookie-storage'
 
+    // cookie 不能使用 : 等分隔符作为key，因此不同Engine里面自己指定分隔符
+    separator = '_'
+    subSeparator = '_'
+
     defaultOptions = {
         //expires: 0,  // Date or Number
         path: '/', //domain: '',
         //secure: true,  // require https
         //sameSite: 'Lax',
-
-
     }
 
     get length() {
@@ -156,8 +158,11 @@ class _aaCookieStorage {
 }
 
 
-class _aaStorage {
-    name = 'aa-storage'
+class _aaStorageEngine {
+    name = 'aa-storage-engine'
+
+    static DefaultSeparator = ':'
+    static DefaultSubSeparator = '.'
 
     #storage
     #persistentNames = []
@@ -175,6 +180,17 @@ class _aaStorage {
         return this.#storage.name
     }
 
+    // cookie 不能使用 : 等分隔符作为key，因此不同Engine里面自己指定分隔符
+    // 冒号 : 是特殊分隔符，默认都是 : 隔开
+    get separator() {
+        const itself = _aaStorageEngine
+        return string(this.#storage, 'separator', itself.DefaultSeparator)
+    }
+
+    get subSeparator() {
+        const itself = _aaStorageEngine
+        return string(this.#storage, 'subSeparator', itself.DefaultSubSeparator)
+    }
 
     // 不用报错，正常人也不会这么操作
     // set length(name) {
@@ -212,10 +228,6 @@ class _aaStorage {
         this.init(...arguments)
     }
 
-
-    isPseudo() {
-        return this.#storage instanceof _aaCookieStorage
-    }
 
     /**
      * @param {[string]} persistentNames
@@ -292,7 +304,7 @@ class _aaStorage {
     }
 
     setItem(key, value, options) {
-        const itself = _aaStorage
+        const itself = _aaStorageEngine
         let persistent = false
         if (typeof options === "boolean") {
             persistent = options
@@ -380,7 +392,7 @@ class _aaStorage {
 
     /**
      * Remove items matched with key
-     * @param {RegExp} key
+     * @param {RegExp} key separator colon ':' is wildcard separator. it matches the engine's separator and subSeparator
      * @param [options]
      */
     removeItems(key, options) {
@@ -388,14 +400,23 @@ class _aaStorage {
             log.error('storage.removeItems: key must be a RegExp', key)
             return
         }
+        const itself = _aaStorageEngine
+
+        let wild = null
+        const sep = this.separator
+        const sub = this.subSeparator
+        const source = key.source
+        if ((sep !== itself.DefaultSeparator || sub !== itself.DefaultSubSeparator) && source.indexOf(':') > -1) {
+            source.replace(/:/, '[' + strings.escapeReg(`${sep}${sub}`) + ']')
+            wild = new RegExp(source)
+        }
 
         this.forEach((_, k) => {
-            if (key.test(k)) {
+            if (key.test(k) || (wild && wild.test(k))) {
                 const args = this.#withOptions && options ? [k, options] : [k]
                 this.#storage.removeItem(...args)
             }
         })
-
     }
 
     /**
@@ -477,9 +498,9 @@ class _aaStorageFactor {
 
 
     constructor(cookieStorage, localStorage, sessionStorage) {
-        this.local = new _aaStorage(localStorage || window.localStorage, [], false, true)
-        this.session = new _aaStorage(sessionStorage || window.sessionStorage, [], false, true)
-        this.cookie = new _aaStorage(cookieStorage || new _aaCookieStorage(), [], true, false)
+        this.local = new _aaStorageEngine(localStorage || window.localStorage, [], false, true)
+        this.session = new _aaStorageEngine(sessionStorage || window.sessionStorage, [], false, true)
+        this.cookie = new _aaStorageEngine(cookieStorage || new _aaCookieStorage(), [], true, false)
     }
 
     /**
@@ -502,7 +523,7 @@ class _aaStorageFactor {
 
     /**
      * Remove items from all storages
-     * @param {string|RegExp} key
+     * @param {string|RegExp} key  separator colon ':' is wildcard separator. it matches the engine's separator and subSeparator
      * @param [options]
      */
     removeEntire(key, options) {
