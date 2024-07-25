@@ -302,7 +302,7 @@ class _aaRawFetch {
      * @param {function} [hook]
      * @return {Promise<*>}
      */
-    statusN(url, settings, hook) {
+    status(url, settings, hook) {
         const mw = this.middleware(url, settings, hook)
         if (mw instanceof Promise) {
             return mw

@@ -49,7 +49,9 @@ class _aaAccount {
      */
     getProfile(refresh = false) {
         if (!this.#auth.authed()) {
-            return null
+            return new Promise((_, reject) => {
+                reject()
+            })
         }
 
         const self = _aaAccount
@@ -88,7 +90,6 @@ class _aaAccount {
             return vusers.push(...doppes)
         })
     }
-
 
 
     searchVuser(vtype) {

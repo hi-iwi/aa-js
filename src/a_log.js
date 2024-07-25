@@ -161,8 +161,15 @@ class log {
 
 }
 
-
-
-
-
-
+function loge(...args) {
+    if (len(args) === 1) {
+        const err = args[0]
+        if (err instanceof AError) {
+            return err.log()
+        }
+        if (err instanceof Error) {
+            return log.error(err.toString())
+        }
+    }
+    return log.print(...args)
+}

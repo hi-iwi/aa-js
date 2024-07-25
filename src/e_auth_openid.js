@@ -1,3 +1,7 @@
+/**
+ * @import _aaStorageFactor, _aaAuth, _aaFetch
+ *
+ */
 class _aaAuthOpenid {
     name = 'aa-auth-openid'
     // @type _aaStorageFactor

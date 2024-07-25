@@ -149,6 +149,10 @@ const AErrorEnum = {
      * @return {string}
      */
     translate: function (code, msg, dict = 'zh-CN') {
+        if (!msg) {
+            return AErrorEnum.code2Msg(code, dict)
+        }
+        msg = string(msg)
         dict = AErrorEnum.getDictionary(dict)
         if (dict[msg]) {
             return dict[msg]
@@ -169,7 +173,7 @@ const AErrorEnum = {
             return fmt.translate(dict, "Invalid parameter: %s", p)
         }
 
-        return msg ? msg : AErrorEnum.code2Msg(code, dict)
+        return msg
     }
 
 }
@@ -388,7 +392,7 @@ class AError extends Error {
     }
 
     toString() {
-        return this.getMsg()
+        return `${this.code}: ` + this.getMsg()
     }
 
     static newBadRequest(param, dict) {

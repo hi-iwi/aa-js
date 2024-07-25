@@ -110,15 +110,6 @@ class _aaFetch {
         })
     }
 
-    /**
-     * Fetch without AError/Error thrown
-     * @param url
-     * @param settings
-     * @return {*}
-     */
-    fetchN(url, settings) {
-        return this.fetch(url, settings, true)
-    }
 
     /**
      * Fetch without auth
@@ -128,24 +119,13 @@ class _aaFetch {
     fetchA(url, settings) {
         settings = struct(settings)
         settings.mustAuth = false
-        return this.fetch(url, settings, false)
+        return this.fetch(url, settings)
     }
 
-    /**
-     * Fetch without must auth and no AError/Error thrown
-     * @param url
-     * @param settings
-     * @return {*}
-     */
-    fetchNA(url, settings) {
-        settings = struct(settings)
-        settings.mustAuth = false
-        return this.fetch(url, settings, true)
-    }
 
-    statusN(url, settings) {
+    status(url, settings) {
         settings = map.fillUp(settings, this.#defaultSettingsExt)
-        const response = this.#rawFetch.statusN(url, settings, this.fetchHook.bind(this))
+        const response = this.#rawFetch.status(url, settings, this.fetchHook.bind(this))
         return response.then(code => code)   // 不用 catch error
     }
 
@@ -175,11 +155,7 @@ class _aaFetch {
         const uri = new this.#uri(url, params)
         return this.fetch(uri.toString(), settings, noThrown)
     }
-
-    getN(url, params, dictionary) {
-        return this.get(url, params, dictionary, true)
-    }
-
+    
     /**
      * HTTP HEAD without AError/Error thrown
      * @param {string} url
@@ -190,13 +166,13 @@ class _aaFetch {
      * @warn Warning: A response to a HEAD method should not have a body. If it has one anyway, that body must be ignored
      *  HEAD只返回 resp['code'] 或 HTTP状态码，忽略 resp['data'] 数据
      */
-    headN(url, params, dictionary, noThrown = false) {
+    head(url, params, dictionary, noThrown = false) {
         const settings = {
             method    : 'HEAD',
             data      : data,
             dictionary: dictionary,
         }
-        return this.statusN(url, settings, noThrown)     // 不用 catch error
+        return this.status(url, settings, noThrown)     // 不用 catch error
     }
 
     /**
@@ -224,9 +200,6 @@ class _aaFetch {
         return this.fetch(url, settings, noThrown)
     }
 
-    deleteN(url, params, dictionary) {
-        return this.delete(url, params, dictionary, true)
-    }
 
     deleteA(url, params, dictionary) {
         const settings = {
@@ -238,15 +211,6 @@ class _aaFetch {
         return this.fetch(url, settings, false)
     }
 
-    deleteNA(url, params, dictionary) {
-        const settings = {
-            method    : 'DELETE',
-            data      : params,
-            dictionary: dictionary,
-            mustAuth  : false,
-        }
-        return this.fetch(url, settings, true)
-    }
 
     /**
      * HTTP POST
@@ -266,9 +230,6 @@ class _aaFetch {
         return this.fetch(url, settings, noThrown)
     }
 
-    postN(url, data, dictionary) {
-        return this.post(url, data, dictionary, true)
-    }
 
     postA(url, data, dictionary) {
         const settings = {
@@ -280,15 +241,6 @@ class _aaFetch {
         return this.fetch(url, settings, false)
     }
 
-    postNA(url, data, dictionary) {
-        const settings = {
-            method    : 'POST',
-            data      : data,
-            dictionary: dictionary,
-            mustAuth  : false,
-        }
-        return this.fetch(url, settings, true)
-    }
 
     /**
      * HTTP PUT
@@ -308,9 +260,6 @@ class _aaFetch {
         return this.fetch(url, settings, noThrown)
     }
 
-    putN(url, data, dictionary) {
-        return this.put(url, data, dictionary, true)
-    }
 
     putA(url, data, dictionary) {
         const settings = {
@@ -322,15 +271,6 @@ class _aaFetch {
         return this.fetch(url, settings, false)
     }
 
-    putNA(url, data, dictionary) {
-        const settings = {
-            method    : 'PUT',
-            data      : data,
-            dictionary: dictionary,
-            mustAuth  : false,
-        }
-        return this.fetch(url, settings, true)
-    }
 
     /**
      * HTTP PATCH
@@ -350,9 +290,6 @@ class _aaFetch {
         return this.fetch(url, settings, noThrown)
     }
 
-    patchN(url, data, dictionary) {
-        return this.patch(url, data, dictionary, true)
-    }
 
     patchA(url, data, dictionary) {
         const settings = {
@@ -364,13 +301,5 @@ class _aaFetch {
         return this.fetch(url, settings, false)
     }
 
-    patchNA(url, data, dictionary) {
-        const settings = {
-            method    : 'PATCH',
-            data      : data,
-            dictionary: dictionary,
-            mustAuth  : false,
-        }
-        return this.fetch(url, settings, true)
-    }
+
 }
