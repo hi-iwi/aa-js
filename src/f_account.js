@@ -1,6 +1,8 @@
 /**
  * @import _aaAuth
  * @typedef {{[key:string]:any}} struct
+ * @typedef {struct} Profile
+ * @typedef {struct} Vuser
  */
 
 class _aaAccount {
@@ -8,11 +10,12 @@ class _aaAccount {
 
     static TableName = 'aa_auth_account_profile'
     #profile
+    #selectedVuid
+
     // @type _aaCache
     #db
     #auth
     #fetch
-
     #fetchUrl
 
     initFetchUrl(url) {
@@ -32,6 +35,11 @@ class _aaAccount {
 
     }
 
+    save(data) {
+        this.#auth.setToken(data['token'], data['fields'])
+        this.saveProfile(data['profile'])
+    }
+
     saveProfile(profile) {
         const self = _aaAccount
         this.#profile = profile
@@ -42,10 +50,11 @@ class _aaAccount {
         this.#db.drop(self.TableName)
     }
 
+
     /**
      *
      * @param {boolean} [refresh]  false on  [program cache] -> [local storage] -> [remote api]; true on [remote api] only
-     * @return {null|*}
+     * @return {Promise<Profile>|*}
      */
     getProfile(refresh = false) {
         if (!this.#auth.authed()) {
@@ -62,7 +71,7 @@ class _aaAccount {
                     resolve(profile)
                 })
             }
-            profile = this.#db.select(self.TableName)
+            profile = this.#db.selectAll(self.TableName)
             if (len(profile) > 0) {
                 this.#profile = profile
                 return new Promise((resolve, _) => {
@@ -83,6 +92,10 @@ class _aaAccount {
         })
     }
 
+    /**
+     * Get vusers
+     * @return {Promise<Vuser[]>}
+     */
     getVusers() {
         return this.getProfile().then(profile => {
             let vusers = [profile['vuser']]
@@ -91,7 +104,11 @@ class _aaAccount {
         })
     }
 
-
+    /**
+     * Get vuser with vtype
+     * @param {number|string} vtype
+     * @return {Promise<Vuser>}
+     */
     searchVuser(vtype) {
         return this.getVusers().then(vusers => {
             vtype = number(vtype)
@@ -101,9 +118,24 @@ class _aaAccount {
                     return vuser
                 }
             }
+            throw new RangeError(`not found vuser with vtype: ${vtype}`)
         })
     }
 
+    /**
+     * Get main vuser
+     * @return {Promise<Vuser>}
+     */
+    mainVuser() {
+        return this.searchVuser(0)
+    }
+
+
+    /**
+     * Get vuser
+     * @param vuid
+     * @return {Promise<Vuser>}
+     */
     getVuser(vuid) {
         return this.getVusers().then(vusers => {
             for (let i = 0; i < vusers.length; i++) {
@@ -112,6 +144,32 @@ class _aaAccount {
                     return vuser
                 }
             }
+            throw new RangeError(`not found vuser ${vuid}`)
         })
+    }
+
+    setSelectedVuid(vuid) {
+        this.#selectedVuid = vuid
+        this.#db.save(self.TableName, {'selected_vuid_': vuid})
+    }
+
+    #readSelectedVuid() {
+        return this.#db.find(self.TableName, 'selected_vuid_')
+    }
+
+
+    /**
+     * Last selected vuser, default is main vuser
+     * @return {Promise<Vuser>}
+     */
+    getSelectedVuser() {
+        let vuid = this.#selectedVuid
+        if (!vuid || vuid === '0') {
+            vuid = this.#readSelectedVuid()
+        }
+        if (!vuid) {
+            return this.mainVuser()
+        }
+        return this.getVuser(vuid)
     }
 }

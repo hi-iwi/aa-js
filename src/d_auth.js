@@ -17,6 +17,9 @@ class _aaAuth {
     #tokenAuthAt = 0
     #validateTried = false
 
+    // @type {string[]|null} Auth fields
+    #fields
+
     enableCookie = true
     cookieOptions = {
         // domain : ,
@@ -29,49 +32,6 @@ class _aaAuth {
         //secure  : location.protocol === "https",  // 只允许https访问
     }
 
-
-    // aa.auth.token['access_token']
-    get token() {
-        const token = this.getToken()
-        if (!token) {
-            return null
-        }
-        const exp = (token['expires_in'] + this.#tokenAuthAt) * time.Second - Date.now()
-        if (exp <= 0) {
-            return this.refresh()
-        }
-        return token
-    }
-
-    set token(token) {
-        this.setToken(token)
-    }
-
-    getToken() {
-        // 由于access token经常使用，并且可能会由于第三方登录，导致修改cookie。
-        // 因此，查询变量方式效率更高，且改动相对无时差
-        if (!this.#token) {
-            const accessToken = this.#readStorage("access_token")
-
-            if (!accessToken) {
-                return null
-            }
-            this.#token = {
-                "access_token" : accessToken,
-                "conflict"     : this.#readStorage("conflict"),
-                "expires_in"   : this.#readStorage("expires_in"),
-                "refresh_api"  : this.#readStorage("refresh_api"),
-                "refresh_token": this.#readStorage("refresh_token"),
-                "scope"        : this.#readStorage("scope"),
-                "secure"       : this.#readStorage("secure"),
-                "token_type"   : this.#readStorage("token_type"),
-                "validate_api" : this.#readStorage("validate_api"),
-            }
-            this.#tokenAuthAt = this.#readStorage("localAuthAt_")
-        }
-
-        return this.#token
-    }
 
     initUnauthorizedHandler(handler) {
         this.#unauthorizedHandler = handler
@@ -133,9 +93,14 @@ class _aaAuth {
         */
         // 由于cookie可以跨域，而 localStorage 不能跨域。
         // 单点登录，所以这些信息都用 cookie 来保存
+        if (typeof opts === "number") {
+            opts = {
+                expires: opts,
+            }
+        }
         opts = map.fillUp(opts, this.cookieOptions)
         const hostname = window.location.hostname
-        opts.domain = /^([\d\.]+|[^\.]+)$/.test(hostname) ? hostname : hostname.replace(/^[^.]+/ig, '')
+        opts.domain = /^([\d.]+|[^.]+)$/.test(hostname) ? hostname : hostname.replace(/^[^.]+/ig, '')
         opts.secure = location.protocol === "https"  // 只允许https访问
         this.#storage.cookie.setItem(key, value, opts)
 
@@ -171,11 +136,12 @@ class _aaAuth {
      */
     validate() {
         let checked = this.#sessionGetItem('checked')
-        if (this.#validateTried || checked || !this.token || !this.token['validate_api']) {
+        const token = this.getToken()
+        if (this.#validateTried || checked || !token || !token['validate_api']) {
             return
         }
         this.#validateTried = true  // fetch 可能失败，就有可能会一直尝试；因此增加一个程序层防重
-        const [method, api] = this.#parseApiUrl(this.token['validate_api'])
+        const [method, api] = this.#parseApiUrl(token['validate_api'])
         this.#rawFetch.fetch(api, {
             method: method,
             data  : {}
@@ -211,7 +177,23 @@ class _aaAuth {
         }
     }
 
-    setToken(token) {
+    getFields() {
+        return this.#readStorage("fields")
+    }
+
+    setFields(fields) {
+        this.#fields = fields
+        this.#localSetItem("fields", fields)
+    }
+
+    /**
+     * Set token and fields
+     * @param token
+     * @param fields
+     */
+    setToken(token, fields) {
+        this.removeLogout()
+
         token = this.validateToken(token)
         if (!token) {
             alert("set invalid token")
@@ -240,12 +222,8 @@ class _aaAuth {
         this.#storage.clearAll()
 
         const expiresIn = this.#token['expires_in']
-        this.#tryStoreCookie("access_token", this.#token['access_token'], {
-            expires: expiresIn * time.Second
-        })
-        this.#tryStoreCookie("token_type", this.#token['token_type'], {
-            expires: expiresIn * time.Second
-        })
+        this.#tryStoreCookie("access_token", this.#token['access_token'], expiresIn * time.Second)
+        this.#tryStoreCookie("token_type", this.#token['token_type'], expiresIn * time.Second)
 
         // refresh token 不应该放到cookie里面
         this.#localSetItem("conflict", this.#token['conflict'])
@@ -258,11 +236,47 @@ class _aaAuth {
 
         this.#localSetItem("localAuthAt_", this.#tokenAuthAt)
         this.#sessionSetItem('checked', true)
+
+        this.setFields(fields)
     }
 
 
+    getToken(noRefresh = false) {
+        // 由于access token经常使用，并且可能会由于第三方登录，导致修改cookie。
+        // 因此，查询变量方式效率更高，且改动相对无时差
+        let token = this.#token
+        if (!token) {
+            const accessToken = this.#readStorage("access_token")
+
+            if (!accessToken) {
+                return null
+            }
+            token = {
+                "access_token" : accessToken,
+                "conflict"     : this.#readStorage("conflict"),
+                "expires_in"   : this.#readStorage("expires_in"),
+                "refresh_api"  : this.#readStorage("refresh_api"),
+                "refresh_token": this.#readStorage("refresh_token"),
+                "scope"        : this.#readStorage("scope"),
+                "secure"       : this.#readStorage("secure"),
+                "token_type"   : this.#readStorage("token_type"),
+                "validate_api" : this.#readStorage("validate_api"),
+            }
+            this.#token = token
+            this.#tokenAuthAt = this.#readStorage("localAuthAt_")
+        }
+        if (!noRefresh) {
+            const exp = (token['expires_in'] + this.#tokenAuthAt) * time.Second - Date.now()
+            if (exp <= 0) {
+                return this.refresh()
+            }
+
+        }
+        return this.#token
+    }
+
     refresh() {
-        const token = this.getToken()
+        const token = this.getToken(true)
         if (!token || !token['refresh_api'] || !token['refresh_token']) {
             return null
         }
@@ -292,10 +306,11 @@ class _aaAuth {
      * @return {string}
      */
     getAuthorization() {
-        if (!this.token || !this.token['access_token'] || !this.token['token_type']) {
+        const token = this.getToken()
+        if (!token || !token['access_token'] || !token['token_type']) {
             return ""
         }
-        return this.token['token_type'] + " " + this.token['access_token']
+        return token['token_type'] + " " + token['access_token']
     }
 
 
@@ -304,7 +319,8 @@ class _aaAuth {
      * @return {boolean}
      */
     authed() {
-        return len(this.token, 'access_token') > 0 && len(this.token, 'token_type') > 0
+        const token = this.getToken()
+        return len(token, 'access_token') > 0 && len(token, 'token_type') > 0
     }
 
     // 所有401，都执行一次服务端退出，这样可以排除大量异常情况 ——— 影响用户下单的成本是最重的！！
@@ -313,6 +329,10 @@ class _aaAuth {
         this.#token = null // clear program cache
         this.#tryStoreCookie(aparam.Logout, 1, 5 * time.Minute)
         callback()
+    }
+
+    removeLogout() {
+        this.#tryStoreCookie(aparam.Logout, 0, -time.Day)
     }
 
     #parseApiUrl(s) {

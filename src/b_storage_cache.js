@@ -59,14 +59,27 @@ class _aaCache {
     /**
      * Select from table
      * @param {string} table
+     * @param {[string]} [fields]
      * @return {*}
      */
-    select(table) {
+    selectAll(table, fields) {
         if (!table) {
-            throw new RangeError("storage cache select table undefined")
+            throw new RangeError("storage cache select all from table undefined")
         }
-        const tableName = this.tableName(table)
-        return this.#storage.getItems(new RegExp("^" + tableName))
+        let pattern = this.tableName(table) + '.'
+        if (len(fields) === 0) {
+            pattern += '(' + fields.join('|') + ')$'
+        }
+        return this.#storage.getItems(new RegExp("^" + pattern))
     }
+
+    find(table, fieldName) {
+        if (!table || !fieldName) {
+            throw new RangeError("storage cache select filed from table")
+        }
+        let key = this.tableName(table) + '.' + fieldName
+        return this.#storage.getItem(key)
+    }
+
 
 }
