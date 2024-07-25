@@ -282,6 +282,9 @@ class map {
      * @return {object|struct} A = (A ∩ B) ∪ zeroize(A)
      */
     static overwrite(target, source, keynameConvertor) {
+        if (!target || !source) {
+            return target
+        }
         let fields = target.hasOwnProperty('_fields_') && target._fields_ ? target._fields_ : target.constructor['_fields_'] ? target.constructor['_fields_'] : null
         for (let [k, v] of Object.entries(source)) {
             let keyname = typeof keynameConvertor === "function" ? keynameConvertor(k) : k

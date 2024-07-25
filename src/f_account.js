@@ -101,7 +101,8 @@ class _aaAccount {
         return this.getProfile().then(profile => {
             let vusers = [profile['vuser']]
             let doppes = array(profile, 'doppes')
-            return vusers.push(...doppes)
+            vusers.push(...doppes)
+            return vusers
         })
     }
 
@@ -112,10 +113,10 @@ class _aaAccount {
      */
     searchVuser(vtype) {
         return this.getVusers().then(vusers => {
-            vtype = number(vtype)
+            vtype = string(vtype)
             for (let i = 0; i < vusers.length; i++) {
                 let vuser = vusers[i]
-                if (number(vuser['vtype']) === vtype) {
+                if (string(vuser['vtype']) === vtype) {
                     return vuser
                 }
             }
