@@ -47,6 +47,7 @@ class _aaAccount {
     }
 
     drop() {
+        const itself = _aaAccount
         this.#db.drop(itself.TableName)
     }
 
@@ -149,13 +150,13 @@ class _aaAccount {
     }
 
     setSelectedVuid(vuid) {
-        const  itself = _aaAccount
+        const itself = _aaAccount
         this.#selectedVuid = vuid
         this.#db.save(itself.TableName, {'selected_vuid_': vuid})
     }
 
     #readSelectedVuid() {
-        const itself  = _aaAccount
+        const itself = _aaAccount
         return this.#db.find(itself.TableName, 'selected_vuid_')
     }
 
