@@ -30,7 +30,7 @@ const _aaHtmlDecoder_ = {
 class html {
     name = 'aa-html'
 
-    static fuzzyTag = '<i class="f8 f94b"></i>'
+    static fuzzyTag = '<i class="fuzzy"></i>'
 
     // 对文章中敏感词进行马赛克化
     static fuzzy(s, tag = html.fuzzyTag) {

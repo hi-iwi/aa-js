@@ -50,10 +50,10 @@ class _aaAuthOpenid {
      */
     fetch(forceRefresh = false) {
         if (!forceRefresh) {
-            if (!this.#openid) {
-                return this.#openid
+            let openid = this.#openid
+            if (!openid) {
+                openid = this.getOpenidCache()
             }
-            let openid = this.getOpenidCache()
             if (openid) {
                 return new Promise((resolve, _) => {
                     resolve(openid)

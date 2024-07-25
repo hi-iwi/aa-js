@@ -307,8 +307,14 @@ class AaImgSrc {
 class _aaOSS {
     name = 'aa-oss'
 
+    #svc
     #assetLibHandler
     #assetHandler
+
+
+    initSvc(svc) {
+        this.#svc = svc
+    }
 
     initAssetLibHandler(handler) {
         this.#assetLibHandler = handler
@@ -319,16 +325,31 @@ class _aaOSS {
         this.#assetHandler = handler
     }
 
+
     constructor() {
     }
 
-    assetLib(path){
+    assetLib(path) {
         return typeof this.#assetLibHandler === "function" ? this.#assetLibHandler(path) : path
     }
 
     asset(path) {
+        if (this.#svc) {
+            path = _aaPath.join(string(this.#svc), path)
+        }
         return typeof this.#assetHandler === "function" ? this.#assetHandler(path) : path
     }
+
+    // image/font
+    i(path) {
+        return this.asset("/i/" + path)
+    }
+
+    // script
+    x(path) {
+        return this.asset("/x/" + path)
+    }
+
 
     /**
      * New AaImgSrc
