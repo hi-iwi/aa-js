@@ -55,19 +55,19 @@ class _aaAuth {
      * @param engine
      * @param key
      * @return {string}
-     * @warn  如果使用 #keyname() 命名，编译便会报错
+     * @warn  如果使用 #keyname() / #keyName() 命名，编译便会报错
      */
-    #keyName(engine, key) {
+    #storageKeyName(engine, key) {
         return ['aa', 'auth', key].join(engine.separator)
     }
 
     #saveItem(engine, key, value) {
-        const keyname = this.#keyName(engine, key)
+        const keyname = this.#storageKeyName(engine, key)
         return engine.setItem(keyname, value)
     }
 
     #readItem(engine, key) {
-        const keyname = this.#keyName(engine, key)
+        const keyname = this.#storageKeyName(engine, key)
         return engine.getItem(keyname)
     }
 
@@ -77,27 +77,27 @@ class _aaAuth {
         if (value) {
             return value
         }
-        value = r.session.getItem('aa_auth_' + key)
+        value = this.#sessionGetItem(key)
         if (value) {
             return value
         }
-        return r.local.getItem('aa_auth_' + key)
+        return this.#localGetItem(key)
     }
 
     #localSetItem(key, value) {
-        //return this.#saveItem(this.#storage.local, key, value)
+        return this.#saveItem(this.#storage.local, key, value)
     }
 
     #localGetItem(key) {
-        //return this.#readItem(this.#storage.local, key)
+        return this.#readItem(this.#storage.local, key)
     }
 
     #sessionSetItem(key, value) {
-        // return this.#saveItem(this.#storage.session, key, value)
+        return this.#saveItem(this.#storage.session, key, value)
     }
 
     #sessionGetItem(key) {
-        // return this.#readItem(this.#storage.session, key)
+        return this.#readItem(this.#storage.session, key)
     }
 
     #tryStoreCookie(key, value, opts) {

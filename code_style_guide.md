@@ -14,6 +14,12 @@ new Map().forEach((value, key, map) => {
 
 cookie-name = token
 
+
+## Rules 
+
+* Don't name private method with name #keyname()/#keyName , it won't compile.
+
+
 * token表示的是除了分隔符和CTLs以外的ASCII字符
 * 分隔符包括:
 * 小中大尖括号 "("|")"|"[]"|"]"|"{"|"}"|"<"|">"

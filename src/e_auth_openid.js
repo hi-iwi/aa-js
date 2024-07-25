@@ -15,7 +15,7 @@ class _aaAuthOpenid {
     #fetchUrl
 
     #openid
-    #keyname
+    #keyName
 
     /**
      *
@@ -35,12 +35,12 @@ class _aaAuthOpenid {
         this.#storageEngine = storageEngine
         this.#auth = auth
         this.#fetch = fetch
-        this.#keyname = ['aa','auth','openid'].join(storageEngine.separator)
+        this.#keyName = ['aa','auth','openid'].join(storageEngine.separator)
     }
 
 
     getOpenidCache() {
-        const k = this.#keyname
+        const k = this.#keyName
         const exp = this.#storageEngine.getItem(k + '_expires_in')
         const now = time.unix()
         if (exp === null || parseInt(exp) < now + 1.8 * time.Second) {
@@ -50,7 +50,7 @@ class _aaAuthOpenid {
     }
 
     setOpenidCache(openid, expiresIn) {
-        const k = this.#keyname
+        const k = this.#keyName
         const now = time.unix()
         const exp = now + int32(expiresIn)
         this.#storageEngine.setItem(k, openid)
