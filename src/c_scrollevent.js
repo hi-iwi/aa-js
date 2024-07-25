@@ -4,7 +4,7 @@
  * @typedef {function(scrollTop, prevScrollTop, autoScroll:bool)} Trigger
  * @typedef {{condition: Condition|null, trigger: Trigger, pause: boolean}} Event
  */
-class __aaScrollEvent {
+class _aaScrollEvent {
     // @type Map
     #events
     // @type {_aaEnvironment}

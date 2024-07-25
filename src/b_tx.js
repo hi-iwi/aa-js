@@ -10,7 +10,7 @@ class _aaTx {
 
 
     constructor() {
-        this.#id = _aaTx.atomicId()
+        this.#id = _aa.TX.atomicId()
         this.#lock = false
         this.#timer = null
     }

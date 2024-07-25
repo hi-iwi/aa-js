@@ -49,10 +49,18 @@ class Aa {
     editor
 
     constructor() {
-        const uri = this.uri
+        const path = _aaPath
+        const tx = _aaTx
+        const env = _aaEnvironment
+        const uri = _aaURI
+
+        this.TX = tx
+        this.Path = path
+        this.env = env
+        this.uri = uri
 
         const registry = new _aaRegistry()
-        const scrollEvent = new __aaScrollEvent()
+        const scrollEvent = new _aaScrollEvent(env)
         const storage = new _aaStorageFactor()
         const cache = new _aaCache(storage.session)
         const db = new _aaCache(storage.local)
@@ -60,7 +68,7 @@ class Aa {
         const rawFetch = new _aaRawFetch(storage, uri)
         const auth = new _aaAuth(storage, rawFetch)
         const fetch = new _aaFetch(uri, rawFetch, auth)
-        const openidAuth = new _aaAuthOpenid(storage, auth, fetch)
+        const openidAuth = new _aaAuthOpenid(storage.session, auth, fetch)
         const account = new _aaAccount(db, auth, fetch)
         const oss = new _aaOSS()
         const editor = new _aaEditor(oss)
