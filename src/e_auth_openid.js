@@ -4,8 +4,8 @@
  */
 class _aaAuthOpenid {
     name = 'aa-auth-openid'
-    // @type _aaStorageFactor
-    #storage
+    // @type _aaStorageEngine
+    #storageEngine
     // @type _aaAuth
     #auth
     // @type _aaFetch
@@ -15,6 +15,7 @@ class _aaAuthOpenid {
     #fetchUrl
 
     #openid
+    #keyname
 
     /**
      *
@@ -26,33 +27,34 @@ class _aaAuthOpenid {
 
     /**
      *
-     * @param {_aaStorageFactor} storage
+     * @param {_aaStorageEngine} storageEngine
      * @param {_aaAuth} auth
      * @param {_aaFetch} fetch
      */
-    constructor(storage, auth, fetch) {
-        this.#storage = storage
+    constructor(storageEngine, auth, fetch) {
+        this.#storageEngine = storageEngine
         this.#auth = auth
         this.#fetch = fetch
+        this.#keyname = ['aa','auth','openid'].join(storageEngine.separator)
     }
 
 
     getOpenidCache() {
-        const k = "aa_auth_openid"
-        const exp = this.#storage.session.getItem(k + '_expires_in')
+        const k = this.#keyname
+        const exp = this.#storageEngine.getItem(k + '_expires_in')
         const now = time.unix()
         if (exp === null || parseInt(exp) < now + 1.8 * time.Second) {
             return null
         }
-        return this.#storage.session.getItem(k)
+        return this.#storageEngine.getItem(k)
     }
 
     setOpenidCache(openid, expiresIn) {
-        const k = "aa_auth_openid"
+        const k = this.#keyname
         const now = time.unix()
         const exp = now + int32(expiresIn)
-        this.#storage.session.setItem(k, openid)
-        this.#storage.session.setItem(k + "_expires_in", exp)
+        this.#storageEngine.setItem(k, openid)
+        this.#storageEngine.setItem(k + "_expires_in", exp)
     }
 
     /**

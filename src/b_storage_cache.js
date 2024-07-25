@@ -1,18 +1,22 @@
 class _aaCache {
     name = 'aa-cache'
-    // @type _aaStorage
-    #storage
+    // @type _aaStorageEngine
+    #storageEngine
 
-    constructor(storage) {
-        this.#storage = storage
+    /**
+     *
+     * @param {_aaStorageEngine} storageEngine
+     */
+    constructor(storageEngine) {
+        this.#storageEngine = storageEngine
     }
 
     tableName(table) {
-        return 'aa_db_' + table
+        return ['aa', 'db', table].join(this.#storageEngine.separator)
     }
 
     keyname(table, key) {
-        return this.tableName(table) + '.' + key
+        return this.tableName(table) + this.#storageEngine.subSeparator + key
     }
 
     // pattern {is://, not:/(^_)|(_total)/} -->
@@ -31,7 +35,7 @@ class _aaCache {
             let keyname = this.keyname(table, key)
             // 这个要放在最前面，抵消默认忽视下划线结尾的临时变量规则
             if ((typeof is === "string" && key === is) || (is instanceof RegExp && is.test(key))) {
-                this.#storage.setItem(keyname, value, persistent)
+                this.#storageEngine.setItem(keyname, value, persistent)
                 return
             }
 
@@ -43,7 +47,7 @@ class _aaCache {
             if ((typeof not === "string" && key === not) || (not instanceof RegExp && not.test(key))) {
                 return
             }
-            this.#storage.setItem(keyname, value, persistent)
+            this.#storageEngine.setItem(keyname, value, persistent)
         })
     }
 
@@ -53,7 +57,7 @@ class _aaCache {
      */
     drop(table) {
         const tableName = this.tableName(table)
-        this.#storage.removeItems(new RegExp("^" + tableName))
+        this.#storageEngine.removeItems(new RegExp("^" + strings.escapeReg(tableName)))
     }
 
     /**
@@ -66,19 +70,19 @@ class _aaCache {
         if (!table) {
             throw new RangeError(`storage cache error: select * from ${table}`)
         }
-        let pattern = this.tableName(table) + '.'
+        let pattern = this.tableName(table) + strings.escapeReg(this.#storageEngine.subSeparator)
         if (len(fields) === 0) {
             pattern += '(' + fields.join('|') + ')$'
         }
-        return this.#storage.getItems(new RegExp("^" + pattern))
+        return this.#storageEngine.getItems(new RegExp("^" + pattern))
     }
 
-    find(table, fieldName) {
-        if (!table || !fieldName) {
-            throw new RangeError(`storage cache error: select ${array(fieldName).join(',')} from ${table}`)
+    find(table, field) {
+        if (!table || !field) {
+            throw new RangeError(`storage cache error: select ${array(field).join(',')} from ${table}`)
         }
-        let key = this.tableName(table) + '.' + fieldName
-        return this.#storage.getItem(key)
+        let key = this.keyname(table, field)
+        return this.#storageEngine.getItem(key)
     }
 
 
