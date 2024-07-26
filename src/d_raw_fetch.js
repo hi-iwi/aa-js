@@ -2,7 +2,7 @@
  * @import _aaStorageFactor, _aaURI
  */
 
-class _aaRawFetch {
+class AaRawFetch {
     name = 'aa-raw-fetch'
 
     // @type _aaStorageFactor
@@ -61,8 +61,8 @@ class _aaRawFetch {
     }
 
     /**
-     * @param {_aaStorageFactor} storage
-     * @param {typeof _aaURI} uri
+     * @param {AaStorageFactor} storage
+     * @param {typeof AaURI} uri
      */
     constructor(storage, uri) {
         this.#storage = storage
@@ -198,7 +198,7 @@ class _aaRawFetch {
     }
 
     debounce(method, url, body) {
-        const itself = _aaRawFetch
+        const itself = AaRawFetch
         this.autoClean()
 
         const checksum = itself.generateChecksum(method, url, body)
@@ -347,7 +347,7 @@ class _aaRawFetch {
      * @todo support ArrayBuffer, TypedArray, DataView, Blob, File, URLSearchParams, FormData
      */
     static generateChecksum(method, url, body) {
-        const itself = _aaRawFetch
+        const itself = AaRawFetch
         let checksum = `${method} ${url}`
         if (!body) {
             return checksum

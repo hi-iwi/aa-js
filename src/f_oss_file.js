@@ -1,6 +1,6 @@
 
 //@TODO
-class _aaFileSrc {
+class AaFileSrc {
     name = 'aa-file-src'
 
     process

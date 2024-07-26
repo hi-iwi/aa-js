@@ -2,7 +2,7 @@
 /**
  * Ajax 包括：XMLHttpRequest 、fetch 等
  */
-class _aaFetch {
+class AaFetch {
     name = 'aa-fetch'
 
     // @type _aaRawFetch
@@ -34,9 +34,9 @@ class _aaFetch {
     }
 
     /**
-     * @param {typeof _aaURI} uri
-     * @param {_aaRawFetch} rawFetch
-     * @param {_aaAuth} auth
+     * @param {typeof AaURI} uri
+     * @param {AaRawFetch} rawFetch
+     * @param {AaAuth} auth
      */
     constructor(uri, rawFetch, auth) {
         this.#uri = uri

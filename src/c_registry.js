@@ -1,7 +1,7 @@
 /**
  * Registry
  */
-class _aaRegistry {
+class AaRegistry {
     name = 'aa-registry'
 
     #registers = {}

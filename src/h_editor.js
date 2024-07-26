@@ -1,7 +1,7 @@
 /**
  * @typedef {(path:string) => struct} ImgSrcDataMaker
  */
-class _aaEditor {
+class AaEditor {
     name = 'aa-editor'
     #oss
     //@type {ImgSrcDataMaker|null}
@@ -18,20 +18,20 @@ class _aaEditor {
 
     /**
      *
-     * @param {_aaOSS} oss
+     * @param {AaOSS} oss
      * @param ossDataMakers
      */
     constructor(oss, ...ossDataMakers) {
         this.#oss = oss
         for (let i = 0; i < ossDataMakers.length; i++) {
             let maker = ossDataMakers[i]
-            if (maker instanceof _aaImgSrc) {
+            if (maker instanceof AaImgSrc) {
                 this.imgSrcDataMaker = maker
-            } else if (maker instanceof _aaVideoSrc) {
+            } else if (maker instanceof AaVideoSrc) {
                 this.videoSrcDataMaker = maker
-            } else if (maker instanceof _aaAudioSrc) {
+            } else if (maker instanceof AaAudioSrc) {
                 this.audioSrcDataMaker = maker
-            } else if (maker instanceof _aaFileSrc) {
+            } else if (maker instanceof AaFileSrc) {
                 this.fileSrcDataMaker = maker
             }
         }
@@ -59,7 +59,7 @@ class _aaEditor {
      * @param imgSrcDataMaker
      */
     decodeDom(dom, imgSrcDataMaker) {
-        const itself = _aaEditor
+        const itself = AaEditor
         if (typeof dom === "string") {
             dom = document.querySelector(dom)
         }
@@ -105,7 +105,7 @@ class _aaEditor {
      */
 
     decodeContent(content, imgSrcDataMaker) {
-        const itself = _aaEditor
+        const itself = AaEditor
 
         content = htmls.fuzzy(content)
         imgSrcDataMaker = itself.maker(imgSrcDataMaker, this.imgSrcDataMaker)

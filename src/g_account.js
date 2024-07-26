@@ -3,7 +3,7 @@
  * @typedef {struct} Profile
  */
 
-class _aaAccount {
+class AaAccount {
     name = 'aa-account'
 
     static TableName = 'auth_account'
@@ -22,9 +22,9 @@ class _aaAccount {
 
     /**
      *
-     * @param {_aaCache} db
+     * @param {AaCache} db
      * @param auth
-     * @param {_aaFetch} fetch
+     * @param {AaFetch} fetch
      */
     constructor(db, auth, fetch) {
         this.#db = db
@@ -39,13 +39,13 @@ class _aaAccount {
     }
 
     saveProfile(profile) {
-        const itself = _aaAccount
+        const itself = AaAccount
         this.#profile = profile
         this.#db.save(itself.TableName, profile)
     }
 
     drop() {
-        const itself = _aaAccount
+        const itself = AaAccount
         this.#db.drop(itself.TableName)
     }
 
@@ -62,7 +62,7 @@ class _aaAccount {
             })
         }
 
-        const itself = _aaAccount
+        const itself = AaAccount
         if (!refresh) {
             let profile = this.#profile
             if (len(profile) > 0) {
@@ -149,13 +149,13 @@ class _aaAccount {
     }
 
     setSelectedVuid(vuid) {
-        const itself = _aaAccount
+        const itself = AaAccount
         this.#selectedVuid = vuid
         this.#db.save(itself.TableName, {'selected_vuid_': vuid})
     }
 
     #readSelectedVuid() {
-        const itself = _aaAccount
+        const itself = AaAccount
         return this.#db.find(itself.TableName, 'selected_vuid_')
     }
 

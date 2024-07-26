@@ -1,6 +1,7 @@
 //  react state  数字 001231 === 1231 == 001231.000  这些数值都没有变化，state就不会触发
 
 
+
 /**
  * defined value
  * @param {*} vv
@@ -341,7 +342,6 @@ function func(vv, vk, defaultV) {
     return nif
 }
 
- 
 
 function _inRange(x, min, max, name) {
     if (x < min || x > max) {
@@ -414,8 +414,10 @@ function string(vv, vk, defaultV) {
     return v + ''
 }
 
-
-// js 数字全部是采用的双精度浮点数存储的。 js number 最大值是：9007199254740992
+/**
+ * @return {number}
+ * @note js 数字全部是采用的双精度浮点数存储的。 js number 最大值是：9007199254740992
+ */
 function number(vv, vk, defaultV) {
     return Number(defval(...arguments))
 }

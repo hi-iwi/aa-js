@@ -3,7 +3,7 @@
  * @typedef {struct} Vuser
  */
 
-class _aaApollo {
+class AaApollo {
     name = 'aa-apollo'
 
     // @type _aaFetch
@@ -20,11 +20,11 @@ class _aaApollo {
 
     /**
      *
-     * @param {_aaFetch} fetcher
+     * @param {AaFetch} fetcher
      * @param {string} url
      * @param {(fp:string)=>void} fingerprintGenerator 设备唯一码生成器
      * @param {(data:struct)=>void} loginDataHandler 登录处理
-     * @param {_aaStorageEngine} storage
+     * @param {AaStorageEngine} storage
      */
     constructor(fetcher, url, fingerprintGenerator, loginDataHandler, storage) {
         this.#fetcher = fetcher
@@ -83,7 +83,7 @@ class _aaApollo {
                 "dph"  : Math.ceil(window.screen.width * window.devicePixelRatio), // 物理分辨率高度
                 "dip_w": window.screen.width,  // 逻辑分辨率宽度
             }
-            apollo = _aaApollo.Encode(info)
+            apollo = AaApollo.Encode(info)
             this.set(apollo)
             done(apollo)
         })
@@ -127,7 +127,7 @@ class _aaApollo {
         let cipher = 'A'
         let swapRange = (cipher.charCodeAt(0) & 1) + 1
         info.timestamp = new Date().valueOf()
-        info.nonce = _aaApollo._genRandStr(8)
+        info.nonce = AaApollo._genRandStr(8)
 
         // 屏幕逻辑宽带 window.screen.height * window.devicePixelRatio
 

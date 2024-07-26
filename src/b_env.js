@@ -2,7 +2,7 @@
  * @import   _aaDebug
  */
 
-class _aaEnvironment {
+class AaEnv {
     name = 'aa-environment'
 
     static debug = _aaDebug
@@ -64,7 +64,7 @@ class _aaEnvironment {
     }
 
     static isAppleTouch() {
-        return _aaEnvironment.isIphone() || _aaEnvironment.isIpad()
+        return AaEnv.isIphone() || AaEnv.isIpad()
     }
 
 

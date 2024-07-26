@@ -32,7 +32,7 @@ scheme  user information     host     port                  query      fragm
  */
 const UrlRemoveRedirect = {redirect: null}
 
-class _aaURI {
+class AaURI {
     name = 'aa-uri'
 
 
@@ -54,19 +54,19 @@ class _aaURI {
 
 
     get protocol() {
-        const itself = _aaURI
+        const itself = AaURI
         const [protocol, ,] = itself.lookup(this.#protocol, this.queries)
         return protocol.toLowerCase()
     }
 
     get hostname() {
-        const itself = _aaURI
+        const itself = AaURI
         const [hostname, ,] = itself.lookup(this.#hostname, this.queries)
         return hostname
     }
 
     get port() {
-        const itself = _aaURI
+        const itself = AaURI
         const [port, ,] = itself.lookup(this.#port, this.queries)
         return port
     }
@@ -88,13 +88,13 @@ class _aaURI {
     }
 
     get pathname() {
-        const itself = _aaURI
+        const itself = AaURI
         const [pathname, ,] = itself.lookup(this.#pathname, this.queries)
         return pathname
     }
 
     get hash() {
-        const itself = _aaURI
+        const itself = AaURI
         const [hash, ,] = itself.lookup(this.#hash, this.queries)
         return hash
     }
@@ -120,7 +120,7 @@ class _aaURI {
      * @param {string} [hash]
      */
     init(url = location.href, params, hash = '') {
-        const itself = _aaURI
+        const itself = AaURI
         url = string(url)  // will convert url:_aaURI to url.String()
         if (url.substring(0, 1) === '/') {
             if (url.substring(1, 2) === '/') {
@@ -223,7 +223,7 @@ class _aaURI {
     /**
      *
      * @param {map|{[key:string]:*}} params
-     * @return {_aaURI}
+     * @return {AaURI}
      */
     extend(params) {
         this.queries.extend(params)
@@ -276,7 +276,7 @@ class _aaURI {
      * @return {{baseUrl: string, search: string, ok: ok, queries: map, url: string, hash: string}}
      */
     parse() {
-        const itself = _aaURI
+        const itself = AaURI
         let newQueries = this.queries.clone(false)
         let port = this.#port ? ':' + this.#port : ''
         let s = this.#protocol + '://' + this.#hostname + port + this.#pathname

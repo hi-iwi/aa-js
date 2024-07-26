@@ -2,7 +2,7 @@
  * @import _aaStorageFactor, _aaAuth, _aaFetch
  *
  */
-class _aaAuthOpenid {
+class AaAuthOpenid {
     name = 'aa-auth-openid'
     // @type _aaStorageEngine
     #storageEngine
@@ -27,9 +27,9 @@ class _aaAuthOpenid {
 
     /**
      *
-     * @param {_aaStorageEngine} storageEngine
-     * @param {_aaAuth} auth
-     * @param {_aaFetch} fetch
+     * @param {AaStorageEngine} storageEngine
+     * @param {AaAuth} auth
+     * @param {AaFetch} fetch
      */
     constructor(storageEngine, auth, fetch) {
         this.#storageEngine = storageEngine

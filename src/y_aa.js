@@ -1,8 +1,6 @@
 class Aa {
     name = 'aa'
     // a_
-    // @type typeof _aaPath
-    Path = _aaPath
 
 
     //@type _aaRegistry
@@ -11,7 +9,7 @@ class Aa {
     scrollEvent
 
     //@type typeof _aaTx
-    TX = _aaTx
+    TX = AaTx
 
     // @type _aaStorageFactor
     storage
@@ -21,13 +19,13 @@ class Aa {
     // log   log 类是纯静态方法，全局直接使用
 
     //@type typeof _aaURI
-    uri = _aaURI
+    uri = AaURI
 
 
     // b_
 
     //@type typeof _aaEnvironment
-    env = _aaEnvironment
+    env = AaEnv
     // c_
     // @type _aaAuth
     auth
@@ -49,29 +47,27 @@ class Aa {
     editor
 
     constructor() {
-        const path = _aaPath
-        const tx = _aaTx
-        const env = _aaEnvironment
-        const uri = _aaURI
+        const tx = AaTx
+        const env = AaEnv
+        const uri = AaURI
 
         this.TX = tx
-        this.Path = path
         this.env = env
         this.uri = uri
 
-        const registry = new _aaRegistry()
-        const scrollEvent = new _aaScrollEvent(env)
-        const storage = new _aaStorageFactor()
-        const cache = new _aaCache(storage.session)
-        const db = new _aaCache(storage.local)
+        const registry = new AaRegistry()
+        const scrollEvent = new AaScrollEvent(env)
+        const storage = new AaStorageFactor()
+        const cache = new AaCache(storage.session)
+        const db = new AaCache(storage.local)
 
-        const rawFetch = new _aaRawFetch(storage, uri)
-        const auth = new _aaAuth(storage, rawFetch)
-        const fetch = new _aaFetch(uri, rawFetch, auth)
-        const openidAuth = new _aaAuthOpenid(storage.session, auth, fetch)
-        const account = new _aaAccount(db, auth, fetch)
-        const oss = new _aaOSS()
-        const editor = new _aaEditor(oss)
+        const rawFetch = new AaRawFetch(storage, uri)
+        const auth = new AaAuth(storage, rawFetch)
+        const fetch = new AaFetch(uri, rawFetch, auth)
+        const openidAuth = new AaAuthOpenid(storage.session, auth, fetch)
+        const account = new AaAccount(db, auth, fetch)
+        const oss = new AaOSS()
+        const editor = new AaEditor(oss)
 
         this.registry = registry
         this.scrollEvent = scrollEvent
@@ -87,14 +83,9 @@ class Aa {
     }
 
     tx() {
-        return new _aaTx()
+        return new AaTx()
     }
-
-    path(path) {
-        return new _aaPath(path)
-    }
-
-
+ 
     url(url = window.location.href, params = {}) {
         return new this.uri(url, params)
 
@@ -106,18 +97,18 @@ class Aa {
 
     /**
      *
-     * @param {ImgSrcStruct|_aaImgSrc} obj
+     * @param {ImgSrcStruct|AaImgSrc} obj
      * @param {ImageBase64|filepath} [thumbnail]
      * @param {File} [multipleFile]
-     * @return {_aaImgSrc}
+     * @return {AaImgSrc}
      */
     imgSrc(obj, thumbnail, multipleFile) {
-        if (obj instanceof _aaImgSrc) {
+        if (obj instanceof AaImgSrc) {
             obj.setThumbnail(thumbnail)
             obj.setMultipleFile(multipleFile)
             return obj
         }
-        return new _aaImgSrc(obj, thumbnail, multipleFile)
+        return new AaImgSrc(obj, thumbnail, multipleFile)
     }
 
     /**
@@ -125,11 +116,11 @@ class Aa {
      * @param {string } url
      * @param {(fp:string)=>void} fingerprintGenerator 设备唯一码生成器
      * @param {(data:{[key:string]:*})=>void} loginDataHandler 登录处理
-     * @param {_aaStorageEngine} [storage]
-     * @return {_aaApollo}
+     * @param {AaStorageEngine} [storage]
+     * @return {AaApollo}
      */
     apollo(url, fingerprintGenerator, loginDataHandler, storage = this.storage.cookie) {
-        return new _aaApollo(this.fetch, url, fingerprintGenerator, loginDataHandler, storage)
+        return new AaApollo(this.fetch, url, fingerprintGenerator, loginDataHandler, storage)
     }
 
 }

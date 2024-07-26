@@ -3,7 +3,7 @@
  * @typedef {{path: string, filetype: number, size: number, provider: number, allowed: (number[][]|null), origin: string, width: number, crop_pattern: string, resize_pattern: string, height: number,thumbnail?: string,  multiple_file?: string}} ImgSrcStruct
  * @typedef {{width: number, url: string, height: number, ratio: decimal, originalWidth: number, originalHeight: number}} ImgResizedData
  */
-class _aaImgSrc {
+class AaImgSrc {
     name = 'aa-img-src'
 
     // @property {int}
@@ -72,7 +72,7 @@ class _aaImgSrc {
     }
 
     /**
-     * Return the nearest size
+     * Return the closest size
      * @param {number} width
      * @param {number} [height]
      * @return {[number,number]}
@@ -129,9 +129,17 @@ class _aaImgSrc {
         return matched ? [w, h] : [maxWidth, maxHeight]
     }
 
+    /**
+     * @param [maxWidth]
+     */
+    maxWidth(maxWidth) {
+        const env = AaEnv
+        const borderWidth = Math.min(env.maxWidth(), this.width)
+
+    }
 
     /**
-     * Crop image to the nearest size after resizing by window.devicePixelRatio
+     * Crop image to the closest size after resizing by window.devicePixelRatio
      * @param {number} width
      * @param {number} height
      * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
@@ -152,14 +160,14 @@ class _aaImgSrc {
     }
 
     /**
-     * Resize image to the nearest size after resizing by window.devicePixelRatio
+     * Resize image to the closest size after resizing by window.devicePixelRatio
      * @param {number|MAX} [maxWidth]
      * @param {number} [maxHeight]
      * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
      */
     resize(maxWidth = MAX, maxHeight) {
         if (!maxWidth || maxWidth === MAX) {
-            maxWidth = _aaEnvironment.maxWidth()
+            maxWidth = AaEnv.maxWidth()
         }
         let [width, height] = this.#allowedSize(maxWidth)
         const ratio = decimal.div(width, height)
@@ -210,7 +218,7 @@ class _aaImgSrc {
      * @return {{path: (string|*), filetype: number, size: number, width: number, height: number}}
      */
     static parsePath(path) {
-        const p = new _aaPath(path)
+        const p = new paths(path)
         let width = 0, size = 0, height = 0
         const a = p.filename.split('_')
         if (len(a) > 1 && len(a[0]) > 32 && len(a[1]) > 0) {

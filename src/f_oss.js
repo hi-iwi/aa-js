@@ -130,7 +130,7 @@ const AaFileTypeEnum = {
 
 
 
-class _aaOSS {
+class AaOSS {
     name = 'aa-oss'
 
     #svc
@@ -161,7 +161,7 @@ class _aaOSS {
 
     asset(path) {
         if (this.#svc) {
-            path = _aaPath.join(string(this.#svc), path)
+            path = paths.join(string(this.#svc), path)
         }
         return typeof this.#assetHandler === "function" ? this.#assetHandler(path) : path
     }
@@ -179,12 +179,12 @@ class _aaOSS {
     /**
      * New AaImgSrc
      * @param {struct} data
-     * @return {_aaImgSrc}
+     * @return {AaImgSrc}
      */
     imgSrc(data) {
-        if (data instanceof _aaImgSrc) {
+        if (data instanceof AaImgSrc) {
             return data
         }
-        return new _aaImgSrc(data)
+        return new AaImgSrc(data)
     }
 }

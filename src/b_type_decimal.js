@@ -156,7 +156,7 @@ class decimal {
         if (!segmentSize) {
             return String(w)
         }
-        return math.thousands(w, segmentSize, separator)
+        return maths.thousands(w, segmentSize, separator)
     }
 
 

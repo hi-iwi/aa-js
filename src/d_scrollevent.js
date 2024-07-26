@@ -4,7 +4,7 @@
  * @typedef {function(scrollTop, prevScrollTop, autoScroll:bool)} Trigger
  * @typedef {{condition: Condition|null, trigger: Trigger, pause: boolean}} Event
  */
-class _aaScrollEvent {
+class AaScrollEvent {
     // @type Map
     #events
     // @type {_aaEnvironment}
@@ -15,7 +15,7 @@ class _aaScrollEvent {
 
     /**
      *
-     * @param {_aaEnvironment} env
+     * @param {AaEnv} env
      */
     constructor(env) {
         this.#env = env

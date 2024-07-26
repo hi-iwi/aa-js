@@ -4,7 +4,7 @@
 
 
 
-class _aaAuth {
+class AaAuth {
     name = 'aa-auth'
 
     // @type _aaStorageFactor
@@ -42,8 +42,8 @@ class _aaAuth {
     }
 
     /**
-     * @param {_aaStorageFactor} storage
-     * @param {_aaRawFetch} rawFetch
+     * @param {AaStorageFactor} storage
+     * @param {AaRawFetch} rawFetch
      */
     constructor(storage, rawFetch) {
         this.#storage = storage
@@ -65,19 +65,19 @@ class _aaAuth {
     }
 
     static #saveItem(engine, key, value) {
-        const itself = _aaAuth
+        const itself = AaAuth
         const keyname = itself.#storageKeyName(engine, key)
         return engine.setItem(keyname, value)
     }
 
     static #readItem(engine, key) {
-        const itself = _aaAuth
+        const itself = AaAuth
         const keyname = itself.#storageKeyName(engine, key)
         return engine.getItem(keyname)
     }
 
     #readStorage(key) {
-        const itself = _aaAuth
+        const itself = AaAuth
         const r = this.#storage
         let value = r.cookie.getItem(key)
         if (value) {
@@ -91,22 +91,22 @@ class _aaAuth {
     }
 
     #localSetItem(key, value) {
-        const itself = _aaAuth
+        const itself = AaAuth
         return itself.#saveItem(this.#storage.local, key, value)
     }
 
     #localGetItem(key) {
-        const itself = _aaAuth
+        const itself = AaAuth
         return itself.#readItem(this.#storage.local, key)
     }
 
     #sessionSetItem(key, value) {
-        const itself = _aaAuth
+        const itself = AaAuth
         return itself.#saveItem(this.#storage.session, key, value)
     }
 
     #sessionGetItem(key) {
-        const itself = _aaAuth
+        const itself = AaAuth
         return itself.#readItem(this.#storage.session, key)
     }
 

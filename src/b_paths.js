@@ -1,4 +1,4 @@
-class _aaPath {
+class paths {
     name = 'aa-path'
     // @proprerty {string} the directory of the, e.g. /a/b
     dir
@@ -10,7 +10,7 @@ class _aaPath {
     filename
 
     init(path) {
-        path = _aaPath.clean(path)
+        path = paths.clean(path)
         if (!path) {
             this.dir = ''
             this.base = ''
@@ -39,7 +39,7 @@ class _aaPath {
     }
 
     toString() {
-        return _aaPath.join(this.dir, this.base)
+        return paths.join(this.dir, this.base)
     }
 
     /**
@@ -49,7 +49,7 @@ class _aaPath {
      */
     static join(...paths) {
         let path = paths.join('/')
-        return _aaPath.clean(path)
+        return paths.clean(path)
     }
 
     /**

@@ -1,7 +1,7 @@
 /**
  * @import
  */
-class _aaCookieStorage {
+class AaCookieStorage {
     name = 'aa-cookie-storage'
 
     // cookie 不能使用 : 等分隔符作为key，因此不同Engine里面自己指定分隔符
@@ -156,7 +156,7 @@ class _aaCookieStorage {
 }
 
 
-class _aaStorageEngine {
+class AaStorageEngine {
     name = 'aa-storage-engine'
 
     static DefaultSeparator = ':'
@@ -181,12 +181,12 @@ class _aaStorageEngine {
     // cookie 不能使用 : 等分隔符作为key，因此不同Engine里面自己指定分隔符
     // 冒号 : 是特殊分隔符，默认都是 : 隔开
     get separator() {
-        const itself = _aaStorageEngine
+        const itself = AaStorageEngine
         return string(this.#storage, 'separator', itself.DefaultSeparator)
     }
 
     get subSeparator() {
-        const itself = _aaStorageEngine
+        const itself = AaStorageEngine
         return string(this.#storage, 'subSeparator', itself.DefaultSubSeparator)
     }
 
@@ -302,7 +302,7 @@ class _aaStorageEngine {
     }
 
     setItem(key, value, options) {
-        const itself = _aaStorageEngine
+        const itself = AaStorageEngine
         let persistent = false
         if (typeof options === "boolean") {
             persistent = options
@@ -398,7 +398,7 @@ class _aaStorageEngine {
             log.error('storage.removeItems: key must be a RegExp', key)
             return
         }
-        const itself = _aaStorageEngine
+        const itself = AaStorageEngine
 
         let wild = null
         const sep = this.separator
@@ -479,7 +479,7 @@ class _aaStorageEngine {
 }
 
 
-class _aaStorageFactor {
+class AaStorageFactor {
     name = 'aa-storage-factor'
 
     // @type _aaStorage
@@ -496,9 +496,9 @@ class _aaStorageFactor {
 
 
     constructor(cookieStorage, localStorage, sessionStorage) {
-        this.local = new _aaStorageEngine(localStorage || window.localStorage, [], false, true)
-        this.session = new _aaStorageEngine(sessionStorage || window.sessionStorage, [], false, true)
-        this.cookie = new _aaStorageEngine(cookieStorage || new _aaCookieStorage(), [], true, false)
+        this.local = new AaStorageEngine(localStorage || window.localStorage, [], false, true)
+        this.session = new AaStorageEngine(sessionStorage || window.sessionStorage, [], false, true)
+        this.cookie = new AaStorageEngine(cookieStorage || new AaCookieStorage(), [], true, false)
     }
 
     /**

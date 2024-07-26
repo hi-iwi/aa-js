@@ -1,11 +1,11 @@
-class _aaCache {
+class AaCache {
     name = 'aa-cache'
     // @type _aaStorageEngine
     #storageEngine
 
     /**
      *
-     * @param {_aaStorageEngine} storageEngine
+     * @param {AaStorageEngine} storageEngine
      */
     constructor(storageEngine) {
         this.#storageEngine = storageEngine
