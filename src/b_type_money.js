@@ -32,13 +32,8 @@ class money extends decimal {
     // @override
     rounder = Math.round
 
-    /**
-     *
-     * @param {money|number|string} vv
-     * @param {string} [vk]
-     */
-    constructor(vv, vk = void '') {
-        super(vv, vk)
+    constructor(vv, vk, defaultV) {
+        super(...arguments)
     }
 
     toCent() {

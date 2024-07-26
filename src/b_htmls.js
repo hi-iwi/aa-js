@@ -30,13 +30,13 @@ const _aaHtmlDecoder_ = {
 }
 
 
-class html {
+class htmls {
     name = 'aa-html'
 
     static fuzzyTag = '<i class="fuzzy"></i>'
 
     // 对文章中敏感词进行马赛克化
-    static fuzzy(s, tag = html.fuzzyTag) {
+    static fuzzy(s, tag = htmls.fuzzyTag) {
         s = s.replace(/[\r\n]+/g, '<br>')
         s = s.replace(/<s>\s*\d+\s*:\s*(\d+)\s*<\/s>/ig, (m, l) => tag.repeat(l))
         return s
@@ -119,7 +119,7 @@ class html {
 
     static decodeText(s) {
         s = string(s).replace(new RegExp('<br>', 'g'), '\r\n')
-        s = html.decode(s)
+        s = htmls.decode(s)
         return s
     }
 }

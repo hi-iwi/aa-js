@@ -13,12 +13,8 @@ class vmoney extends money {
     scale = money.Scale
     // @override
     units = money.Units
-    /**
-     *
-     * @param {money|number|string} vv
-     * @param {string} [vk]
-     */
-    constructor(vv, vk = void '') {
-        super(vv, vk)
+
+    constructor(vv, vk, defaultV) {
+        super(...arguments)
     }
 }

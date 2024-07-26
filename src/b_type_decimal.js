@@ -54,13 +54,8 @@ class decimal {
      * @param {money|number|string} vv
      * @param {string} [vk]
      */
-    constructor(vv, vk = void '') {
-        // 子类继承后，也能通过该判断。即子类 instance of 父类 也是true
-        if (vv instanceof decimal) {
-            return vv   // js constructor 可以返回
-        }
-        vv = Math.floor(number(vv, vk))
-        this.value = vv
+    constructor(vv, vk, defaultV) {
+        this.value = Math.floor(number(...arguments))
     }
 
     /**

@@ -68,7 +68,7 @@ class _aaEditor {
         })
 
         dom.querySelectorAll("abbr[data-privacy-key]").forEach(abbr => {
-            abbr.innerHTML = html.fuzzy(abbr.innerHTML)
+            abbr.innerHTML = htmls.fuzzy(abbr.innerHTML)
         })
         dom.querySelectorAll("img").forEach(t => {
             const src = t.getAttribute('src')
@@ -107,7 +107,7 @@ class _aaEditor {
     decodeContent(content, imgSrcDataMaker) {
         const itself = _aaEditor
 
-        content = html.fuzzy(content)
+        content = htmls.fuzzy(content)
         imgSrcDataMaker = itself.maker(imgSrcDataMaker, this.imgSrcDataMaker)
         if (typeof imgSrcDataMaker !== "function") {
             return content
@@ -197,7 +197,7 @@ class _aaEditor {
 
         // @patch：当选中图片，右键再按换行，会把图片外面<figure>变成<p>
         content = content.replace(/<p>[^<]*(<(img|video|source|object|embed)[^>]+\/?>)[^<]*<\/p>/ig, '<$2>$1</$2>');
-        content = html.encode(content)
+        content = htmls.encode(content)
         return content;
     }
 }

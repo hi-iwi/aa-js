@@ -181,6 +181,25 @@ class _aaImgSrc {
         }
     }
 
+    /**
+     * Get the original image, return resized if original image not exists
+     * @return {ImgResizedData}
+     */
+    getOriginal() {
+        if (!this.origin) {
+            return this.resize(this.width, this.height)
+        }
+        const ratio = decimal.div(this.width, this.height)
+        return {
+            width         : this.width,
+            height        : this.height,
+            ratio         : ratio,
+            url           : this.origin,
+            originalWidth : this.width,
+            originalHeight: this.height,
+        }
+    }
+
     // aaFetch 层会处理该数据
     toJSON() {
         return this.path

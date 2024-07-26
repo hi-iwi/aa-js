@@ -23,13 +23,8 @@ class percent extends decimal {
         return this.toReal() * percent.Percent + string(sign)
     }
 
-    /**
-     *
-     * @param {money|number|string} vv
-     * @param {string} [vk]
-     */
-    constructor(vv, vk = void '') {
-        super(vv, vk)
+    constructor(vv, vk, defaultV) {
+        super(...arguments)
     }
 
 
