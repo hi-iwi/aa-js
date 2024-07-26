@@ -1,4 +1,21 @@
 /**
+ * @typedef {object} Class
+ * @typedef {{[key:string]:any}|*} struct    --> 为了方便JSDoc，这里struct 用空泛的更方便
+ * @typedef {string} filepath
+ * @typedef {string} jsonstr
+ * @typedef {string} QueryString    k=v&k=v&k=v
+ * @typedef {function(value:any, key:string)} IteratorCallback
+ * @typedef {string}MAX
+ * @typedef {string}MIN
+ */
+
+const nif = () => void 0   // 空函数  ==>  Go语言都定义 any = interface{}，这里定义要给 nif 是有必要的
+const MAX = 'MAX'
+const MIN = 'MIN'
+const BreakSignal = false // a signal from callback function to break forEach((value,key)) iterator
+
+
+/**
  * Keep-names of URL parameters 路由URL参数名
  */
 const aparam = {
@@ -47,6 +64,12 @@ var _aaDebug = new (class {
             return
         }
         this.value = this.isLocalhost() ? this.#console : this.#disabled
+
+        /**
+         *
+         * @type {number[][]}
+         */
+        let a = [[10, 20, 30], [10, 2]]
     }
 
     isLocalhost() {

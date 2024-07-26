@@ -1,4 +1,7 @@
-// @import atype
+/**
+ * @import atype
+ */
+
 
 // 基础static class
 class fmt {

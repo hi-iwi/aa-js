@@ -1,6 +1,6 @@
 /**
  * @import _aaFetch
- * @typedef {{[key:string]:any}} struct
+ * @typedef {struct} Vuser
  */
 
 class _aaApollo {

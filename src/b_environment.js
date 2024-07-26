@@ -1,4 +1,6 @@
-// @import   _aaDebug
+/**
+ * @import   _aaDebug
+ */
 
 class _aaEnvironment {
     name = 'aa-environment'

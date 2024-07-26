@@ -1,5 +1,5 @@
 //@TODO
-class AaVideoSrc {
+class _aaVideoSrc {
     name = 'aa-video-src'
 
     process

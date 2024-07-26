@@ -1,6 +1,6 @@
 
 //@TODO
-class AaAudioSrc {
+class _aaAudioSrc {
     name = 'aa-audio-src'
 
     process

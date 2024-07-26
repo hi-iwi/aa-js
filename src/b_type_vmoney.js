@@ -1,12 +1,18 @@
 // virtual money
 class vmoney extends money {
     name = 'aa-vmoney'
-
+    // @override
     static Scale = 4
-    static Unit = Math.pow(10, vmoney.Scale)
-
+    // @override
+    static Units = Math.pow(10, vmoney.Scale)
+    // @override
     type = "vmoney"
-
+    // @override
+    rounder = Math.round
+    // @override
+    scale = money.Scale
+    // @override
+    units = money.Units
     /**
      *
      * @param {money|number|string} vv
@@ -14,7 +20,5 @@ class vmoney extends money {
      */
     constructor(vv, vk = void '') {
         super(vv, vk)
-        this.scale = vmoney.Scale
-        this.rounder = Math.round
     }
 }

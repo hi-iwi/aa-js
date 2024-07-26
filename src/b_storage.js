@@ -1,7 +1,5 @@
 /**
  * @import
- * @typedef {{[key:string]:any}} struct
- * @typedef {function(value:any, key:string)} IteratorCallback
  */
 class _aaCookieStorage {
     name = 'aa-cookie-storage'

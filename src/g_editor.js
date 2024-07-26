@@ -1,5 +1,4 @@
 /**
- * @typedef {{[key:string]:any}} struct
  * @typedef {(path:string) => struct} ImgSrcDataMaker
  */
 class _aaEditor {
@@ -26,13 +25,13 @@ class _aaEditor {
         this.#oss = oss
         for (let i = 0; i < ossDataMakers.length; i++) {
             let maker = ossDataMakers[i]
-            if (maker instanceof AaImgSrc) {
+            if (maker instanceof _aaImgSrc) {
                 this.imgSrcDataMaker = maker
-            } else if (maker instanceof AaVideoSrc) {
+            } else if (maker instanceof _aaVideoSrc) {
                 this.videoSrcDataMaker = maker
-            } else if (maker instanceof AaAudioSrc) {
+            } else if (maker instanceof _aaAudioSrc) {
                 this.audioSrcDataMaker = maker
-            } else if (maker instanceof AaFileSrc) {
+            } else if (maker instanceof _aaFileSrc) {
                 this.fileSrcDataMaker = maker
             }
         }

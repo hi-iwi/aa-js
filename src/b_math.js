@@ -1,4 +1,6 @@
-//@import atype
+/**
+ * @import atype
+ */
 
 // static class
 class math {

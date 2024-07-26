@@ -1,8 +1,6 @@
 /**
  * @import _aaAuth
- * @typedef {{[key:string]:any}} struct
  * @typedef {struct} Profile
- * @typedef {struct} Vuser
  */
 
 class _aaAccount {

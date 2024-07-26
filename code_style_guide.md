@@ -1,12 +1,44 @@
 # Code Style Guide
 
+# JSDoc types
+
+```js
+// @type (number|string)[]
+const numOrStrArray = [1, 2, 3, '4', '5', 6, 7]
+
+// @type {{name:string, age:number}[]}
+const structArray = [
+    {name  : "aario",
+        age: 18
+    },
+    {name  : "Aario",
+        age: 28
+    },
+    {name  : "AARIO",
+        age: 38
+    },
+]
+
+// @warn struct must be enclosed in {{ }}
+// @type {{a:string, b?:number, c:number}}    b?: optional
+const definedStruct = {
+    a: "Aario",
+    c: 100
+}
+
+
+// @type {(x:number, y:number)=>void}
+const fn = (x, y) => {
+}
+```
+
 ## forEach((value, key) =>{})
 
 ```js
 [].forEach((value, index) => {
 })
 new Map().forEach((value, key, map) => {
-    
+
 })
 ```
 
@@ -14,8 +46,7 @@ new Map().forEach((value, key, map) => {
 
 cookie-name = token
 
-
-## Rules 
+## Rules
 
 * Don't name private method with name #keyname()/#keyName , it won't compile.
 
@@ -36,18 +67,20 @@ cookie-name = token
 4. private static #variables
 5. variables
 6. private #variables
-7. get
-8. set
-9. len()
-10. initXXX()
-11. init()
-12. constructor()
-13. other methods()
-14. valueOf()
-15. toString()
-16. toJSON()
-17. log()
-18. static methods()
+7. setXXX()         set property
+8. getXXX()         get property 
+9. set xxx(value)   set property
+10. get xxx()       get property
+11. len()
+12. initXXX()
+13. init()
+14. constructor()
+15. other methods()
+16. valueOf()
+17. toString()
+18. toJSON()
+19. log()
+20. static methods()
 
 ```js
 class Demo {

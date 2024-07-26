@@ -100,6 +100,21 @@ class Aa {
 
     }
 
+    /**
+     *
+     * @param {ImgSrcStruct|_aaImgSrc} obj
+     * @param {ImageBase64|filepath} [thumbnail]
+     * @param {File} [multipleFile]
+     * @return {_aaImgSrc}
+     */
+    imgSrc(obj, thumbnail, multipleFile) {
+        if (obj instanceof _aaImgSrc) {
+            obj.setThumbnail(thumbnail)
+            obj.setMultipleFile(multipleFile)
+            return obj
+        }
+        return new _aaImgSrc(obj, thumbnail, multipleFile)
+    }
 
     /**
      * Apollo

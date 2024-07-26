@@ -1,5 +1,8 @@
-// @import atype
-
+/**
+ * @import atype
+ * @type {null}
+ * @private
+ */
 // @type {(null|{[key:number]:string})}
 let _aerrorCode2MsgMap_ = null
 

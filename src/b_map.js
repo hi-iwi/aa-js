@@ -1,29 +1,36 @@
 /**
  * @import atype
- * @typedef {{[key:string]:any}} struct
- * @typedef {function(value:any, key:string)} IteratorCallback
  */
 
 // 自定义map类型  参考 Map
 class map {
     name = 'aa-map'
 
-    object // {struct | FormData| string}
+    props
 
     // len() 函数会识别这个
     len() {
         return this.keys().length
     }
 
-    init(o) {
-        this.object = map.parse(o)
+    /**
+     * @param {struct|FormData|jsonstr} props
+     */
+    init(props) {
+        if (!props) {
+            this.props = {}
+        }
+        this.props = map.parse(props)
     }
 
     /**
-     * @param {struct|string} o
+     * @param {struct|FormData|jsonstr} props
      */
-    constructor(o = {}) {
-        this.init(...arguments)
+    constructor(props) {
+        if (props instanceof map) {
+            return props
+        }
+        this.init(props)
     }
 
 
@@ -35,14 +42,14 @@ class map {
         let ks = this.keys().sort();
         let sortedObj = {};
         for (let i = 0; i < ks.length; i++) {
-            sortedObj[ks[i]] = this.object[ks[i]];
+            sortedObj[ks[i]] = this.props[ks[i]];
         }
-        this.object = sortedObj
+        this.props = sortedObj
         return this
     }
 
     toString() {
-        return JSON.stringify(this.object)
+        return JSON.stringify(this.props)
     }
 
     toQueryString(assert, sort = true) {
@@ -65,7 +72,7 @@ class map {
 
 
     entries() {
-        return Object.entries(this.object)
+        return Object.entries(this.props)
     }
 
     /**
@@ -89,35 +96,35 @@ class map {
     }
 
     has(key, allowUndefined = false) {
-        return this.object.hasOwnProperty(key) && (allowUndefined || typeof this.object[key] != "undefined")
+        return this.props.hasOwnProperty(key) && (allowUndefined || typeof this.props[key] != "undefined")
     }
 
     get(key, cast = string) {
-        let v = this.has(key) ? this.object[key] : void 0
+        let v = this.has(key) ? this.props[key] : void 0
         return cast(v)
     }
 
     keys() {
-        return Object.keys(this.object)
+        return Object.keys(this.props)
     }
 
     values() {
-        return Object.values(this.object)
+        return Object.values(this.props)
     }
 
     clear() {
-        this.object = {}
+        this.props = {}
     }
 
     delete(key) {
-        delete this.object[key]
+        delete this.props[key]
     }
 
     set(key, value) {
         if (!key) {
             return
         }
-        this.object[key] = value
+        this.props[key] = value
     }
 
     getOrSet(key, defaultValue, allowUndefined = false) {
@@ -149,13 +156,13 @@ class map {
 
     // 深度复制
     clone(deep = true) {
-        let obj = deep ? map.clone(this.object) : {...this.object}
+        let obj = deep ? map.clone(this.props) : {...this.props}
         return new map(obj)
     }
 
     /**
      * 解析json或{} 为 {}
-     * @param obj
+     * @param {struct|FormData|jsonstr} obj
      * @returns {struct}
      */
     static parse(obj) {
@@ -192,9 +199,9 @@ class map {
     /**
      * Merge the contents of two objects together into the first object based on the properties of the first object
      * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名覆盖，抛弃sources对象多余属性值。常用于配置文件填充
-     * @param {struct} target A --> 会污染 target。 target 可以是struct，也可以是class.
+     * @param {Class|struct} target A --> 会污染 target。 target 可以是struct，也可以是class.
      * @param {struct} source B
-     * @return {object|struct}   A = A  ∪ (A ∩ B)
+     * @return {Class|struct}   A = A  ∪ (A ∩ B)
      */
     static merge(target, source) {
         for (let [k, v] of Object.entries(struct(source))) {
@@ -210,9 +217,9 @@ class map {
      * Merge the contents of two objects together into the first object based on the properties and their types of the first object
      * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名且值类型相同的覆盖，抛弃sources对象多余属性值
      *      常用于配置文件填充
-     * @param {object|struct} target A --> 会污染 target。 target 可以是struct，也可以是class.
+     * @param {Class|struct} target A --> 会污染 target。 target 可以是struct，也可以是class.
      * @param {struct}  source B
-     * @return  {object|struct}     A = A ∪ (|A| ∩ |B|)
+     * @return  {Class|struct}     A = A ∪ (|A| ∩ |B|)
      */
     static strictMerge(target, source) {
         for (let [k, v] of Object.entries(struct(source))) {
@@ -232,7 +239,7 @@ class map {
      *
      * @param target A
      * @param source B
-     * @return {*}    A = A ∪ B
+     * @return {struct}    A = A ∪ B
      */
     static assign(target, source) {
         return Object.assign(struct(target), struct(source))
@@ -252,10 +259,10 @@ class map {
     /**
      * Fill up the non-existent properties of the first object with the second object's
      * @description 将两个对象的差集填充进target对象。通常用于填充默认配置。
-     * @param {struct} target   A --> 会污染 target
+     * @param {Class|struct} target   A --> 会污染 target
      * @param {struct} defaults B
      * @param {function} [handler]
-     * @return  {object|struct}    A = A ∪ (A - B)
+     * @return  {Class|struct}    A = A ∪ (A - B)
      */
     static fillUp(target, defaults, handler) {
         target = struct(target)
@@ -276,10 +283,10 @@ class map {
      * Overwrite the target object's content with source object based on the target object's properties,
      *      and zeroize the target object's properties before overwriting.
      * @description 将两个对象的交集填充进target，将target其他属性设为零值。通常重新填充配置target。
-     * @param {object|struct} target A --> 会污染 target。
+     * @param {Class|struct} target A --> 会污染 target。
      * @param {struct}  source B --> probably it's a configuration struct ，后者往往是配置项，覆盖掉前者
      * @param {function} keynameConvertor convert properties' field names in source object
-     * @return {object|struct} A = (A ∩ B) ∪ zeroize(A)
+     * @return {Class|struct} A = (A ∩ B) ∪ zeroize(A)
      */
     static overwrite(target, source, keynameConvertor) {
         if (!target || !source) {
@@ -288,6 +295,7 @@ class map {
         let fields = target.hasOwnProperty('_fields_') && target._fields_ ? target._fields_ : target.constructor['_fields_'] ? target.constructor['_fields_'] : null
         for (let [k, v] of Object.entries(source)) {
             let keyname = typeof keynameConvertor === "function" ? keynameConvertor(k) : k
+            let privKeyname = '#' + keyname
             if (!target.hasOwnProperty(keyname)) {
                 for (let [k2, _] of Object.entries(target)) {
                     // "base_url" ===> baseUrl  or  baseURL

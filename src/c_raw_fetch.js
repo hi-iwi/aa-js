@@ -1,6 +1,5 @@
 /**
  * @import _aaStorageFactor, _aaURI
- * @typedef {{[key:string]:any}} struct
  */
 
 class _aaRawFetch {

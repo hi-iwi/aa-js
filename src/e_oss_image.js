@@ -1,4 +1,10 @@
-class AaImgSrc {
+/**
+ * @typedef {string} ImageBase64
+ * @typedef {{width: number, url: string, height: number, ratio: decimal}} ImgResizedData
+ * @typedef {string}test
+ * @typedef {{path: string, filetype: number, size: number, provider: number, allowed: (number[][]|null), origin: string, width: number, crop_pattern: string, resize_pattern: string, height: number,thumbnail?: string,  multiple_file?: string}} ImgSrcStruct
+ */
+class _aaImgSrc {
     name = 'aa-img-src'
 
     // @property {int}
@@ -13,21 +19,58 @@ class AaImgSrc {
     height
     allowed
 
-    /**
-     * @param {struct} props
-     */
-    init(props) {
-        map.overwrite(this, props, fmt.toCamelCase)
+    // @type {ImageBase64|filepath} for upload
+    #thumbnail
+    // @type {File} for upload
+    #multipleFile
+
+    setThumbnail(thumbnail) {
+        this.#thumbnail = thumbnail
+    }
+
+    getThumbnail(width, height) {
+        if (this.#thumbnail) {
+            return this.#thumbnail
+        }
+        return this.crop(width, height).url
+    }
+
+    setMultipleFile(file) {
+        this.#multipleFile = file
+    }
+
+    getMultipleFile(file) {
+        return this.#multipleFile
     }
 
     /**
-     *
-     * @param {struct} props
+     * @param {ImgSrcStruct} props
+     * @param {ImageBase64|filepath} [thumbnail]
+     * @param {File} [multipleFile]
      */
-    constructor(props) {
-        this.init(props)
+    init(props, thumbnail, multipleFile) {
+        if (arguments.length > 2) {
+            props['thumbnail'] = thumbnail
+            props['multipleFile'] = multipleFile
+        }
+
+        map.overwrite(this, props, key => {
+            key = fmt.toCamelCase(key)
+            if (['thumbnail', 'multipleFile'].includes(key)) {
+                key = '#' + key
+            }
+            return key
+        })
     }
 
+    /**
+     * @param {ImgSrcStruct} props
+     * @param {ImageBase64|filepath} [thumbnail]
+     * @param {File} [multipleFile]
+     */
+    constructor(props, thumbnail, multipleFile) {
+        this.init(props, thumbnail, multipleFile)
+    }
 
     /**
      * Return the nearest size
@@ -87,41 +130,54 @@ class AaImgSrc {
         return matched ? [w, h] : [maxWidth, maxHeight]
     }
 
+
     /**
      * Crop image to the nearest size after resizing by window.devicePixelRatio
      * @param {number} width
      * @param {number} height
-     * @return {{width: number, url: string, height: number, ratio: number}}
+     * @return {ImgResizedData}
      */
     crop(width, height) {
         [width, height] = this.#allowedSize(width, height)
         const pattern = string(this.cropPattern)
         const url = pattern.replace(/\${WIDTH}/g, string(width)).replace(/\${HEIGHT}/g, string(height))
+        const ratio = decimal.div(width, height)
         return {
-            width : width,
-            height: height,
-            ratio : width / height,
-            url   : url,
+            width       : width,
+            height      : height,
+            ratio       : ratio,
+            url         : url,
+            originWidth : this.width,
+            originHeight: this.height,
         }
     }
 
     /**
      * Resize image to the nearest size after resizing by window.devicePixelRatio
-     * @param {number|'MAX'|*} maxWidth
-     * @return {{width: number, url: string, height: number, ratio: number}}
+     * @param {number|MAX} [maxWidth]
+     * @param {number} [maxHeight]
+     * @return {ImgResizedData}
      */
-    resize(maxWidth = MAX) {
+    resize(maxWidth = MAX, maxHeight) {
         if (!maxWidth || maxWidth === MAX) {
             maxWidth = _aaEnvironment.maxWidth()
         }
         let [width, height] = this.#allowedSize(maxWidth)
+        const ratio = decimal.div(width, height)
+        if (maxHeight > 0 && height > maxHeight) {
+            height = maxHeight
+            width = ratio.beDiv(maxWidth)
+        }
+
         const pattern = string(this.resizePattern)
         const url = pattern.replace(/\${MAXWIDTH}/g, maxWidth)
         return {
-            width : width,
-            height: height,
-            ratio : width / height,
-            url   : url,
+            width       : width,
+            height      : height,
+            ratio       : ratio,
+            url         : url,
+            originWidth : this.width,
+            originHeight: this.height,
         }
     }
 
@@ -152,28 +208,6 @@ class AaImgSrc {
             width   : width,
             height  : height,
         }
-    }
-
-}
-
-class AaImgSrcUpload {
-    name = 'aa-img-src-real-time'
-
-    // @type {ImageBase64|path}
-    thumbnail
-    // @type AaImgSrc
-    imgSrc
-    file
-
-    constructor(imgSrc, base64, file) {
-        this.imgSrc = imgSrc instanceof AaImgSrc ? imgSrc : new AaImgSrc(imgSrc)
-        this.base64 = base64
-        this.file = file
-    }
-
-    // aaFetch 层会处理该数据
-    toJSON() {
-        return this.imgSrc ? this.imgSrc.path : ""
     }
 
 }

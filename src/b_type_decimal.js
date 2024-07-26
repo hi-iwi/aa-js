@@ -3,7 +3,7 @@ class decimal {
     name = 'aa-decimal'
 
     static Scale = 4  // 万分之一   Math.pow(10, decimal.Scale)
-    static Unit = Math.pow(10, decimal.Scale)
+    static Units = Math.pow(10, decimal.Scale)
     static Max = parseInt("".padEnd((Math.ceil(Number.MAX_SAFE_INTEGER / 10) + '').length, "9")) // 最多支持999亿.9999
 
 
@@ -15,9 +15,39 @@ class decimal {
     // mantissa // 小数值
     // whole // 整数值
     //precision   // 精度，如 12345.6789.precision   ==> 9 = len('12345') + len('6789')
+    // 私有变量禁止 this 传递，所以要保持 protected
+    /**
+     * @type {number}
+     * @protected
+     */
     scale = decimal.Scale// 小数位数，如 12345.6789.scale  ==> 4 = len('6789')
+    /**
+     * @type {number}
+     * @readonly
+     * @protected
+     */
+    units = decimal.Units
+
+    set scale(scale) {
+        this.setScale(scale)
+    }
+
     rounder = Math.round   // 取整方式 ceil -> round up;  floor -> round down
 
+
+    static unitsX(num) {
+        return new this(num * this.Units)  // 使用 this. 可以传递到子类
+    }
+
+    /**
+     * Divide two numbers and convert its result to decimal
+     * @param a
+     * @param b
+     * @return {decimal}
+     */
+    static div(a, b) {
+        return new this(a * this.Units / b) // 使用 this. 可以传递到子类
+    }
 
     /**
      *
@@ -33,7 +63,6 @@ class decimal {
         this.value = vv
     }
 
-
     /**
      * 设置精度（即小数位数）
      * @param {number} scale
@@ -44,6 +73,7 @@ class decimal {
             scale = decimal.Scale
         }
         this.scale = scale
+        this.units = Math.pow(10, scale)
         return this
     }
 
@@ -76,15 +106,17 @@ class decimal {
         return this
     }
 
+    beDiv(n) {
+        n *= this.units * this.units
+        this.value = this.rounder(n / this.value)
+        return this
+    }
+
     // 精度
     precision() {
         return String(Math.abs(this.value)).length
     }
 
-    // 实数值
-    real() {
-        return this.value / Math.pow(10, this.scale)
-    }
 
     /**
      * 整数部分值
@@ -141,6 +173,7 @@ class decimal {
      * @returns {string}
      */
     formatMantissa(scale = 0, trimScale = false, scaleRound = 'floor') {
+        const itself = decimal
         let s = String(Math.abs(this.value))
         let a = s.length - this.scale
         if (a > 0) {
@@ -148,7 +181,7 @@ class decimal {
         }
         let ok = false;
 
-        [s, ok] = this.#mantissaOk(s, scale, trimScale)
+        [s, ok] = itself.mantissaOk(s, scale, trimScale)
         if (!ok) {
             return s
         }
@@ -165,7 +198,7 @@ class decimal {
                 }
             }
             // s 发生变化
-            [s, ok] = this.#mantissaOk(s, scale, trimScale)
+            [s, ok] = itself.mantissaOk(s, scale, trimScale)
             if (!ok) {
                 return s
             }
@@ -178,15 +211,28 @@ class decimal {
      * @returns {string}
      */
     format(style = void null) {
-        style = this.#newStyle(style)
+        const itself = decimal
+        style = itself.newStyle(style)
         return this.formatWhole(style.segmentSize, style.separator) + this.formatMantissa(style.scale, style.trimScale, style.scaleRound)
     }
+
+
+    // 实数值
+    toReal() {
+        return this.value / this.units
+    }
+
+    toJSON() {
+        return this.value
+    }
+
 
     /**
      * @param {number|{segmentSize?: number, scale?: number, separator?: string, trimScale?: boolean, scaleRound?: ("floor"|"round"|"ceil")}} [style]
      * @returns {{segmentSize: number, scale: number, separator: string, trimScale: boolean, scaleRound: ('floor'|'round'|'ceil')}}
+     * @protected
      */
-    #newStyle(style = void null) {
+    static newStyle(style = void null) {
         let t = {
             segmentSize: 0,  // 整数部分每segmentSize位使用separator隔开
             separator  : ",", // 整数部分分隔符，如英文每3位一个逗号；中文每4位一个空格等表示方法
@@ -204,8 +250,14 @@ class decimal {
         return map.strictMerge(t, style)
     }
 
-
-    #mantissaOk(s, scale = 0, trimScale = false) {
+    /**
+     * @param s
+     * @param scale
+     * @param trimScale
+     * @return {(string|boolean)[]}
+     * @protected
+     */
+    static mantissaOk(s, scale = 0, trimScale = false) {
         if (trimScale || scale === 0) {
             s = s.replace(/0+$/g, '')
         } else if (len(s) < scale) {

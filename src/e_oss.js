@@ -1,7 +1,5 @@
 /**
  * @import _aaPath, _aaEnvironment, _aaAuth
- * @typedef {{[key:string]:any}} struct
- * @typedef {string} ImageBase64
  */
 // filetype 统一了，方便客户端分析 path/filetype 结构类型。也方便客户端上传的格式符合标准格式。
 // .3pg 既是音频文件，也是视频文件。因此，不能单纯通过后缀知晓文件类型。需要客户端上传的时候预先知道是音频或视频。
@@ -181,12 +179,12 @@ class _aaOSS {
     /**
      * New AaImgSrc
      * @param {struct} data
-     * @return {AaImgSrc}
+     * @return {_aaImgSrc}
      */
     imgSrc(data) {
-        if (data instanceof AaImgSrc) {
+        if (data instanceof _aaImgSrc) {
             return data
         }
-        return new AaImgSrc(data)
+        return new _aaImgSrc(data)
     }
 }

@@ -1,4 +1,7 @@
-// @import aparam, _aaStorageFactor, _aaRawFetch
+/**
+ * @import aparam, _aaStorageFactor, _aaRawFetch
+ */
+
 
 
 class _aaAuth {
