@@ -1,8 +1,7 @@
 /**
  * @typedef {string} ImageBase64
- * @typedef {{width: number, url: string, height: number, ratio: decimal}} ImgResizedData
- * @typedef {string}test
  * @typedef {{path: string, filetype: number, size: number, provider: number, allowed: (number[][]|null), origin: string, width: number, crop_pattern: string, resize_pattern: string, height: number,thumbnail?: string,  multiple_file?: string}} ImgSrcStruct
+ * @typedef {{width: number, url: string, height: number, ratio: decimal, originalWidth: number, originalHeight: number}} ImgResizedData
  */
 class _aaImgSrc {
     name = 'aa-img-src'
@@ -135,7 +134,7 @@ class _aaImgSrc {
      * Crop image to the nearest size after resizing by window.devicePixelRatio
      * @param {number} width
      * @param {number} height
-     * @return {ImgResizedData}
+     * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
      */
     crop(width, height) {
         [width, height] = this.#allowedSize(width, height)
@@ -156,7 +155,7 @@ class _aaImgSrc {
      * Resize image to the nearest size after resizing by window.devicePixelRatio
      * @param {number|MAX} [maxWidth]
      * @param {number} [maxHeight]
-     * @return {ImgResizedData}
+     * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
      */
     resize(maxWidth = MAX, maxHeight) {
         if (!maxWidth || maxWidth === MAX) {
@@ -183,7 +182,7 @@ class _aaImgSrc {
 
     /**
      * Get the original image, return resized if original image not exists
-     * @return {ImgResizedData}
+     * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
      */
     getOriginal() {
         if (!this.origin) {
