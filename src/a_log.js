@@ -170,6 +170,7 @@ function loge(...args) {
         if (err instanceof Error) {
             return log.error(err.toString())
         }
+        return log.print(...args)
     }
-    return log.print(...args)
+    return log.println(...args)
 }

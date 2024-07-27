@@ -170,11 +170,11 @@ class AaAuth {
         this.#validateTried = true  // fetch 可能失败，就有可能会一直尝试；因此增加一个程序层防重
         const url = token['validate_api']
         this.#rawFetch.fetch(url, {
-            data: {}
+            mustAuth: false,
         }).then(_ => {
             this.#sessionSetItem('checked', true)
         }).catch(err => {
-            if (err.isGone()) {
+            if (!err.isServerErrors()) {
                 this.clear()
             }
             log.warn(err.toString())
@@ -309,7 +309,7 @@ class AaAuth {
         const refreshToken = token['refresh_token']
         const url = token['refresh_api']
         this.#rawFetch.fetch(url, {
-            auth               : true,
+            mustAuth           : false,
             preventTokenRefresh: true,
             data               : {
                 'grant_type': 'refresh_token',
@@ -318,13 +318,13 @@ class AaAuth {
         }).then(data => {
             this.setToken(data)
         }).catch(err => {
+            if (!err.isServerErrors()) {
+                this.clear()
+            }
             log.error(err.toString())
         })
     }
 
-    clear() {
-        this.#storage.removeEntire(/^aa_auth_\./)
-    }
 
     /**
      * Get authorization value in header
@@ -348,12 +348,28 @@ class AaAuth {
         return len(token, 'access_token') > 0 && len(token, 'token_type') > 0
     }
 
-    // 所有401，都执行一次服务端退出，这样可以排除大量异常情况 ——— 影响用户下单的成本是最重的！！
+
+    /**
+     * Clear all auth data
+     * @note 非手动退出，就不要清空所有数据，避免用户缓存的文章丢失
+     */
+    clear() {
+        this.#storage.removeEntire(/^aa:auth:\./)
+        this.#token = null // clear program cache
+    }
+
+
+    /**
+     * Log out
+     * @param {function} [callback]
+     * @note 所有401，都执行一次服务端退出，这样可以排除大量异常情况 ——— 影响用户下单的成本是最重的！！
+     */
     logout(callback) {
-        this.#storage.clearAllExcept([aparam.Logout])
+        // 手动退出，才会清空所有数据
+        this.#storage.clearAll()
         this.#token = null // clear program cache
         this.#tryStoreCookie(aparam.Logout, 1, 5 * time.Minute)
-        callback()
+        callback && callback()
     }
 
     removeLogout() {

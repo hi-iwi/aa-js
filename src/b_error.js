@@ -26,6 +26,7 @@ let _aerrorDictionaries_ = {
         "Timeout"               : "请求超时，请稍后再试",
         "Conflict"              : "异常冲突",
         "Gone"                  : "数据已被删除",
+        
         "Unsupported media type": "文件格式不正确",
 
         "No rows"          : "没有数据啦",

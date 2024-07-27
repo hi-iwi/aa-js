@@ -419,7 +419,6 @@ class AaURI {
             }
         }
         const ok = !(/\/{[\w:-]+}/.test(s))  // 判定是否还有未替换的url param
-        log.print(s, ok)
         return [s, newQueries, ok]
     }
 }
