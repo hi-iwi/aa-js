@@ -252,51 +252,94 @@ class   // Returns function XXX()
         return !atype.isEmpty(...args)
     }
 
-    // 必须是 > 0的数字，注意 bigint
+    /**
+     * 必须是 > 0的数字，注意 bigint
+     * @param {vv_vk_defaultV} args
+     * @return {boolean|boolean}
+     */
     static isRealId(...args) {
         let v = defval(...args)
         return v === null ? false : (uint64a(v) !== "0")
     }
 
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
     static notRealId(...args) {
         return !atype.isRealId(...args)
     }
 
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
     static isArray(...args) {
         return Array.isArray(defval(...args))
     }
 
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
     static isBoolean(...args) {
         return typeof defval(...args) === "boolean"
     }
 
-    // 仅为 {} 结构体；
-    // @warn ，不要用 typeof arr === "object" 判定是否是结构体，因为 typeof [] 也是 object。而 AaType.Of([]) 为array, AaType.Of({}) 为 object
+
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     * @note 仅为 {} 结构体；不要用 typeof arr === "object" 判定是否是结构体，因为 typeof [] 也是 object。而 AaType.Of([]) 为array, AaType.Of({}) 为 object
+     */
     static isStruct(...args) {
         return atype.of(...args) === "struct"
     }
 
-
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
     static isDate(...args) {
         return atype.of(...args) === "date"
     }
 
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
     static isDom(...args) {
         return atype.of(...args) === "dom"
     }
 
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
     static isFunction(...args) {
         return typeof defval(...args) === "function"
     }
 
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
     static isNumber(...args) {
         return typeof defval(...args) === "number"
     }
 
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
     static isString(...args) {
         return typeof defval(...args) === "string"
     }
 
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
     static isRegexp(...args) {
         return atype.of(...args) === "regexp"
     }
@@ -308,7 +351,8 @@ class   // Returns function XXX()
 // len(bool) len(number) 为 0，防止直接用 for( < len(x)) 导致异常
 /**
  * Get length of anything
- * @return {number|*}
+ * @param {vv_vk_defaultV} [args]
+ * @return {number}
  */
 function len(...args) {
     let v = defval(...args)
@@ -332,6 +376,10 @@ function len(...args) {
     return Object.keys(v).length  // 支持string,array, object
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {function}
+ */
 function func(...args) {
     let v = defval(...args)
     if (typeof v === "function") {
@@ -352,6 +400,10 @@ function _inRange(x, min, max, name) {
     return x
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {boolean}
+ */
 function bool(...args) {
     let v = defval(...args)
     if (v === null) {// 不要用 AaLib.Type 判断是否 undefined
@@ -387,19 +439,35 @@ function bool(...args) {
     return !!v
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {0|1}
+ */
 function booln(...args) {
     return bool(...args) ? 1 : 0
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {boolean}
+ */
 function not(...args) {
     return !bool(...args)
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {boolean}
+ */
 function nullable(...args) {
     let v = defval(...args)
     return len(v) === 0 ? null : v
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {string}
+ */
 function string(...args) {
     let v = defval(...args)
     if (v === null) {
@@ -413,6 +481,7 @@ function string(...args) {
 }
 
 /**
+ * @param {vv_vk_defaultV} [args]
  * @return {number}
  * @note js 数字全部是采用的双精度浮点数存储的。 js number 最大值是：9007199254740992
  */
@@ -420,69 +489,119 @@ function number(...args) {
     return Number(defval(...args))
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {number}
+ */
 function float64(...args) {
     return number(...args)
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {number}
+ */
 function float32(...args) {
     return float64(...args)
 }
 
-// int64 最大值：9223372036854775807  >  js number 最大值 9007199254740992
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {string}
+ * @note int64 最大值：9223372036854775807  >  js number 最大值 Number.MAX_SAFE_INTEGER = 9007199254740992
+ */
 function int64a(...args) {
     // int64 和 uint64 都用string类型
     let v = defval(...args)
     return v === null ? "0" : v + ''
 }
 
-// 9007199254740992 Number.MAX_SAFE_INTEGER
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {number}
+ */
 function intMax(...args) {
     return Math.floor(number(...args))
 }
 
-function moneyOld(...args) {
-    return Math.floor(number(...args))
-}
-
-
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {number}
+ */
 function int32(...args) {
     return _inRange(intMax(...args), -2147483648, 2147483647, 'int32')
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {number}
+ */
 function int24(...args) {
     return _inRange(intMax(...args), -8388608, 8388607, 'int24')
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {number}
+ */
 function int16(...args) {
     return _inRange(intMax(...args), -32768, 32767, 'int16')
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {number}
+ */
 function int8(...args) {
     return _inRange(intMax(...args), -128, 127, 'int8')
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {string}
+ */
 function uint64a(...args) {
     // int64 和 uint64 都用string类型
     let v = defval(...args)
     return v === null ? "0" : (v + '')
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {number}
+ */
 function uint32(...args) {
     return _inRange(intMax(...args), 0, 4294967295, 'uint32')
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {number}
+ */
 function uint24(...args) {
     return _inRange(intMax(...args), 0, 16777215, 'uint24')
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {number}
+ */
 function uint16(...args) {
     return _inRange(intMax(...args), 0, 65535, 'uint16')
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {number}
+ */
 function uint8(...args) {
     return _inRange(intMax(...args), 0, 255, 'uint8')
 }
 
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {struct}
+ */
 function struct(...args) {
     let v = defval(...args)
     if (v === null || typeof v !== "object") {
@@ -494,7 +613,10 @@ function struct(...args) {
     return v
 }
 
-
+/**
+ * @param {vv_vk_defaultV} [args]
+ * @return {array}
+ */
 function array(...args) {
     let v = defval(...args)
     if (v === null || typeof v !== "object") {
