@@ -35,6 +35,7 @@ const UrlRemoveRedirect = {redirect: null}
 class AaURI {
     name = 'aa-uri'
 
+    method
 
     // @type boolean
     #isTemplate = false   // is using template
@@ -100,22 +101,28 @@ class AaURI {
     }
 
 
-    /*
-        {protocol:string}//{hostname}:{port:uint}/{path1:string}/{path2:int}#{hash}
-     ① //luexu.com
-     ② //luexu.com/hi
-     ③ https://luexu.com
-     ④ http://192.168.0.1:8080
-     ⑤ //localhost   --> https://localhost
-     ⑥ /home/me  --> https://xxx.xx/home/me
+    /**
+     * {method} {protocol:string}//{hostname}:{port:uint}/{path1:string}/{path2:int}#{hash}
+     ① [GET|DELETE|...] //luexu.com
+     ② [GET|DELETE|...] //luexu.com/hi
+     ③ [GET|DELETE|...] https://luexu.com
+     ④ [GET|DELETE|...] http://192.168.0.1:8080
+     ⑤ [GET|DELETE|...] //localhost   --> https://localhost
+     ⑥ [GET|DELETE|...] /home/me  --> https://xxx.xx/home/me
      */
     /**
-     * @param {string} url
-     * @param {{[key:string]:*}} [params]
+     * @param {RequestURL} url
+     * @param {struct} [params]
      * @param {string} [hash]
      */
     init(url = location.href, params, hash = '') {
-         url = string(url)  // will convert url:_aaURI to url.String()
+        url = string(url).trim()  // will convert url:_aaURI to url.String()
+        let method = void ''
+        const arr = url.split(' ')
+        if (arr.length > 1) {
+            method = arr[1]
+            url = arr.slice(1).join(' ')
+        }
         if (url.substring(0, 1) === '/') {
             if (url.substring(1, 2) === '/') {
                 url = window.location.protocol + url
@@ -160,6 +167,7 @@ class AaURI {
         const pathname = hierPart.substring(x)
         const [hostname, port] = AaURI.splitHost(host)
 
+        this.method = method
         this.#protocol = protocol  //  e.g. {scheme:string}: http/tcp  or empty
         this.#hostname = hostname
         this.#port = port
@@ -270,7 +278,7 @@ class AaURI {
      * @return {{baseUrl: string, search: string, ok: ok, queries: map, url: string, hash: string}}
      */
     parse() {
-         let newQueries = this.queries.clone(false)
+        let newQueries = this.queries.clone(false)
         let port = this.#port ? ':' + this.#port : ''
         let s = this.#protocol + '://' + this.#hostname + port + this.#pathname
         let baseUrl, hash, ok, ok2;

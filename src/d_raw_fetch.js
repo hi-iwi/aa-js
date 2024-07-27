@@ -1,17 +1,20 @@
 /**
  * @import AaStorageFactor, AaURI
+ * @typedef {struct|string} RequestData
  */
 
 class AaRawFetch {
     name = 'aa-raw-fetch'
 
     /**
- * @type {AaStorageFactor}
- */
+     * @type {AaStorageFactor}
+     */
     #storage
 
 
-    // @type map
+    /**
+     * @type map
+     */
     #requests
 
     #cleanTimer
@@ -196,7 +199,7 @@ class AaRawFetch {
     }
 
     debounce(method, url, body) {
-         this.autoClean()
+        this.autoClean()
 
         const checksum = AaRawFetch.generateChecksum(method, url, body)
         // 0.4秒内不能重复提交相同数据
@@ -340,7 +343,7 @@ class AaRawFetch {
      * @todo support ArrayBuffer, TypedArray, DataView, Blob, File, URLSearchParams, FormData
      */
     static generateChecksum(method, url, body) {
-         let checksum = `${method} ${url}`
+        let checksum = `${method} ${url}`
         if (!body) {
             return checksum
         }
