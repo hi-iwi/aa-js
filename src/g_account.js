@@ -39,14 +39,12 @@ class AaAccount {
     }
 
     saveProfile(profile) {
-        const itself = AaAccount
-        this.#profile = profile
-        this.#db.save(itself.TableName, profile)
+         this.#profile = profile
+        this.#db.save(AaAccount.TableName, profile)
     }
 
     drop() {
-        const itself = AaAccount
-        this.#db.drop(itself.TableName)
+         this.#db.drop(AaAccount.TableName)
     }
 
 
@@ -62,15 +60,14 @@ class AaAccount {
             })
         }
 
-        const itself = AaAccount
-        if (!refresh) {
+         if (!refresh) {
             let profile = this.#profile
             if (len(profile) > 0) {
                 return new Promise((resolve, _) => {
                     resolve(profile)
                 })
             }
-            profile = this.#db.selectAll(itself.TableName)
+            profile = this.#db.selectAll(AaAccount.TableName)
             if (len(profile) > 0) {
                 this.#profile = profile
                 return new Promise((resolve, _) => {
@@ -149,14 +146,12 @@ class AaAccount {
     }
 
     setSelectedVuid(vuid) {
-        const itself = AaAccount
-        this.#selectedVuid = vuid
-        this.#db.save(itself.TableName, {'selected_vuid_': vuid})
+         this.#selectedVuid = vuid
+        this.#db.save(AaAccount.TableName, {'selected_vuid_': vuid})
     }
 
     #readSelectedVuid() {
-        const itself = AaAccount
-        return this.#db.find(itself.TableName, 'selected_vuid_')
+         return this.#db.find(AaAccount.TableName, 'selected_vuid_')
     }
 
 

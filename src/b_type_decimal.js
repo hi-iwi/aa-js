@@ -168,7 +168,6 @@ class decimal {
      * @returns {string}
      */
     formatMantissa(scale = 0, trimScale = false, scaleRound = 'floor') {
-        const itself = decimal
         let s = String(Math.abs(this.value))
         let a = s.length - this.scale
         if (a > 0) {
@@ -176,7 +175,7 @@ class decimal {
         }
         let ok = false;
 
-        [s, ok] = itself.mantissaOk(s, scale, trimScale)
+        [s, ok] = decimal.mantissaOk(s, scale, trimScale)
         if (!ok) {
             return s
         }
@@ -193,7 +192,7 @@ class decimal {
                 }
             }
             // s 发生变化
-            [s, ok] = itself.mantissaOk(s, scale, trimScale)
+            [s, ok] = decimal.mantissaOk(s, scale, trimScale)
             if (!ok) {
                 return s
             }
@@ -206,8 +205,7 @@ class decimal {
      * @returns {string}
      */
     format(style = void null) {
-        const itself = decimal
-        style = itself.newStyle(style)
+         style = decimal.newStyle(style)
         return this.formatWhole(style.segmentSize, style.separator) + this.formatMantissa(style.scale, style.trimScale, style.scaleRound)
     }
 

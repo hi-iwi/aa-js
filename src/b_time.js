@@ -1,6 +1,6 @@
 // @import time.MinDatetime, time.MaxDatetime
 
-class _aaDateZero extends Date {
+class AaDateZero extends Date {
     name = 'aa-date-zero'
     value = '0000-00-00 00:00:00'
 
@@ -129,18 +129,18 @@ class _aaDateZero extends Date {
     }
 }
 
-class _aaDateString {
+class AaDateString {
     name = 'aa-date-string'
 
     static minDatetime = '0000-00-00 00:00:00' // 当作配置，可以修改; date/year 等可以通过此解析出来，不用单独配置了
     static maxDatetime = '9999-12-31 23:59:59'
 
-    static #minYear = _aaDateString.minDatetime.substring(0, 4)
-    static #minDate = _aaDateString.minDatetime.substring(0, 10)
-    static #maxYear = _aaDateString.maxDatetime.substring(0, 4)
-    static #maxDate = _aaDateString.maxDatetime.substring(0, 10)
+    static #minYear = AaDateString.minDatetime.substring(0, 4)
+    static #minDate = AaDateString.minDatetime.substring(0, 10)
+    static #maxYear = AaDateString.maxDatetime.substring(0, 4)
+    static #maxDate = AaDateString.maxDatetime.substring(0, 10)
 
-    static localTimezoneOffsetString = _aaDateString.parseTimezoneOffsetString()
+    static localTimezoneOffsetString = AaDateString.parseTimezoneOffsetString()
     static #yearLen = 4 // len('0000')
     static #dateLen = 10  // len('0000-00-00')
     static #datetimeLen = 19   // len('0000-00-00 00:00:00')
@@ -176,14 +176,14 @@ class _aaDateString {
             s = s.replace(reg, '')
         }
         if (!zone) {
-            zone = _aaDateString.localTimezoneOffsetString
+            zone = AaDateString.localTimezoneOffsetString
         }
 
-        if (_aaDateString.#datetimePattern.test(s)) {
+        if (AaDateString.#datetimePattern.test(s)) {
             s += '.000' + zone
-        } else if (_aaDateString.#datePattern.test(s)) {
+        } else if (AaDateString.#datePattern.test(s)) {
             s += 'T00:00:00.000' + zone
-        } else if (_aaDateString.#yearPattern.test(s)) {
+        } else if (AaDateString.#yearPattern.test(s)) {
             s += '-01-01T00:00:00.000' + zone
         } else if (!["", "null", "invalid date", "invalid time value"].includes(s.toLowerCase())) {
             s += zone
@@ -197,21 +197,21 @@ class _aaDateString {
      * @param {string} s  {YYYY|YYYY-MM-DD|YYYY-MM-DD HH:II:SS}
      * @param {string} [zone]
      */
-    constructor(s, zone = _aaDateString.localTimezoneOffsetString) {
+    constructor(s, zone = AaDateString.localTimezoneOffsetString) {
         this.init(s, zone)
     }
 
 
     isYear() {
-        return _aaDateString.#yearPattern.test(this.raw)
+        return AaDateString.#yearPattern.test(this.raw)
     }
 
     isDate() {
-        return _aaDateString.#datePattern.test(this.raw)
+        return AaDateString.#datePattern.test(this.raw)
     }
 
     isDatetime() {
-        return _aaDateString.#datetimePattern.test(this.raw)
+        return AaDateString.#datetimePattern.test(this.raw)
     }
 
     isZero() {
@@ -219,7 +219,7 @@ class _aaDateString {
     }
 
     isMin(includeZero = true) {
-        const d = _aaDateString
+        const d = AaDateString
         const v = this.#value
         if (includeZero && this.isZero()) {
             return true
@@ -234,7 +234,7 @@ class _aaDateString {
     }
 
     isMax() {
-        const d = _aaDateString
+        const d = AaDateString
         const v = this.#value
         if (this.isYear()) {
             return v.substring(0, d.#yearLen) === d.#maxYear
@@ -285,7 +285,7 @@ class _aaDateString {
     }
 
     date() {
-        return this.isZero() ? new _aaDateZero(this.#toZero()) : new Date(this.#value)
+        return this.isZero() ? new AaDateZero(this.#toZero()) : new Date(this.#value)
     }
 
     valueOf() {
@@ -301,17 +301,15 @@ class _aaDateString {
     }
 
     static setMinDatetime(datetime) {
-        const itself = _aaDateString
-        itself.minDatetime = datetime
-        itself.#minYear = datetime.substring(0, 4)
-        itself.#minDate = datetime.substring(0, 10)
+         AaDateString.minDatetime = datetime
+        AaDateString.#minYear = datetime.substring(0, 4)
+        AaDateString.#minDate = datetime.substring(0, 10)
     }
 
     static setMaxDatetime(datetime) {
-        const itself = _aaDateString
-        itself.maxDatetime = datetime
-        itself.#maxYear = datetime.substring(0, 4)
-        itself.#maxDate = datetime.substring(0, 10)
+         AaDateString.maxDatetime = datetime
+        AaDateString.#maxYear = datetime.substring(0, 4)
+        AaDateString.#maxDate = datetime.substring(0, 10)
     }
 
     /**
@@ -342,14 +340,14 @@ class _aaDateString {
         } else if (typeof offset !== "number") {
             offset = new Date().getTimezoneOffset()
         }
-        return offset < 0 ? "+" + _aaDateString.formatTime(-offset) : "-" + _aaDateString.formatTime(offset)
+        return offset < 0 ? "+" + AaDateString.formatTime(-offset) : "-" + AaDateString.formatTime(offset)
     }
 
 }
 
 // 253402271999000 = new Date("9999-12-31 23:59:59")
 // 253402214400000 = new Date("9999-12-31")
-class _aaDateValidator {
+class AaDateValidator {
     name = 'aa-date-validator'
 
     // support '1000-01-01' to '9999-12-31'
@@ -366,12 +364,12 @@ class _aaDateValidator {
     static ValidDate = 'valid date'
 
 
-    static #minYearTs = new _aaDateString(_aaDateString.minDatetime.substring(0, 4) || '0000').valueOf()
-    static #maxYearTs = new _aaDateString(_aaDateString.maxDatetime.substring(0, 4) || '9999').valueOf()
-    static #minDateTs = new _aaDateString(_aaDateString.minDatetime.substring(0, 10) || '0000-00-00').valueOf()
-    static #maxDateTs = new _aaDateString(_aaDateString.maxDatetime.substring(0, 10) || '9999-12-31').valueOf()
-    static #minDatetimeTs = new _aaDateString(_aaDateString.minDatetime || '0000-00-00 00:00:00').valueOf()
-    static #maxDatetimeTs = new _aaDateString(_aaDateString.maxDatetime || '9999-12-31 23:59:59').valueOf()
+    static #minYearTs = new AaDateString(AaDateString.minDatetime.substring(0, 4) || '0000').valueOf()
+    static #maxYearTs = new AaDateString(AaDateString.maxDatetime.substring(0, 4) || '9999').valueOf()
+    static #minDateTs = new AaDateString(AaDateString.minDatetime.substring(0, 10) || '0000-00-00').valueOf()
+    static #maxDateTs = new AaDateString(AaDateString.maxDatetime.substring(0, 10) || '9999-12-31').valueOf()
+    static #minDatetimeTs = new AaDateString(AaDateString.minDatetime || '0000-00-00 00:00:00').valueOf()
+    static #maxDatetimeTs = new AaDateString(AaDateString.maxDatetime || '9999-12-31 23:59:59').valueOf()
 
 
     #type
@@ -379,13 +377,13 @@ class _aaDateValidator {
 
     /**
      *
-     * @param {_aaDateString|string|number|Date} date
+     * @param {AaDateString|string|number|Date} date
      * @param {boolean} strict
      */
     init(date, strict = true) {
-        const d = _aaDateValidator
-        date = typeof date === "string" ? new _aaDateString(date) : date
-        if (date instanceof _aaDateString) {
+        const d = AaDateValidator
+        date = typeof date === "string" ? new AaDateString(date) : date
+        if (date instanceof AaDateString) {
             if (date.isZero()) {
                 this.#type = date.isYear() ? d.ZeroYear : (date.isDate() ? d.ZeroDate : d.ZeroDatetime)
                 return
@@ -437,7 +435,7 @@ class _aaDateValidator {
                     this.#type = d.ValidDate
             }
         } catch (e) {
-            this.#type = _aaDateValidator.InvalidDate
+            this.#type = AaDateValidator.InvalidDate
         }
         return this
     }
@@ -448,27 +446,27 @@ class _aaDateValidator {
 
 
     setInvalid() {
-        this.#type = _aaDateValidator.InvalidDate
+        this.#type = AaDateValidator.InvalidDate
     }
 
 
     isZero() {
-        const d = _aaDateValidator
+        const d = AaDateValidator
         return [d.ZeroYear, d.ZeroDate, d.ZeroDatetime].includes(this.#type)
     }
 
     isMin(includeZero = true) {
-        const d = _aaDateValidator
+        const d = AaDateValidator
         return [d.MinYear, d.MinDate, d.MinDatetime].includes(this.#type) || (includeZero && this.isZero())
     }
 
     isMax() {
-        const d = _aaDateValidator
+        const d = AaDateValidator
         return [d.MaxYear, d.MaxDate, d.MaxDatetime].includes(this.#type)
     }
 
     isValid(includeMax = false) {
-        const d = _aaDateValidator
+        const d = AaDateValidator
         return this.#type === d.ValidDate || (includeMax && this.isMax())
     }
 
@@ -493,10 +491,10 @@ class time {
     // @type Date
     #date
     // @type AaDateValidator
-    #validator = new _aaDateValidator("Invalid Date")
+    #validator = new AaDateValidator("Invalid Date")
 
     pattern = 'YYYY-MM-DD HH:II:SS'
-    timezoneOffset = _aaDateString.localTimezoneOffsetString
+    timezoneOffset = AaDateString.localTimezoneOffsetString
 
 
     get validator() {
@@ -523,7 +521,7 @@ class time {
             date = new Date(date)
         } else if (typeof date === "string") {
             this.setPattern(date)
-            let ds = new _aaDateString(date, this.timezoneOffset)
+            let ds = new AaDateString(date, this.timezoneOffset)
             this.validator.init(ds, strict)
             if (this.validator.isMin() || this.validator.isMax()) {
                 return
@@ -790,7 +788,7 @@ class time {
     // YYYY-MM-DD HH:II:SS   YYYY-MM-DD HH:II:SS.sss
     // z ==> timezone
     format(s = "YYYY-MM-DD HH:II:SS") {
-        if (this.#date instanceof _aaDateZero) {
+        if (this.#date instanceof AaDateZero) {
             return s.replace(/[YMDHISs]/g, '0').replace(/Z/g, this.timezoneOffset)
         }
 
@@ -857,19 +855,19 @@ class time {
     }
 
     static minDatetime() {
-        return _aaDateString.minDatetime
+        return AaDateString.minDatetime
     }
 
     static setMinDatetime(datetime) {
-        _aaDateString.setMinDatetime(datetime)
+        AaDateString.setMinDatetime(datetime)
     }
 
     static maxDatetime() {
-        return _aaDateString.maxDatetime
+        return AaDateString.maxDatetime
     }
 
     static setMaxDatetime(datetime) {
-        _aaDateString.setMaxDatetime(datetime)
+        AaDateString.setMaxDatetime(datetime)
     }
 
     /**
@@ -888,7 +886,7 @@ class time {
      * @return number
      */
     static toYearMonthNumber(date) {
-        let ds = new _aaDateString(date)
+        let ds = new AaDateString(date)
         return parseInt(ds.year() + '' + ds.month())
     }
 

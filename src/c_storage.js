@@ -181,13 +181,11 @@ class AaStorageEngine {
     // cookie 不能使用 : 等分隔符作为key，因此不同Engine里面自己指定分隔符
     // 冒号 : 是特殊分隔符，默认都是 : 隔开
     get separator() {
-        const itself = AaStorageEngine
-        return string(this.#storage, 'separator', itself.DefaultSeparator)
+         return string(this.#storage, 'separator', AaStorageEngine.DefaultSeparator)
     }
 
     get subSeparator() {
-        const itself = AaStorageEngine
-        return string(this.#storage, 'subSeparator', itself.DefaultSubSeparator)
+         return string(this.#storage, 'subSeparator', AaStorageEngine.DefaultSubSeparator)
     }
 
     // 不用报错，正常人也不会这么操作
@@ -302,14 +300,13 @@ class AaStorageEngine {
     }
 
     setItem(key, value, options) {
-        const itself = AaStorageEngine
-        let persistent = false
+         let persistent = false
         if (typeof options === "boolean") {
             persistent = options
             options = void false  // set to undefined
         }
         if (this.#encapsulate) {
-            value = itself.makeValue(value, persistent)
+            value = AaStorageEngine.makeValue(value, persistent)
         }
         const args = this.#withOptions && options ? [key, value, options] : [key, value]
         this.#storage.setItem(...args)
@@ -398,13 +395,12 @@ class AaStorageEngine {
             log.error('storage.removeItems: key must be a RegExp', key)
             return
         }
-        const itself = AaStorageEngine
 
         let wild = null
         const sep = this.separator
         const sub = this.subSeparator
         const source = key.source
-        if ((sep !== itself.DefaultSeparator || sub !== itself.DefaultSubSeparator) && source.indexOf(':') > -1) {
+        if ((sep !== AaStorageEngine.DefaultSeparator || sub !== AaStorageEngine.DefaultSubSeparator) && source.indexOf(':') > -1) {
             source.replace(/:/, '[' + strings.escapeReg(`${sep}${sub}`) + ']')
             wild = new RegExp(source)
         }

@@ -198,10 +198,9 @@ class AaRawFetch {
     }
 
     debounce(method, url, body) {
-        const itself = AaRawFetch
-        this.autoClean()
+         this.autoClean()
 
-        const checksum = itself.generateChecksum(method, url, body)
+        const checksum = AaRawFetch.generateChecksum(method, url, body)
         // 0.4秒内不能重复提交相同数据
         const interval = 400 * time.Millisecond
         const now = new Date().valueOf()  // in milliseconds
@@ -347,24 +346,23 @@ class AaRawFetch {
      * @todo support ArrayBuffer, TypedArray, DataView, Blob, File, URLSearchParams, FormData
      */
     static generateChecksum(method, url, body) {
-        const itself = AaRawFetch
-        let checksum = `${method} ${url}`
+         let checksum = `${method} ${url}`
         if (!body) {
             return checksum
         }
 
         let content = ''
         if (body instanceof File) {
-            content = itself.fileChecksum(body)
+            content = AaRawFetch.fileChecksum(body)
         } else if (body instanceof FormData) {
             for (const pair of body) {
-                let v = pair[1] instanceof File ? itself.fileChecksum(pair[1]) : pair[1]
+                let v = pair[1] instanceof File ? AaRawFetch.fileChecksum(pair[1]) : pair[1]
                 content = '&' + pair[0] + '=' + v
             }
             content = content.substring(1)
             content = `#${content.length}|${content}`
         } else if (typeof body === "string") {
-            content = itself.stringChecksum(body)
+            content = AaRawFetch.stringChecksum(body)
         }
         return `${method} ${url} {${content}}`
     }

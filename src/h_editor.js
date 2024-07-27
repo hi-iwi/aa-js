@@ -59,8 +59,7 @@ class AaEditor {
      * @param imgSrcDataMaker
      */
     decodeDom(dom, imgSrcDataMaker) {
-        const itself = AaEditor
-        if (typeof dom === "string") {
+         if (typeof dom === "string") {
             dom = document.querySelector(dom)
         }
         dom.querySelectorAll('a').forEach(a => {
@@ -77,7 +76,7 @@ class AaEditor {
                 return
             }
 
-            imgSrcDataMaker = itself.maker(imgSrcDataMaker, this.imgSrcDataMaker)
+            imgSrcDataMaker = AaEditor.maker(imgSrcDataMaker, this.imgSrcDataMaker)
             if (typeof imgSrcDataMaker !== "function") {
                 return
             }
@@ -105,10 +104,9 @@ class AaEditor {
      */
 
     decodeContent(content, imgSrcDataMaker) {
-        const itself = AaEditor
 
         content = htmls.fuzzy(content)
-        imgSrcDataMaker = itself.maker(imgSrcDataMaker, this.imgSrcDataMaker)
+        imgSrcDataMaker = AaEditor.maker(imgSrcDataMaker, this.imgSrcDataMaker)
         if (typeof imgSrcDataMaker !== "function") {
             return content
         }
