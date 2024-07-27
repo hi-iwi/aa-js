@@ -236,6 +236,7 @@ class AError extends Error {
      */
     triggerDisplay() {
         if (typeof AError.display !== "function") {
+            log.error(`${this.toString()} [AError.display is not defined]`)
             return false
         }
         const result = AError.display(this)

@@ -67,11 +67,9 @@ class AaFetch {
     }
 
     /**
-     *
-     * @param  {RequestInfo|string} url
-     *  @example 'https://luexu.com'
-     *  @example 'GET https://luexu.com'
-     * @param settings
+     * HTTP Fetch
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [settings]
      * @return {*}
      * @exmaple async mode 异步模式，返回结果顺序不固定
      *  aa.fetch.fetch(urlA).then().catch()
@@ -110,8 +108,8 @@ class AaFetch {
 
     /**
      * Fetch without authorization
-     * @param url
-     * @param settings
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [settings]
      */
     fetchA(url, settings) {
         map.set(settings, 'mustAuth', false)
@@ -120,8 +118,9 @@ class AaFetch {
 
     /**
      * Fetch without AError/Error thrown
-     * @param url
-     * @param settings
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [settings]
+     * @note can also using .fetch.then(resolve, err=>{err.triggerDisplay})
      */
     fetchN(url, settings) {
         return this.fetch(url, settings).catch(err => {
@@ -131,8 +130,8 @@ class AaFetch {
 
     /**
      * Fetch without authorization and without AError/Error thrown
-     * @param url
-     * @param settings
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [settings]
      */
     fetchNA(url, settings) {
         map.set(settings, 'mustAuth', false)
@@ -141,8 +140,8 @@ class AaFetch {
 
     /**
      * Get HTTP status code
-     * @param url
-     * @param settings
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [settings]
      * @return {Promise<*>}
      */
     status(url, settings) {
@@ -153,8 +152,8 @@ class AaFetch {
 
     /**
      * Get HTTP status code without AError/Error thrown
-     * @param url
-     * @param settings
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [settings]
      * @return {Promise<*>}
      */
     statusN(url, settings) {
@@ -175,9 +174,9 @@ class AaFetch {
 
     /**
      * HTTP GET
-     * @param {string} url
-     * @param {{[key:string]:any}} [params]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [params]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     get(url, params, dictionary) {
@@ -191,9 +190,9 @@ class AaFetch {
 
     /**
      * HTTP GET without AError/Error thrown
-     * @param url
-     * @param params
-     * @param dictionary
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [params]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     getN(url, params, dictionary) {
@@ -204,9 +203,9 @@ class AaFetch {
 
     /**
      * HTTP HEAD
-     * @param {string} url
-     * @param {{[key:string]:any}} [params]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [params]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      * @warn Warning: A response to a HEAD method should not have a body. If it has one anyway, that body must be ignored
      *  HEAD只返回 resp['code'] 或 HTTP状态码，忽略 resp['data'] 数据
@@ -222,9 +221,9 @@ class AaFetch {
 
     /**
      * HTTP HEAD without AError/Error thrown
-     * @param {string} url
-     * @param {{[key:string]:any}} [params]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [params]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      * @warn Warning: A response to a HEAD method should not have a body. If it has one anyway, that body must be ignored
      *  HEAD只返回 resp['code'] 或 HTTP状态码，忽略 resp['data'] 数据
@@ -237,9 +236,9 @@ class AaFetch {
 
     /**
      * HTTP DELETE
-     * @param {string} url
-     * @param {{[key:string]:any}} [params]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [params]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     delete(url, params, dictionary) {
@@ -261,9 +260,9 @@ class AaFetch {
 
     /**
      * HTTP DELETE without AError/Error thrown
-     * @param {string} url
-     * @param {{[key:string]:any}} [params]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [params]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     deleteN(url, params, dictionary) {
@@ -274,9 +273,9 @@ class AaFetch {
 
     /**
      * HTTP DELETE without authorization
-     * @param {string} url
-     * @param {{[key:string]:any}} [params]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [params]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     deleteA(url, params, dictionary) {
@@ -291,9 +290,9 @@ class AaFetch {
 
     /**
      * HTTP DELETE without authorization and without AError/Error thrown
-     * @param {string} url
-     * @param {{[key:string]:any}} [params]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {struct} [params]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     deleteNA(url, params, dictionary) {
@@ -304,9 +303,9 @@ class AaFetch {
 
     /**
      * HTTP POST
-     * @param {string} url
-     * @param {{[key:string]:any}} [data]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {RequestData} [data]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     post(url, data, dictionary) {
@@ -321,9 +320,9 @@ class AaFetch {
 
     /**
      * HTTP POST without authorization
-     * @param {string} url
-     * @param {{[key:string]:any}} [data]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {RequestData} [data]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     postA(url, data, dictionary) {
@@ -338,9 +337,9 @@ class AaFetch {
 
     /**
      * HTTP POST without AError/Error thrown
-     * @param {string} url
-     * @param {{[key:string]:any}} [data]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {RequestData} [data]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     postN(url, data, dictionary) {
@@ -351,9 +350,9 @@ class AaFetch {
 
     /**
      * HTTP POST without authorization and without AError/Error thrown
-     * @param {string} url
-     * @param {{[key:string]:any}} [data]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {RequestData} [data]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     postNA(url, data, dictionary) {
@@ -364,9 +363,9 @@ class AaFetch {
 
     /**
      * HTTP PUT
-     * @param {string} url
-     * @param {{[key:string]:any}} [data]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {RequestData} [data]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     put(url, data, dictionary) {
@@ -381,9 +380,9 @@ class AaFetch {
 
     /**
      * HTTP PUT without authorization
-     * @param {string} url
-     * @param {{[key:string]:any}} [data]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {RequestData} [data]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     putA(url, data, dictionary) {
@@ -398,9 +397,9 @@ class AaFetch {
 
     /**
      * HTTP PUT without AError/Error thrown
-     * @param {string} url
-     * @param {{[key:string]:any}} [data]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {RequestData} [data]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     putN(url, data, dictionary) {
@@ -411,9 +410,9 @@ class AaFetch {
 
     /**
      * HTTP PUT without authorization and without AError/Error thrown
-     * @param {string} url
-     * @param {{[key:string]:any}} [data]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {RequestData} [data]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     putNA(url, data, dictionary) {
@@ -424,9 +423,9 @@ class AaFetch {
 
     /**
      * HTTP PATCH
-     * @param {string} url
-     * @param {{[key:string]:any}} [data]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {RequestData} [data]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     patch(url, data, dictionary) {
@@ -441,9 +440,9 @@ class AaFetch {
 
     /**
      * HTTP PATCH without authorization
-     * @param {string} url
-     * @param {{[key:string]:any}} [data]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {RequestData} [data]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     patchA(url, data, dictionary) {
@@ -458,9 +457,9 @@ class AaFetch {
 
     /**
      * HTTP PATCH without AError/Error thrown
-     * @param {string} url
-     * @param {{[key:string]:any}} [data]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {RequestData} [data]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     patchN(url, data, dictionary) {
@@ -471,9 +470,9 @@ class AaFetch {
 
     /**
      * HTTP PATCH without authorization and without AError/Error thrown
-     * @param {string} url
-     * @param {{[key:string]:any}} [data]
-     * @param {{[key:string]:any}} [dictionary]
+     * @param  {RequestURL|RequestInfo} url
+     * @param {RequestData} [data]
+     * @param {struct} [dictionary]
      * @return {Promise<*>}
      */
     patchNA(url, data, dictionary) {
