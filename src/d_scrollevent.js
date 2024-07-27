@@ -1,24 +1,21 @@
 /**
- * @import _aaEnvironment
+ * @import AaEnv
  * @typedef {function(scrollTop, prevScrollTop, autoScroll:bool)} Condition
  * @typedef {function(scrollTop, prevScrollTop, autoScroll:bool)} Trigger
  * @typedef {{condition: Condition|null, trigger: Trigger, pause: boolean}} Event
  */
 class AaScrollEvent {
-    // @type Map
+    /**
+     * @type {Map}
+     */
     #events
-    // @type {_aaEnvironment}
-    #env
+
 
     onAutoScrolling = false   // 是否在触发自动
     prevScrollTop = 0
 
-    /**
-     *
-     * @param {AaEnv} env
-     */
-    constructor(env) {
-        this.#env = env
+
+    constructor() {
         this.#events = new Map()
     }
 
@@ -38,7 +35,7 @@ class AaScrollEvent {
         // 这个一定要是动态的！！！列表刷新之后， $(document).height() 是会变得
         // 如果文章有图片未加载，那么 $(document).height() 会随图片加载一直变化
         scrollTop++    // errors caused by decimals
-        const b = this.#env.documentHeight() - window.innerHeight - 200   // 200 像素优化用户体验，临底部就开始拉取新的列表
+        const b = AaEnv.documentHeight() - window.innerHeight - 200   // 200 像素优化用户体验，临底部就开始拉取新的列表
         return scrollTop >= prevScrollTop && scrollTop >= b
     }
 

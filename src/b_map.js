@@ -24,7 +24,7 @@ class map {
     }
 
     /**
-     * @param {struct|FormData|jsonstr} props
+     * @param {struct|FormData|jsonstr} [props]
      */
     constructor(props) {
         if (props instanceof map) {

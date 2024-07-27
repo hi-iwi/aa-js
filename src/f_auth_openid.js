@@ -1,14 +1,20 @@
 /**
- * @import _aaStorageFactor, _aaAuth, _aaFetch
+ * @import AaStorageFactor, AaAuth, AaFetch
  *
  */
 class AaAuthOpenid {
     name = 'aa-auth-openid'
-    // @type _aaStorageEngine
+    /**
+ * @type {AaStorageEngine}
+ */Engine
     #storageEngine
-    // @type _aaAuth
+/**
+ * @type {AaAuth}
+ */
     #auth
-    // @type _aaFetch
+    /**
+ * @type {AaFetch}
+ */
     #fetch
 
     // @type {string}

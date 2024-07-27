@@ -1,16 +1,20 @@
 /**
- * @import _aaFetch
+ * @import AaFetch
  * @typedef {struct} Vuser
  */
 
 class AaApollo {
     name = 'aa-apollo'
 
-    // @type _aaFetch
+    /**
+ * @type {AaFetch}
+ */
     #fetcher
     #fingerprintGenerator
     #loginDataHandler
-    // @type _aaStorage
+    /**
+ * @type {AaStorageEngine}
+ */
     #storage
 
     paramName = aparam.Apollo //  参数名 --> 阿波罗计划
@@ -114,7 +118,7 @@ class AaApollo {
 
     // static TestGenRandStr() {
     //     for (let i = 0; i < 10000000; i++) {
-    //         let s = __aaBaseAppollo.genRandStr(8)
+    //         let s = AaBaseAppollo.genRandStr(8)
     //         if (s.length !== 8) {
     //             console.error("bad: " + s)
     //             return false

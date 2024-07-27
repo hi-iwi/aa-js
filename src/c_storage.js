@@ -181,11 +181,11 @@ class AaStorageEngine {
     // cookie 不能使用 : 等分隔符作为key，因此不同Engine里面自己指定分隔符
     // 冒号 : 是特殊分隔符，默认都是 : 隔开
     get separator() {
-         return string(this.#storage, 'separator', AaStorageEngine.DefaultSeparator)
+        return string(this.#storage, 'separator', AaStorageEngine.DefaultSeparator)
     }
 
     get subSeparator() {
-         return string(this.#storage, 'subSeparator', AaStorageEngine.DefaultSubSeparator)
+        return string(this.#storage, 'subSeparator', AaStorageEngine.DefaultSubSeparator)
     }
 
     // 不用报错，正常人也不会这么操作
@@ -300,7 +300,7 @@ class AaStorageEngine {
     }
 
     setItem(key, value, options) {
-         let persistent = false
+        let persistent = false
         if (typeof options === "boolean") {
             persistent = options
             options = void false  // set to undefined
@@ -478,11 +478,17 @@ class AaStorageEngine {
 class AaStorageFactor {
     name = 'aa-storage-factor'
 
-    // @type _aaStorage
+    /**
+     * @type {AaStorageEngine}
+     */
     local
-    // @type _aaStorage
+    /**
+     * @type {AaStorageEngine}
+     */
     session
-    // @type _aaStorage
+    /**
+     * @type {AaStorageEngine}
+     */
     cookie
 
 
@@ -490,7 +496,12 @@ class AaStorageFactor {
         return this.local.length + this.session.length + this.cookie.length
     }
 
-
+    /**
+     *
+     * @param {AaStorageEngine} cookieStorage
+     * @param {AaStorageEngine} localStorage
+     * @param {AaStorageEngine} sessionStorage
+     */
     constructor(cookieStorage, localStorage, sessionStorage) {
         this.local = new AaStorageEngine(localStorage || window.localStorage, [], false, true)
         this.session = new AaStorageEngine(sessionStorage || window.sessionStorage, [], false, true)

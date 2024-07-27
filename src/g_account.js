@@ -1,5 +1,5 @@
 /**
- * @import _aaAuth
+ * @import AaAuth
  * @typedef {struct} Profile
  */
 
@@ -10,7 +10,9 @@ class AaAccount {
     #profile
     #selectedVuid
 
-    // @type _aaCache
+    /**
+     * @type {AaCache}
+     */
     #db
     #auth
     #fetch
@@ -39,12 +41,12 @@ class AaAccount {
     }
 
     saveProfile(profile) {
-         this.#profile = profile
+        this.#profile = profile
         this.#db.save(AaAccount.TableName, profile)
     }
 
     drop() {
-         this.#db.drop(AaAccount.TableName)
+        this.#db.drop(AaAccount.TableName)
     }
 
 
@@ -60,7 +62,7 @@ class AaAccount {
             })
         }
 
-         if (!refresh) {
+        if (!refresh) {
             let profile = this.#profile
             if (len(profile) > 0) {
                 return new Promise((resolve, _) => {
@@ -146,12 +148,12 @@ class AaAccount {
     }
 
     setSelectedVuid(vuid) {
-         this.#selectedVuid = vuid
+        this.#selectedVuid = vuid
         this.#db.save(AaAccount.TableName, {'selected_vuid_': vuid})
     }
 
     #readSelectedVuid() {
-         return this.#db.find(AaAccount.TableName, 'selected_vuid_')
+        return this.#db.find(AaAccount.TableName, 'selected_vuid_')
     }
 
 

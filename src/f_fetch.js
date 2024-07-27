@@ -1,24 +1,27 @@
-// @import _aaStorageFactor, _aaURI, _aaRawFetch, _aaAuth
+// @import AaStorageFactor, AaURI, AaRawFetch, AaAuth
 /**
  * Ajax 包括：XMLHttpRequest 、fetch 等
  */
 class AaFetch {
     name = 'aa-fetch'
 
-    // @type _aaRawFetch
+    /**
+     * @type AaRawFetch
+     */
     #rawFetch
-    // @type _aaAuth
+
+    /**
+     * @type {AaAuth}
+     */
     #auth
 
-    // @type typeof _aaURI
-    #uri
 
     enableRedirect = true  // 是否允许自动跳转
 
     deleteHasBody = false  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/DELETE
 
     /**
-     * 对 _aaRawFetch settings 扩展
+     * 对 AaRawFetch settings 扩展
      * @type {{mustAuth?:boolean, onAuthError?:function, preventTokenRefresh?:boolean}}
      */
     #defaultSettingsExt = {
@@ -34,12 +37,11 @@ class AaFetch {
     }
 
     /**
-     * @param {typeof AaURI} uri
+
      * @param {AaRawFetch} rawFetch
      * @param {AaAuth} auth
      */
-    constructor(uri, rawFetch, auth) {
-        this.#uri = uri
+    constructor(rawFetch, auth) {
         this.#rawFetch = rawFetch
         this.#auth = auth
     }
@@ -151,11 +153,10 @@ class AaFetch {
             method    : "GET",
             dictionary: dictionary,
         }
-        // @type _aaURI
-        const uri = new this.#uri(url, params)
+        const uri = new AaURI(url, params)
         return this.fetch(uri.toString(), settings, noThrown)
     }
-    
+
     /**
      * HTTP HEAD without AError/Error thrown
      * @param {string} url
@@ -192,7 +193,7 @@ class AaFetch {
         }
 
         if (!this.deleteHasBody) {
-            const uri = new this.#uri(url, params)
+            const uri = new AaURI(url, params)
             url = uri.toString()
             delete settings.data
         }

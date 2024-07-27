@@ -3,67 +3,81 @@ class Aa {
     // a_
 
 
-    //@type _aaRegistry
+    /**
+     * @type {AaRegistry}
+     */
     registry
 
     scrollEvent
 
-    //@type typeof _aaTx
-    TX = AaTx
+    /**
+     * @type {AaTX}
+     */
+    TX = AaTX
 
-    // @type _aaStorageFactor
+    /**
+     * @type {AaStorageFactor}
+     */
     storage
     cache
     db
 
-    // log   log 类是纯静态方法，全局直接使用
 
-    //@type typeof _aaURI
+    /**
+     * @type {AaURI}
+     */
     uri = AaURI
 
 
     // b_
 
-    //@type typeof _aaEnvironment
+    /**
+     * @type {AaEnv}
+     */
     env = AaEnv
+
     // c_
-    // @type _aaAuth
+    /**
+     * @type {AaAuth}
+     */
     auth
-    // @type _aaStateStorage
 
-    // d_
 
-    // @type _aaFetch
+    /**
+     * @type {AaFetch}
+     */
     fetch
 
-    // @type_aaAuthOpenid
+    /**
+     * @type {AaAuthOpenid}
+     */
     openidAuth
 
-    // @type _aaAccount
+    /**
+     * @type {AaAccount}
+     */
     account
-    //@type _aaOSS
+
+    /**
+     * @type {AaOSS}
+     */
     oss
-    // @type _aaEditor
+
+    /**
+     * @type {AaEditor}
+     */
     editor
 
     constructor() {
-        const tx = AaTx
-        const env = AaEnv
-        const uri = AaURI
-
-        this.TX = tx
-        this.env = env
-        this.uri = uri
-
         const registry = new AaRegistry()
-        const scrollEvent = new AaScrollEvent(env)
+        const scrollEvent = new AaScrollEvent()
         const storage = new AaStorageFactor()
         const cache = new AaCache(storage.session)
         const db = new AaCache(storage.local)
 
-        const rawFetch = new AaRawFetch(storage, uri)
+        const rawFetch = new AaRawFetch(storage)
         const auth = new AaAuth(storage, rawFetch)
-        const fetch = new AaFetch(uri, rawFetch, auth)
+        const fetch = new AaFetch(rawFetch, auth)
         const openidAuth = new AaAuthOpenid(storage.session, auth, fetch)
         const account = new AaAccount(db, auth, fetch)
         const oss = new AaOSS()
@@ -83,11 +97,11 @@ class Aa {
     }
 
     tx() {
-        return new AaTx()
+        return new AaTX()
     }
- 
+
     url(url = window.location.href, params = {}) {
-        return new this.uri(url, params)
+        return new AaURI(url, params)
 
     }
 
@@ -113,7 +127,7 @@ class Aa {
 
     /**
      * Apollo
-     * @param {string } url
+     * @param {string} url
      * @param {(fp:string)=>void} fingerprintGenerator 设备唯一码生成器
      * @param {(data:{[key:string]:*})=>void} loginDataHandler 登录处理
      * @param {AaStorageEngine} [storage]

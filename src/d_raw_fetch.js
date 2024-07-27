@@ -1,15 +1,15 @@
 /**
- * @import _aaStorageFactor, _aaURI
+ * @import AaStorageFactor, AaURI
  */
 
 class AaRawFetch {
     name = 'aa-raw-fetch'
 
-    // @type _aaStorageFactor
+    /**
+ * @type {AaStorageFactor}
+ */
     #storage
 
-    // @type typeof _aaURI
-    #uri
 
     // @type map
     #requests
@@ -62,11 +62,9 @@ class AaRawFetch {
 
     /**
      * @param {AaStorageFactor} storage
-     * @param {typeof AaURI} uri
      */
-    constructor(storage, uri) {
+    constructor(storage) {
         this.#storage = storage
-        this.#uri = uri
         this.#requests = new map()
     }
 
@@ -93,7 +91,7 @@ class AaRawFetch {
         }
 
         if (isDataAllQueryString || ["GET", "HEAD", "OPTION", "DELETE"].includes(method)) {
-            const p = new this.#uri(url, data).parse()
+            const p = new AaURI(url, data).parse()
             if (!p.ok) {
                 throw new SyntaxError("miss parameter(s) in url: " + p.url)
             }
@@ -101,7 +99,7 @@ class AaRawFetch {
         }
 
         let queries, ok;
-        [url, queries, ok] = this.#uri.lookup(url, data)
+        [url, queries, ok] = AaURI.lookup(url, data)
         if (ok) {
             throw new AError(AErrorEnum.BadRequest, "miss parameter(s) in url: " + p.url)
         }
@@ -248,7 +246,7 @@ class AaRawFetch {
             }
         }
 
-        const uri = new this.#uri(url, {"_stringify": booln(true)})
+        const uri = new AaURI(url, {"_stringify": booln(true)})
         return [uri.toString(), settings]
     }
 

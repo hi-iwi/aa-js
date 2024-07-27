@@ -553,10 +553,10 @@ class time {
      *      YYYY-MM-DD        YYYY-MM            YYYY
      * @warn Chrome 支持  new Date('YYYY-MM-DD')  但是 safari 不支持！！Safari 需转换完整字符串：YYYY-MM-DD HH:II:SS.sss+08:00
      * @usage
-     *  new _aaDate()
-     *  new _aaDate(date:string, zone?:string)
-     *  new _aaDate(timestamp:number, zone?string)   ---> new Date(millisecond)
-     *  new _aaDate(year:number, month:number, day:number, hour?:number, minute?:number, second?:number, millisecond?:number, zone?:string)
+     *  new time()
+     *  new time(date:string, zone?:string)
+     *  new time(timestamp:number, zone?string)   ---> new Date(millisecond)
+     *  new time(year:number, month:number, day:number, hour?:number, minute?:number, second?:number, millisecond?:number, zone?:string)
      *  @throws {TypeError}
      */
     constructor(...args) {
@@ -577,7 +577,7 @@ class time {
             this.timezoneOffset = args[l - 1]
             l--  // 移除最后一位
         }
-        //  new _aaDate(year:number, month:number, day:number, hour?:number, minute?:number, second?:number, millisecond?:number, zone?:string)
+        //  new time(year:number, month:number, day:number, hour?:number, minute?:number, second?:number, millisecond?:number, zone?:string)
         let arg = l === 1 ? args[0] : new Date(...args.slice(0, l))
         this.init(arg)
     }
@@ -837,7 +837,7 @@ class time {
      * @param {time|Date|string|number} [d1]  default to now, a.k.a. new Date()
      */
     diff(d1) {
-        return new _aaDateDifference(this, d1)
+        return new timeDifference(this, d1)
     }
 
     // 只保留特殊常用的函数，其他的如果需要用。就调用 xxx.date.xxxx 直接调用即可
@@ -901,7 +901,7 @@ class time {
 }
 
 
-class _aaDateDifference {
+class timeDifference {
     name = 'aa-date-difference'
 
     // differences in milliseconds
@@ -919,7 +919,7 @@ class _aaDateDifference {
 
     constructor(d0, d1) {
         d0 = d0 instanceof time ? d0 : new time(d0)
-        d1 = d1 instanceof time ? d1 : new time(d1)  // new _aaDate(undfined) equals to new _aaDate(new Date())
+        d1 = d1 instanceof time ? d1 : new time(d1)  // new time(undfined) equals to new time(new Date())
         if (!d0.validator.isValid(true) || !d0.validator.isValid(true)) {
             log.error("date difference: invalid date", d0, d1)
             return
@@ -1057,9 +1057,9 @@ class _aaDateDifference {
             'I': this.minutesPart,
             'S': this.secondsPart
         }
-        let ls = _aaDateDifference.loadDiff(layout, p)
+        let ls = timeDifference.loadDiff(layout, p)
         if (!noCarry) {
-            p = _aaDateDifference.carryTimeDiff(p, ls)
+            p = timeDifference.carryTimeDiff(p, ls)
         }
 
         if (p['Y'] > 0 && !ls['Y']) {

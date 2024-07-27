@@ -1,26 +1,37 @@
 /**
- * @import aparam, _aaStorageFactor, _aaRawFetch
+ * @import aparam, AaStorageFactor, AaRawFetch
  */
-
 
 
 class AaAuth {
     name = 'aa-auth'
 
-    // @type _aaStorageFactor
+    /**
+     * @type {AaStorageFactor}
+     */
     #storage
-    // @type _aaRawFetch
+    /**
+     * @type {AaRawFetch}
+     */
     #rawFetch
 
-    // @type function  外部可以使用、修改
+    //
+    /**
+     * @type {function}  外部可以使用、修改
+     */
     #unauthorizedHandler
 
-    // @type {{access_token: string, conflict: boolean|undefined, expires_in: number, refresh_api: string, refresh_token: string, scope: null, secure: boolean|undefined, token_type: string, validate_api: string}}
+    /**
+     * @type {{access_token: string, conflict: boolean|undefined, expires_in: number, refresh_api: string, refresh_token: string, scope: null, secure: boolean|undefined, token_type: string, validate_api: string}}
+     */
+
     #token
     #tokenAuthAt = 0
     #validateTried = false
 
-    // @type {string[]|null} Auth fields
+    /**
+     * @type {string[]|null}  Auth fields
+     */
     #fields
 
     enableCookie = true
@@ -65,17 +76,17 @@ class AaAuth {
     }
 
     static #saveItem(engine, key, value) {
-         const keyname = AaAuth.#storageKeyName(engine, key)
+        const keyname = AaAuth.#storageKeyName(engine, key)
         return engine.setItem(keyname, value)
     }
 
     static #readItem(engine, key) {
-         const keyname = AaAuth.#storageKeyName(engine, key)
+        const keyname = AaAuth.#storageKeyName(engine, key)
         return engine.getItem(keyname)
     }
 
     #readStorage(key) {
-         const r = this.#storage
+        const r = this.#storage
         let value = r.cookie.getItem(key)
         if (value) {
             return value
@@ -88,19 +99,19 @@ class AaAuth {
     }
 
     #localSetItem(key, value) {
-         return AaAuth.#saveItem(this.#storage.local, key, value)
+        return AaAuth.#saveItem(this.#storage.local, key, value)
     }
 
     #localGetItem(key) {
-         return AaAuth.#readItem(this.#storage.local, key)
+        return AaAuth.#readItem(this.#storage.local, key)
     }
 
     #sessionSetItem(key, value) {
-         return AaAuth.#saveItem(this.#storage.session, key, value)
+        return AaAuth.#saveItem(this.#storage.session, key, value)
     }
 
     #sessionGetItem(key) {
-         return AaAuth.#readItem(this.#storage.session, key)
+        return AaAuth.#readItem(this.#storage.session, key)
     }
 
     #tryStoreCookie(key, value, opts) {

@@ -2,7 +2,7 @@
 // a simple transaction lock
 let _aaTxIncr_ = 0
 
-class AaTx {
+class AaTX {
     name = 'aa-tx'
     #id
     #lock  // bool, 锁状态
@@ -10,7 +10,7 @@ class AaTx {
 
 
     constructor() {
-        this.#id = AaTx.atomicId()
+        this.#id = AaTX.atomicId()
         this.#lock = false
         this.#timer = null
     }

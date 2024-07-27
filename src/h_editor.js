@@ -48,7 +48,7 @@ class AaEditor {
             maker = defaultMaker
         }
         if (typeof maker !== "function") {
-            log.warn('miss oss data maker defined in _aaEditor')
+            log.warn('miss oss data maker defined in AaEditor')
         }
         return maker
     }
