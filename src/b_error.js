@@ -1,6 +1,5 @@
 /**
  * @import atype
- * @type {null}
  * @private
  */
 // @type {(null|{[key:number]:string})}

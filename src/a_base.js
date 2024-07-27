@@ -82,12 +82,6 @@ var _aaDebug = new (class {
             return
         }
         this.value = this.isLocalhost() ? this.#console : this.#disabled
-
-        /**
-         *
-         * @type {number[][]}
-         */
-        let a = [[10, 20, 30], [10, 2]]
     }
 
     isLocalhost() {

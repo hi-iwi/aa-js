@@ -10,14 +10,10 @@ class AaEditor {
     audioSrcDataMaker
     fileSrcDataMaker
 
-    /**
-     * .className,  #ID,  tag
-     * @type {[string]}
-     */
+    // @type {[string]} e.g. ".className",  "#ID",  "tag"
     whiteList = [".hidden-url"]
 
     /**
-     *
      * @param {AaOSS} oss
      * @param ossDataMakers
      */
@@ -54,12 +50,11 @@ class AaEditor {
     }
 
     /**
-     *
      * @param {HTMLElement|string} dom    id: #ID, class: .className
      * @param imgSrcDataMaker
      */
     decodeDom(dom, imgSrcDataMaker) {
-         if (typeof dom === "string") {
+        if (typeof dom === "string") {
             dom = document.querySelector(dom)
         }
         dom.querySelectorAll('a').forEach(a => {

@@ -5,14 +5,10 @@
 class AaFetch {
     name = 'aa-fetch'
 
-    /**
-     * @type AaRawFetch
-     */
+    // @type {AaRawFetch}
     #rawFetch
 
-    /**
-     * @type {AaAuth}
-     */
+    // @type {AaAuth}
     #auth
 
 
@@ -37,7 +33,6 @@ class AaFetch {
     }
 
     /**
-
      * @param {AaRawFetch} rawFetch
      * @param {AaAuth} auth
      */

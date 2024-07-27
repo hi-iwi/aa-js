@@ -10,9 +10,7 @@ class AaAccount {
     #profile
     #selectedVuid
 
-    /**
-     * @type {AaCache}
-     */
+    // @type {AaCache}
     #db
     #auth
     #fetch
@@ -51,7 +49,6 @@ class AaAccount {
 
 
     /**
-     *
      * @param {boolean} [refresh]  false on  [program cache] -> [local storage] -> [remote api]; true on [remote api] only
      * @return {Promise<Profile>|*}
      */

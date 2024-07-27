@@ -1,8 +1,7 @@
 # Code Style Guide
 
 # JSDoc types
-@type 不能用单行注释，要用块注释方式（部分编辑器无法识别）
-
+ 
 ```js
 /**
  * @type (number|string)[]

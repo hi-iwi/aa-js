@@ -4,17 +4,14 @@
  */
 class AaAuthOpenid {
     name = 'aa-auth-openid'
-    /**
- * @type {AaStorageEngine}
- */Engine
+
+    // @type {AaStorageEngine}
     #storageEngine
-/**
- * @type {AaAuth}
- */
+    
+    // @type {AaAuth}
     #auth
-    /**
- * @type {AaFetch}
- */
+    
+    // @type {AaFetch}
     #fetch
 
     // @type {string}
@@ -101,7 +98,6 @@ class AaAuthOpenid {
     }
 
     /**
-     *
      * @param {boolean} forceRefresh
      * @return {Promise<{Authorization: *, "X-Openid": *}>}
      */

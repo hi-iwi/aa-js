@@ -6,15 +6,11 @@
 class AaRawFetch {
     name = 'aa-raw-fetch'
 
-    /**
-     * @type {AaStorageFactor}
-     */
+// @type {AaStorageFactor}
     #storage
 
 
-    /**
-     * @type map
-     */
+    // @type {map}
     #requests
 
     #cleanTimer

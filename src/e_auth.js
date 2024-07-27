@@ -1,37 +1,27 @@
 /**
  * @import aparam, AaStorageFactor, AaRawFetch
+ * @typedef {{access_token: string, conflict: boolean|undefined, expires_in: number, refresh_api: string, refresh_token: string, scope: null, secure: boolean|undefined, token_type: string, validate_api: string}} TokenData
  */
 
 
 class AaAuth {
     name = 'aa-auth'
 
-    /**
-     * @type {AaStorageFactor}
-     */
+    // @type {AaStorageFactor}
     #storage
-    /**
-     * @type {AaRawFetch}
-     */
+
+    // @type {AaRawFetch}
     #rawFetch
 
-    //
-    /**
-     * @type {function}  外部可以使用、修改
-     */
+    // @type {function}  外部可以使用、修改
     #unauthorizedHandler
 
-    /**
-     * @type {{access_token: string, conflict: boolean|undefined, expires_in: number, refresh_api: string, refresh_token: string, scope: null, secure: boolean|undefined, token_type: string, validate_api: string}}
-     */
-
+    // @type {TokenData}
     #token
     #tokenAuthAt = 0
     #validateTried = false
 
-    /**
-     * @type {string[]|null}  Auth fields
-     */
+    // @type {string[]|null}  Auth fields
     #fields
 
     enableCookie = true
@@ -42,8 +32,7 @@ class AaAuth {
         // 微信授权登录，跳转回来。如果是strict，就不会携带cookie（防止csrf攻击）；而lax就会携带。
         // 在 Lax 模式下只会阻止在使用危险 HTTP 方法进行请求携带的三方 Cookie，例如 POST 方式。同时，使用 Js 脚本发起的请求也无法携带三方 Cookie。
         // 谷歌默认 sameSite=Lax
-        sameSite: 'lax',
-        //secure  : location.protocol === "https",  // 只允许https访问
+        sameSite: 'lax', //secure  : location.protocol === "https",  // 只允许https访问
     }
 
 

@@ -478,17 +478,11 @@ class AaStorageEngine {
 class AaStorageFactor {
     name = 'aa-storage-factor'
 
-    /**
-     * @type {AaStorageEngine}
-     */
+    // @type {AaStorageEngine}
     local
-    /**
-     * @type {AaStorageEngine}
-     */
+    // @type {AaStorageEngine}
     session
-    /**
-     * @type {AaStorageEngine}
-     */
+    // @type {AaStorageEngine}
     cookie
 
 
