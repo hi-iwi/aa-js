@@ -81,7 +81,9 @@ class XXX{
 * _fields_: []string|{[key:string}:typeFunc}    :  一个类似结构体或object的class，用 _files_ :["key"]   来描述有效字段。主要用于
   map.merge/strictMerge/overwrite
 
-* (vv, vk) ====> vk ? vv[vk] : vv
+* (vv, vk, defaultV) ====>  (vk ? (vv[vk] ? vv[vk] : defaultV) : vv )
+    * Golang 至今未支持三元写法，因此不代表某种习惯就必须要所有人接受。这里规定一种写法并无障碍，并非强制性要求。
+    * 等同于  (vk ? (vv[vk] ? vv[vk] : defaultV) : vv )，尚未习惯的，可以使用这种常规写法
 * ::new()
 * .clone()  ===> 深度复制该类
 * .init(data)   ===> 重置数据

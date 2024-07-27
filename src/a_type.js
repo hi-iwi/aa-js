@@ -1,14 +1,14 @@
 //  react state  数字 001231 === 1231 == 001231.000  这些数值都没有变化，state就不会触发
 
 
-
 /**
- * defined value
- * @param {*} vv
+ * Return defined value
+ * @param {*} [vv]
  * @param {string|number} [vk]
  * @param {*} [defaultV]
- * @returns {null|*}
- *
+ * @returns {null|*} return any type except type `undefined`
+ * @note Golang 至今未支持三元写法，因此不代表某种习惯就必须要所有人接受。这里规定一种写法并无障碍，并非强制性要求。
+ *  等同于  (vk ? (vv[vk] ? vv[vk] : defaultV) : vv )，尚未习惯的，可以使用这种常规写法
  */
 function defval(vv, vk, defaultV) {
     if (typeof vv === "undefined" || typeof defaultV === "undefined") {
@@ -218,8 +218,8 @@ class   // Returns function XXX()
     }
 
     // 对象 a={}   !a 为 false。。  a =={} 也是 false
-    static isEmpty(vv, vk) {
-        let v = defval(vv, vk)
+    static isEmpty(...args) {
+        let v = defval(...args)
         if (v === null) {// 不要用 AaLib.Type 判断是否 undefined
             return true
         }
@@ -248,57 +248,57 @@ class   // Returns function XXX()
         return !v
     }
 
-    static notEmpty(vv, vk, defaultV) {
-        return !atype.isEmpty(vv, vk, defaultV)
+    static notEmpty(...args) {
+        return !atype.isEmpty(...args)
     }
 
     // 必须是 > 0的数字，注意 bigint
-    static isRealId(vv, vk, defaultV) {
-        let v = defval(...arguments)
+    static isRealId(...args) {
+        let v = defval(...args)
         return v === null ? false : (uint64a(v) !== "0")
     }
 
-    static notRealId(vv, vk, defaultV) {
-        return !atype.isRealId(vv, vk, defaultV)
+    static notRealId(...args) {
+        return !atype.isRealId(...args)
     }
 
-    static isArray(vv, vk, defaultV) {
-        return Array.isArray(defval(...arguments))
+    static isArray(...args) {
+        return Array.isArray(defval(...args))
     }
 
-    static isBoolean(vv, vk, defaultV) {
-        return typeof defval(...arguments) === "boolean"
+    static isBoolean(...args) {
+        return typeof defval(...args) === "boolean"
     }
 
     // 仅为 {} 结构体；
     // @warn ，不要用 typeof arr === "object" 判定是否是结构体，因为 typeof [] 也是 object。而 AaType.Of([]) 为array, AaType.Of({}) 为 object
-    static isStruct(vv, vk, defaultV) {
-        return atype.of(vv, vk, defaultV) === "struct"
+    static isStruct(...args) {
+        return atype.of(...args) === "struct"
     }
 
 
-    static isDate(vv, vk, defaultV) {
-        return atype.of(vv, vk, defaultV) === "date"
+    static isDate(...args) {
+        return atype.of(...args) === "date"
     }
 
-    static isDom(vv, vk, defaultV) {
-        return atype.of(vv, vk, defaultV) === "dom"
+    static isDom(...args) {
+        return atype.of(...args) === "dom"
     }
 
-    static isFunction(vv, vk, defaultV) {
-        return typeof defval(...arguments) === "function"
+    static isFunction(...args) {
+        return typeof defval(...args) === "function"
     }
 
-    static isNumber(vv, vk, defaultV) {
-        return typeof defval(...arguments) === "number"
+    static isNumber(...args) {
+        return typeof defval(...args) === "number"
     }
 
-    static isString(vv, vk, defaultV) {
-        return typeof defval(...arguments) === "string"
+    static isString(...args) {
+        return typeof defval(...args) === "string"
     }
 
-    static isRegexp(vv, vk, defaultV) {
-        return atype.of(vv, vk, defaultV) === "regexp"
+    static isRegexp(...args) {
+        return atype.of(...args) === "regexp"
     }
 
 
@@ -308,12 +308,10 @@ class   // Returns function XXX()
 // len(bool) len(number) 为 0，防止直接用 for( < len(x)) 导致异常
 /**
  * Get length of anything
- * @param vv
- * @param {string|number} [kk]
  * @return {number|*}
  */
-function len(vv, kk) {
-    let v = defval(vv, kk)
+function len(...args) {
+    let v = defval(...args)
     if (typeof v === "undefined" || v === null) {
         return 0
     }
@@ -334,8 +332,8 @@ function len(vv, kk) {
     return Object.keys(v).length  // 支持string,array, object
 }
 
-function func(vv, vk, defaultV) {
-    let v = defval(...arguments)
+function func(...args) {
+    let v = defval(...args)
     if (typeof v === "function") {
         return v
     }
@@ -354,8 +352,8 @@ function _inRange(x, min, max, name) {
     return x
 }
 
-function bool(vv, vk, defaultV) {
-    let v = defval(...arguments)
+function bool(...args) {
+    let v = defval(...args)
     if (v === null) {// 不要用 AaLib.Type 判断是否 undefined
         return false
     }
@@ -389,21 +387,21 @@ function bool(vv, vk, defaultV) {
     return !!v
 }
 
-function booln(vv, vk, defaultV) {
-    return bool(...arguments) ? 1 : 0
+function booln(...args) {
+    return bool(...args) ? 1 : 0
 }
 
-function not(vv, vk, defaultV) {
-    return !bool(...arguments)
+function not(...args) {
+    return !bool(...args)
 }
 
-function nullable(vv, vk, defaultV) {
-    let v = defval(...arguments)
+function nullable(...args) {
+    let v = defval(...args)
     return len(v) === 0 ? null : v
 }
 
-function string(vv, vk, defaultV) {
-    let v = defval(...arguments)
+function string(...args) {
+    let v = defval(...args)
     if (v === null) {
         return ""
     }
@@ -418,75 +416,75 @@ function string(vv, vk, defaultV) {
  * @return {number}
  * @note js 数字全部是采用的双精度浮点数存储的。 js number 最大值是：9007199254740992
  */
-function number(vv, vk, defaultV) {
-    return Number(defval(...arguments))
+function number(...args) {
+    return Number(defval(...args))
 }
 
-function float64(vv, vk, defaultV) {
-    return number(...arguments)
+function float64(...args) {
+    return number(...args)
 }
 
-function float32(vv, vk, defaultV) {
-    return float64(...arguments)
+function float32(...args) {
+    return float64(...args)
 }
 
 // int64 最大值：9223372036854775807  >  js number 最大值 9007199254740992
-function int64a(vv, vk, defaultV) {
+function int64a(...args) {
     // int64 和 uint64 都用string类型
-    let v = defval(...arguments)
+    let v = defval(...args)
     return v === null ? "0" : v + ''
 }
 
 // 9007199254740992 Number.MAX_SAFE_INTEGER
-function intMax(vv, vk, defaultV) {
-    return Math.floor(number(...arguments))
+function intMax(...args) {
+    return Math.floor(number(...args))
 }
 
-function moneyOld(vv, vk, defaultV) {
-    return Math.floor(number(...arguments))
+function moneyOld(...args) {
+    return Math.floor(number(...args))
 }
 
 
-function int32(vv, vk, defaultV) {
-    return _inRange(intMax(...arguments), -2147483648, 2147483647, 'int32')
+function int32(...args) {
+    return _inRange(intMax(...args), -2147483648, 2147483647, 'int32')
 }
 
-function int24(vv, vk, defaultV) {
-    return _inRange(intMax(...arguments), -8388608, 8388607, 'int24')
+function int24(...args) {
+    return _inRange(intMax(...args), -8388608, 8388607, 'int24')
 }
 
-function int16(vv, vk, defaultV) {
-    return _inRange(intMax(...arguments), -32768, 32767, 'int16')
+function int16(...args) {
+    return _inRange(intMax(...args), -32768, 32767, 'int16')
 }
 
-function int8(vv, vk, defaultV) {
-    return _inRange(intMax(...arguments), -128, 127, 'int8')
+function int8(...args) {
+    return _inRange(intMax(...args), -128, 127, 'int8')
 }
 
-function uint64a(vv, vk, defaultV) {
+function uint64a(...args) {
     // int64 和 uint64 都用string类型
-    let v = defval(...arguments)
+    let v = defval(...args)
     return v === null ? "0" : (v + '')
 }
 
-function uint32(vv, vk, defaultV) {
-    return _inRange(intMax(...arguments), 0, 4294967295, 'uint32')
+function uint32(...args) {
+    return _inRange(intMax(...args), 0, 4294967295, 'uint32')
 }
 
-function uint24(vv, vk, defaultV) {
-    return _inRange(intMax(...arguments), 0, 16777215, 'uint24')
+function uint24(...args) {
+    return _inRange(intMax(...args), 0, 16777215, 'uint24')
 }
 
-function uint16(vv, vk, defaultV) {
-    return _inRange(intMax(...arguments), 0, 65535, 'uint16')
+function uint16(...args) {
+    return _inRange(intMax(...args), 0, 65535, 'uint16')
 }
 
-function uint8(vv, vk, defaultV) {
-    return _inRange(intMax(...arguments), 0, 255, 'uint8')
+function uint8(...args) {
+    return _inRange(intMax(...args), 0, 255, 'uint8')
 }
 
-function struct(vv, vk, defaultV) {
-    let v = defval(...arguments)
+function struct(...args) {
+    let v = defval(...args)
     if (v === null || typeof v !== "object") {
         return {}
     }
@@ -497,8 +495,8 @@ function struct(vv, vk, defaultV) {
 }
 
 
-function array(vv, vk, defaultV) {
-    let v = defval(...arguments)
+function array(...args) {
+    let v = defval(...args)
     if (v === null || typeof v !== "object") {
         return []
     }
