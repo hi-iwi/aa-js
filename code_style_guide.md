@@ -74,7 +74,7 @@ cookie-name = token
 1. variable keep word `name`, to name this class
 2. static Constants
 3. static variables
-4. private static #variables
+4. private static #variables       ---> 尽量不要使用私有静态变量!!!
 5. variables
 6. private #variables
 7. setXXX()         set property

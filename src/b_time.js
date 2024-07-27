@@ -135,18 +135,18 @@ class AaDateString {
     static minDatetime = '0000-00-00 00:00:00' // 当作配置，可以修改; date/year 等可以通过此解析出来，不用单独配置了
     static maxDatetime = '9999-12-31 23:59:59'
 
-    static #minYear = AaDateString.minDatetime.substring(0, 4)
-    static #minDate = AaDateString.minDatetime.substring(0, 10)
-    static #maxYear = AaDateString.maxDatetime.substring(0, 4)
-    static #maxDate = AaDateString.maxDatetime.substring(0, 10)
+    static minYear = AaDateString.minDatetime.substring(0, 4)
+    static minDate = AaDateString.minDatetime.substring(0, 10)
+    static maxYear = AaDateString.maxDatetime.substring(0, 4)
+    static maxDate = AaDateString.maxDatetime.substring(0, 10)
 
     static localTimezoneOffsetString = AaDateString.parseTimezoneOffsetString()
-    static #yearLen = 4 // len('0000')
-    static #dateLen = 10  // len('0000-00-00')
-    static #datetimeLen = 19   // len('0000-00-00 00:00:00')
-    static #yearPattern = /^\d{4}$/
-    static #datePattern = /^\d{4}-[01]\d-[03]\d$/
-    static #datetimePattern = /^\d{4}-[01]\d-[03]\d[\sT][0-2]\d:[0-5]\d:[0-5]\d$/
+    static yearLen = 4 // len('0000')
+    static dateLen = 10  // len('0000-00-00')
+    static datetimeLen = 19   // len('0000-00-00 00:00:00')
+    static yearPattern = /^\d{4}$/
+    static datePattern = /^\d{4}-[01]\d-[03]\d$/
+    static datetimePattern = /^\d{4}-[01]\d-[03]\d[\sT][0-2]\d:[0-5]\d:[0-5]\d$/
 
 
     timezoneOffset
@@ -179,11 +179,11 @@ class AaDateString {
             zone = AaDateString.localTimezoneOffsetString
         }
 
-        if (AaDateString.#datetimePattern.test(s)) {
+        if (AaDateString.datetimePattern.test(s)) {
             s += '.000' + zone
-        } else if (AaDateString.#datePattern.test(s)) {
+        } else if (AaDateString.datePattern.test(s)) {
             s += 'T00:00:00.000' + zone
-        } else if (AaDateString.#yearPattern.test(s)) {
+        } else if (AaDateString.yearPattern.test(s)) {
             s += '-01-01T00:00:00.000' + zone
         } else if (!["", "null", "invalid date", "invalid time value"].includes(s.toLowerCase())) {
             s += zone
@@ -203,15 +203,15 @@ class AaDateString {
 
 
     isYear() {
-        return AaDateString.#yearPattern.test(this.raw)
+        return AaDateString.yearPattern.test(this.raw)
     }
 
     isDate() {
-        return AaDateString.#datePattern.test(this.raw)
+        return AaDateString.datePattern.test(this.raw)
     }
 
     isDatetime() {
-        return AaDateString.#datetimePattern.test(this.raw)
+        return AaDateString.datetimePattern.test(this.raw)
     }
 
     isZero() {
@@ -225,24 +225,24 @@ class AaDateString {
             return true
         }
         if (this.isYear()) {
-            return v.substring(0, d.#yearLen) === d.#minYear
+            return v.substring(0, d.yearLen) === d.minYear
         }
         if (this.isDate()) {
-            return v.substring(0, d.#dateLen) === d.#minDate
+            return v.substring(0, d.dateLen) === d.minDate
         }
-        return v.substring(0, d.#datetimeLen) === d.minDatetime
+        return v.substring(0, d.datetimeLen) === d.minDatetime
     }
 
     isMax() {
         const d = AaDateString
         const v = this.#value
         if (this.isYear()) {
-            return v.substring(0, d.#yearLen) === d.#maxYear
+            return v.substring(0, d.yearLen) === d.maxYear
         }
         if (this.isDate()) {
-            return v.substring(0, d.#dateLen) === d.#maxDate
+            return v.substring(0, d.dateLen) === d.maxDate
         }
-        return v.substring(0, d.#datetimeLen) === d.maxDatetime
+        return v.substring(0, d.datetimeLen) === d.maxDatetime
     }
 
     year() {
@@ -302,14 +302,14 @@ class AaDateString {
 
     static setMinDatetime(datetime) {
          AaDateString.minDatetime = datetime
-        AaDateString.#minYear = datetime.substring(0, 4)
-        AaDateString.#minDate = datetime.substring(0, 10)
+        AaDateString.minYear = datetime.substring(0, 4)
+        AaDateString.minDate = datetime.substring(0, 10)
     }
 
     static setMaxDatetime(datetime) {
          AaDateString.maxDatetime = datetime
-        AaDateString.#maxYear = datetime.substring(0, 4)
-        AaDateString.#maxDate = datetime.substring(0, 10)
+        AaDateString.maxYear = datetime.substring(0, 4)
+        AaDateString.maxDate = datetime.substring(0, 10)
     }
 
     /**
