@@ -72,7 +72,6 @@ class AaFetch {
      *  @example 'https://luexu.com'
      *  @example 'GET https://luexu.com'
      * @param settings
-     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {*}
      * @exmaple async mode 异步模式，返回结果顺序不固定
      *  aa.fetch.fetch(urlA).then().catch()
@@ -88,7 +87,7 @@ class AaFetch {
      *  }
      *  x()
      */
-    fetch(url, settings, noThrown = false) {
+    fetch(url, settings) {
         settings = map.fillUp(settings, this.#defaultSettingsExt)
         const response = this.#rawFetch.fetch(url, settings, this.fetchHook.bind(this))
         return response.then(data => data).catch(err => {
@@ -104,31 +103,65 @@ class AaFetch {
                     return
                 }
             }
-
-            if (noThrown && err.triggerDisplay()) {
-                return
-            }
             throw err
         })
     }
 
 
     /**
-     * Fetch without auth
+     * Fetch without authorization
      * @param url
      * @param settings
      */
     fetchA(url, settings) {
-        settings = struct(settings)
-        settings.mustAuth = false
+        map.set(settings, 'mustAuth', false)
         return this.fetch(url, settings)
     }
 
+    /**
+     * Fetch without AError/Error thrown
+     * @param url
+     * @param settings
+     */
+    fetchN(url, settings) {
+        return this.fetch(url, settings).catch(err => {
+            err.triggerDisplay()
+        })
+    }
 
+    /**
+     * Fetch without authorization and without AError/Error thrown
+     * @param url
+     * @param settings
+     */
+    fetchNA(url, settings) {
+        map.set(settings, 'mustAuth', false)
+        return this.fetchN(url, settings)
+    }
+
+    /**
+     * Get HTTP status code
+     * @param url
+     * @param settings
+     * @return {Promise<*>}
+     */
     status(url, settings) {
         settings = map.fillUp(settings, this.#defaultSettingsExt)
         const response = this.#rawFetch.status(url, settings, this.fetchHook.bind(this))
-        return response.then(code => code)   // 不用 catch error
+        return response.then(code => code)
+    }
+
+    /**
+     * Get HTTP status code without AError/Error thrown
+     * @param url
+     * @param settings
+     * @return {Promise<*>}
+     */
+    statusN(url, settings) {
+        return this.status(url, settings).catch(err => {
+            log.error(`${settings.method} ${url} status error: ${err.message}`)
+            return AErrorEnum.ClientThrow   // 后面再也不用 catch 了
+        })
     }
 
     // /**
@@ -145,16 +178,46 @@ class AaFetch {
      * @param {string} url
      * @param {{[key:string]:any}} [params]
      * @param {{[key:string]:any}} [dictionary]
-     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {Promise<*>}
      */
-    get(url, params, dictionary, noThrown = false) {
+    get(url, params, dictionary) {
         const settings = {
             method    : "GET",
             dictionary: dictionary,
         }
         const uri = new AaURI(url, params)
-        return this.fetch(uri.toString(), settings, noThrown)
+        return this.fetch(uri.toString(), settings)
+    }
+
+    /**
+     * HTTP GET without AError/Error thrown
+     * @param url
+     * @param params
+     * @param dictionary
+     * @return {Promise<*>}
+     */
+    getN(url, params, dictionary) {
+        return this.get(url, params, dictionary).catch(err => {
+            err.triggerDisplay()
+        })
+    }
+
+    /**
+     * HTTP HEAD
+     * @param {string} url
+     * @param {{[key:string]:any}} [params]
+     * @param {{[key:string]:any}} [dictionary]
+     * @return {Promise<*>}
+     * @warn Warning: A response to a HEAD method should not have a body. If it has one anyway, that body must be ignored
+     *  HEAD只返回 resp['code'] 或 HTTP状态码，忽略 resp['data'] 数据
+     */
+    head(url, params, dictionary) {
+        const settings = {
+            method    : 'HEAD',
+            data      : data,
+            dictionary: dictionary,
+        }
+        return this.status(url, settings)     // 不用 catch error
     }
 
     /**
@@ -162,18 +225,14 @@ class AaFetch {
      * @param {string} url
      * @param {{[key:string]:any}} [params]
      * @param {{[key:string]:any}} [dictionary]
-     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {Promise<*>}
      * @warn Warning: A response to a HEAD method should not have a body. If it has one anyway, that body must be ignored
      *  HEAD只返回 resp['code'] 或 HTTP状态码，忽略 resp['data'] 数据
      */
-    head(url, params, dictionary, noThrown = false) {
-        const settings = {
-            method    : 'HEAD',
-            data      : data,
-            dictionary: dictionary,
-        }
-        return this.status(url, settings, noThrown)     // 不用 catch error
+    headN(url, params, dictionary) {
+        return this.head(url, params, dictionary).catch(err => {
+            err.triggerDisplay()
+        })
     }
 
     /**
@@ -181,10 +240,9 @@ class AaFetch {
      * @param {string} url
      * @param {{[key:string]:any}} [params]
      * @param {{[key:string]:any}} [dictionary]
-     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {Promise<*>}
      */
-    delete(url, params, dictionary, noThrown = false) {
+    delete(url, params, dictionary) {
         let settings = {
             method    : 'DELETE',
             data      : params,
@@ -198,10 +256,29 @@ class AaFetch {
             delete settings.data
         }
 
-        return this.fetch(url, settings, noThrown)
+        return this.fetch(url, settings)
     }
 
+    /**
+     * HTTP DELETE without AError/Error thrown
+     * @param {string} url
+     * @param {{[key:string]:any}} [params]
+     * @param {{[key:string]:any}} [dictionary]
+     * @return {Promise<*>}
+     */
+    deleteN(url, params, dictionary) {
+        return this.delete(url, params, dictionary).catch(err => {
+            err.triggerDisplay()
+        })
+    }
 
+    /**
+     * HTTP DELETE without authorization
+     * @param {string} url
+     * @param {{[key:string]:any}} [params]
+     * @param {{[key:string]:any}} [dictionary]
+     * @return {Promise<*>}
+     */
     deleteA(url, params, dictionary) {
         const settings = {
             method    : 'DELETE',
@@ -209,29 +286,46 @@ class AaFetch {
             dictionary: dictionary,
             mustAuth  : false,
         }
-        return this.fetch(url, settings, false)
+        return this.fetchA(url, settings)
     }
 
+    /**
+     * HTTP DELETE without authorization and without AError/Error thrown
+     * @param {string} url
+     * @param {{[key:string]:any}} [params]
+     * @param {{[key:string]:any}} [dictionary]
+     * @return {Promise<*>}
+     */
+    deleteNA(url, params, dictionary) {
+        return this.deleteA(url, params, dictionary).catch(err => {
+            err.triggerDisplay()
+        })
+    }
 
     /**
      * HTTP POST
      * @param {string} url
      * @param {{[key:string]:any}} [data]
      * @param {{[key:string]:any}} [dictionary]
-     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {Promise<*>}
      */
-    post(url, data, dictionary, noThrown = false) {
+    post(url, data, dictionary) {
         const settings = {
             method    : 'POST',
             data      : data,
             dictionary: dictionary,
             mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
-        return this.fetch(url, settings, noThrown)
+        return this.fetch(url, settings)
     }
 
-
+    /**
+     * HTTP POST without authorization
+     * @param {string} url
+     * @param {{[key:string]:any}} [data]
+     * @param {{[key:string]:any}} [dictionary]
+     * @return {Promise<*>}
+     */
     postA(url, data, dictionary) {
         const settings = {
             method    : 'POST',
@@ -239,29 +333,59 @@ class AaFetch {
             dictionary: dictionary,
             mustAuth  : false,
         }
-        return this.fetch(url, settings, false)
+        return this.fetchA(url, settings)
     }
 
+    /**
+     * HTTP POST without AError/Error thrown
+     * @param {string} url
+     * @param {{[key:string]:any}} [data]
+     * @param {{[key:string]:any}} [dictionary]
+     * @return {Promise<*>}
+     */
+    postN(url, data, dictionary) {
+        return this.post(url, data, dictionary).catch(err => {
+            err.triggerDisplay()
+        })
+    }
+
+    /**
+     * HTTP POST without authorization and without AError/Error thrown
+     * @param {string} url
+     * @param {{[key:string]:any}} [data]
+     * @param {{[key:string]:any}} [dictionary]
+     * @return {Promise<*>}
+     */
+    postNA(url, data, dictionary) {
+        return this.postA(url, data, dictionary).catch(err => {
+            err.triggerDisplay()
+        })
+    }
 
     /**
      * HTTP PUT
      * @param {string} url
      * @param {{[key:string]:any}} [data]
      * @param {{[key:string]:any}} [dictionary]
-     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {Promise<*>}
      */
-    put(url, data, dictionary, noThrown = false) {
+    put(url, data, dictionary) {
         const settings = {
             method    : 'PUT',
             data      : data,
             dictionary: dictionary,
             mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
-        return this.fetch(url, settings, noThrown)
+        return this.fetch(url, settings)
     }
 
-
+    /**
+     * HTTP PUT without authorization
+     * @param {string} url
+     * @param {{[key:string]:any}} [data]
+     * @param {{[key:string]:any}} [dictionary]
+     * @return {Promise<*>}
+     */
     putA(url, data, dictionary) {
         const settings = {
             method    : 'PUT',
@@ -269,29 +393,59 @@ class AaFetch {
             dictionary: dictionary,
             mustAuth  : false,
         }
-        return this.fetch(url, settings, false)
+        return this.fetchA(url, settings)
     }
 
+    /**
+     * HTTP PUT without AError/Error thrown
+     * @param {string} url
+     * @param {{[key:string]:any}} [data]
+     * @param {{[key:string]:any}} [dictionary]
+     * @return {Promise<*>}
+     */
+    putN(url, data, dictionary) {
+        return this.put(url, data, dictionary).catch(err => {
+            err.triggerDisplay()
+        })
+    }
+
+    /**
+     * HTTP PUT without authorization and without AError/Error thrown
+     * @param {string} url
+     * @param {{[key:string]:any}} [data]
+     * @param {{[key:string]:any}} [dictionary]
+     * @return {Promise<*>}
+     */
+    putNA(url, data, dictionary) {
+        return this.putA(url, data, dictionary).catch(err => {
+            err.triggerDisplay()
+        })
+    }
 
     /**
      * HTTP PATCH
      * @param {string} url
      * @param {{[key:string]:any}} [data]
      * @param {{[key:string]:any}} [dictionary]
-     * @param {boolean} noThrown?  No AError/Error thrown
      * @return {Promise<*>}
      */
-    patch(url, data, dictionary, noThrown = false) {
+    patch(url, data, dictionary) {
         const settings = {
             method    : 'PATCH',
             data      : data,
             dictionary: dictionary,
             mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
-        return this.fetch(url, settings, noThrown)
+        return this.fetch(url, settings)
     }
 
-
+    /**
+     * HTTP PATCH without authorization
+     * @param {string} url
+     * @param {{[key:string]:any}} [data]
+     * @param {{[key:string]:any}} [dictionary]
+     * @return {Promise<*>}
+     */
     patchA(url, data, dictionary) {
         const settings = {
             method    : 'PATCH',
@@ -299,8 +453,32 @@ class AaFetch {
             dictionary: dictionary,
             mustAuth  : false,
         }
-        return this.fetch(url, settings, false)
+        return this.fetchA(url, settings)
     }
 
+    /**
+     * HTTP PATCH without AError/Error thrown
+     * @param {string} url
+     * @param {{[key:string]:any}} [data]
+     * @param {{[key:string]:any}} [dictionary]
+     * @return {Promise<*>}
+     */
+    patchN(url, data, dictionary) {
+        return this.patch(url, data, dictionary).catch(err => {
+            err.triggerDisplay()
+        })
+    }
 
+    /**
+     * HTTP PATCH without authorization and without AError/Error thrown
+     * @param {string} url
+     * @param {{[key:string]:any}} [data]
+     * @param {{[key:string]:any}} [dictionary]
+     * @return {Promise<*>}
+     */
+    patchNA(url, data, dictionary) {
+        return this.patchA(url, data, dictionary).catch(err => {
+            err.triggerDisplay()
+        })
+    }
 }

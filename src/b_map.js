@@ -160,6 +160,16 @@ class map {
         return new map(obj)
     }
 
+    static set(obj, key, value) {
+        obj = struct(obj)
+        obj[key] = value
+        return obj
+    }
+
+    static get(obj, key) {
+        return !obj ? void 0 : obj[key]
+    }
+
     /**
      * 解析json或{} 为 {}
      * @param {struct|FormData|jsonstr} obj

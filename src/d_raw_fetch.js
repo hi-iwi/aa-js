@@ -310,11 +310,7 @@ class AaRawFetch {
                 return Number(resp.status)
             }
             return resp.json()
-        }).then(resp => typeof resp === "number" ? resp : number(resp, 'code')).catch(err => {
-            log.error(`${settings.method} ${url} status error: ${err.message}`)
-            return AErrorEnum.ClientThrow   // 后面再也不用 catch 了
-        })
-
+        }).then(resp => typeof resp === "number" ? resp : number(resp, 'code'))
     }
 
 
