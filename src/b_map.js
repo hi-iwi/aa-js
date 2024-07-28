@@ -54,18 +54,18 @@ class map {
 
     toQueryString(assert, sort = true) {
         let params = [];
-        this.forEach((v, k) => {
-            if (k === "" || typeof v === "undefined" || v === null) {
+        this.forEach((key, value) => {
+            if (value === "" || typeof key === "undefined" || key === null) {
                 return
             }
-            if (typeof assert === "function" && assert(k, v)) {
+            if (typeof assert === "function" && assert(key, value)) {
                 return
             }
-            if (Array.isArray(v)) {
-                v = v.join(",")  // url param，数组用逗号隔开模式
+            if (Array.isArray(key)) {
+                key = key.join(",")  // url param，数组用逗号隔开模式
             }
-            v = encodeURIComponent(string(v))
-            params.push(k + '=' + v)
+            key = encodeURIComponent(string(key))
+            params.push(value + '=' + key)
         }, sort)
         return params.join('&')
     }
@@ -83,15 +83,15 @@ class map {
     forEach(callback, sort = false) {
         // 这种方式forEach 中进行删除未遍历到的值是安全的
         if (!sort) {
-            for (let [k, v] of this.entries()) {
-                callback(v, k)
+            for (let [key, value] of this.entries()) {
+                callback(key, value)
             }
             return
         }
         let keys = this.keys().sort()
         for (let i = 0; i < keys.length; i++) {
-            let k = keys[i]
-            callback(this.get(k), k)
+            let key = keys[i]
+            callback(key, this.get(key))
         }
     }
 
@@ -140,16 +140,16 @@ class map {
      */
     extend(obj) {
         if (obj instanceof map) {
-            obj.forEach((v, k) => {
-                this.set(k, v)
+            obj.forEach((key, value) => {
+                this.set(key, value)
             })
             return this
         }
         if (!obj || typeof obj !== "object") {
             return this
         }
-        for (let [k, v] of Object.entries(obj)) {
-            this.set(k, v)
+        for (let [key, value] of Object.entries(obj)) {
+            this.set(key, value)
         }
         return this
     }

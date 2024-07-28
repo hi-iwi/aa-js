@@ -267,7 +267,7 @@ class AaStorageEngine {
                 items.push(key)
             }
         }, true)
-        
+
         return items.length > 0 ? items : null
     }
 
@@ -361,9 +361,9 @@ class AaStorageEngine {
             return
         }
         let items = {}
-        this.forEach((v, k) => {
-            if (key.test(k)) {
-                items[k] = v
+        this.forEach((key, value) => {
+            if (key.test(key)) {
+                items[key] = value
             }
         })
         return items.length === 0 ? null : items

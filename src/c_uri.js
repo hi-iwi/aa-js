@@ -198,10 +198,10 @@ class AaURI {
     }
 
     filter(filter) {
-        this.queries.forEach((v, k) => {
-            if (filter(k, v)) {
+        this.queries.forEach((key, value) => {
+            if (filter(key, value)) {
                 // 这种方式forEach 中进行删除未遍历到的值是安全的
-                this.queries.delete(k)
+                this.queries.delete(key)
             }
         })
         return this
@@ -209,7 +209,7 @@ class AaURI {
 
 
     filterEmpty(empty = ['', '0', 0]) {
-        return this.filter((k, v) => empty.includes(v))
+        return this.filter((_, value) => empty.includes(value))
     }
 
 
