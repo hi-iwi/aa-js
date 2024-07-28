@@ -97,12 +97,13 @@ class AaAccount {
                 reject("invalid profile fetch")
             })
         }
-        this.#tx.begin()
+
         if (this.#tx.notFree()) {
             return asleep(200 * time.Millisecond).then(() => {
                 return this.getProfile(refresh)
             })
         }
+        this.#tx.begin()
         return fetch.fetch(url).then(profile => {
             this.#tx.commit()
             this.saveProfile(profile)
