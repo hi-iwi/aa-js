@@ -1,5 +1,6 @@
 /**
  * @import
+ * @typedef {{ persistent?:boolean, expires?:number|Date, path?:string, secure?:boolean, sameSite?:string }} StorageOptions
  */
 class AaCookieStorage {
     name = 'aa-cookie-storage'
@@ -59,6 +60,12 @@ class AaCookieStorage {
         }
     }
 
+    /**
+     *
+     * @param {string } key
+     * @param {string|number} value
+     * @param {StorageOptions} [options]
+     */
     setItem(key, value, options) {
         if (!this.available()) {
             return
@@ -134,6 +141,7 @@ class AaCookieStorage {
      *
      * It will not delete cookies with HttpOnly flag set, as the HttpOnly flag disables JavaScript's access to the cookie.
      * It will not delete cookies that have been set with a Path value. (This is despite the fact that those cookies will appear in document.cookie, but you can't delete it without specifying the same Path value with which it was set.)
+     * @param {StorageOptions} [options]
      */
     removeItem(key, options) {
         this.setItem(key, '', map.fillUp({expires: -3600 * 48}, options))
@@ -144,6 +152,7 @@ class AaCookieStorage {
      *
      * It will not delete cookies with HttpOnly flag set, as the HttpOnly flag disables JavaScript's access to the cookie.
      * It will not delete cookies that have been set with a Path value. (This is despite the fact that those cookies will appear in document.cookie, but you can't delete it without specifying the same Path value with which it was set.)
+     * @param {StorageOptions} [options]
      */
     clear(options) {
         if (!this.available() || !document.cookie) {
@@ -304,42 +313,48 @@ class AaStorageEngine {
         return this.#storage.key(index)
     }
 
+    /**
+     * Set Item
+     * @param {string} key
+     * @param {any} value
+     * @param {StorageOptions} [options]
+     */
     setItem(key, value, options) {
-        let persistent = false
-        if (typeof options === "boolean") {
-            persistent = options
-            options = void false  // set to undefined
-        }
         if (this.#encapsulate) {
-            value = AaStorageEngine.makeValue(value, persistent)
+            value = AaStorageEngine.makeValue(value, options)
         }
         const args = this.#withOptions && options ? [key, value, options] : [key, value]
         this.#storage.setItem(...args)
     }
 
-    // @param {{[key:string]:any}}
-    setItems(items, persistent = false) {
+    /**
+     * Set items in key:value pairs
+     * @param {struct} items
+     * @param {StorageOptions} [options]
+     */
+    setItems(items, options) {
         for (let [key, value] of Object.entries(items)) {
-            this.setItem(key, value, persistent)
+            this.setItem(key, value, options)
         }
     }
 
+    /**
+     * Get item, returns null on not exists
+     * @param key
+     * @return {null|string|string|*}
+     */
     getItem(key) {
         let value = this.#storage.getItem(key)
         if (!this.#encapsulate || typeof value !== "string") {
             return value
         }
-
-        let d = value.indexOf(':')
-        let type = value.substring(0, d)
-        if (type.length === 0 || type.length > 2) {
+        const match = value.match(/^([a-zA-Z]):(.+):(\d*)$/)
+        if (!match) {
             return value
         }
-        if (type.length === 2) {
-            type = type.substring(1)
-        }
-
-        value = value.substring(d + 1)
+        let type = match[1]
+        value = match[2]
+        let expireTo = number(match[3])
         switch (type.toLowerCase()) {
             case atype.aliasOf(null):
                 value = (value === "null") ? null : undefined
@@ -357,6 +372,10 @@ class AaStorageEngine {
             case atype.aliasOf('date'):
                 value = new Date(value)
                 break;
+        }
+        if (expireTo > 0 && Date.now() - expireTo >= 0) {
+            this.removeItem(key)
+            return null
         }
         return value
     }
@@ -382,7 +401,7 @@ class AaStorageEngine {
     /**
      * Remove item from this storage
      * @param {string} key
-     * @param [options]
+     * @param {StorageOptions} [options]
      */
     removeItem(key, options) {
         const args = this.#withOptions && options ? [key, options] : [key]
@@ -393,7 +412,7 @@ class AaStorageEngine {
     /**
      * Remove items matched with key
      * @param {RegExp} key separator colon ':' is wildcard separator. it matches the engine's separator and subSeparator
-     * @param [options]
+     * @param {StorageOptions} [options]
      */
     removeItems(key, options) {
         if (!(key instanceof RegExp)) {
@@ -446,7 +465,12 @@ class AaStorageEngine {
         this.clearExcept()
     }
 
-    static makeValue(value, persistent = false) {
+    /**
+     * @param {any} value
+     * @param {StorageOptions} [options]
+     * @return {number|string}
+     */
+    static makeValue(value, options) {
         let ok = true;
         const type = atype.of(value)
         switch (type) {
@@ -468,13 +492,23 @@ class AaStorageEngine {
                 ok = false
                 break;
         }
-        if (ok) {
-            let st = atype.aliasOf(type)
-            if (bool(persistent)) {
-                st = st.toUpperCase()
-            }
-            value = st + ':' + value
+        if (!ok) {
+            return value
         }
+        const persistent = bool(options, 'persistent')
+        let expires = defval(options, 'expires')
+        if (typeof expires === "number") {
+            expires = Date.now() + expires
+        } else if (expires instanceof Date) {
+            expires = expires.valueOf()
+        }
+
+
+        let st = atype.aliasOf(type)
+        if (bool(persistent)) {
+            st = st.toUpperCase()
+        }
+        value = st + ':' + value + ':' + string(expires)   // base64数字会变得更长
         return value
     }
 

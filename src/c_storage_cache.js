@@ -40,9 +40,9 @@ class AaCache {
      * @param {string} table
      * @param {map|{[key:string]:any}} data
      * @param {string|RegExp} pattern
-     * @param {boolean} [persistent]
+     * @param {struct} [options]
      */
-    save(table, data, pattern, persistent = false) {
+    save(table, data, pattern, options) {
         const is = defval(pattern, 'is')
         const not = defval(pattern, 'not')
         data = new map(data)
@@ -50,7 +50,7 @@ class AaCache {
             let keyname = this.formatKeyname(table, key)
             // 这个要放在最前面，抵消默认忽视下划线结尾的临时变量规则
             if ((typeof is === "string" && key === is) || (is instanceof RegExp && is.test(key))) {
-                this.#storageEngine.setItem(keyname, value, persistent)
+                this.#storageEngine.setItem(keyname, value, options)
                 return
             }
 
@@ -62,7 +62,7 @@ class AaCache {
             if ((typeof not === "string" && key === not) || (not instanceof RegExp && not.test(key))) {
                 return
             }
-            this.#storageEngine.setItem(keyname, value, persistent)
+            this.#storageEngine.setItem(keyname, value, options)
         })
     }
 
