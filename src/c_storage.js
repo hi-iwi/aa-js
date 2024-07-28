@@ -47,14 +47,18 @@ class AaCookieStorage {
     /**
      *
      * @param {IteratorCallback} callback
+     * @param {(value:any)=>any} [valueHandler]
      */
-    forEach(callback) {
+    forEach(callback, valueHandler) {
         const all = this.getAll()
         if (!all) {
             return
         }
-        for (const [key, value] of Object.entries(all)) {
-            if (callback(value, key) === BreakSignal) {
+        for (let [key, value] of Object.entries(all)) {
+            if (typeof valueHandler === "function") {
+                value = valueHandler(value)
+            }
+            if (callback(key, value) === BreakSignal) {
                 break
             }
         }
@@ -244,11 +248,9 @@ class AaStorageEngine {
 
     getPersistentNames() {
         let items = []
-        // 这里要用原始的，不能用 this.forEach
-
-        for (let i = 0; i < this.length; i++) {
-            const key = this.key(i)
-            const value = this.#storage.getItem(key)
+        // 这里是是获取raw数据
+        this.forEach((key, value) => {
+            log.print(key, value)
             if (array(aparam, 'PersistentNames').includes(key)) {
                 items.push(key)
                 return
@@ -263,20 +265,25 @@ class AaStorageEngine {
 
             let type = value.charAt(0)
             // persistent data starts with uppercase
-            if (type >= "A" && type <= "Z") {
-                items.push(key)
+            if (value.charAt(1) === ':' && type >= "A" && type <= "Z") {
+                let v = this.decodeValue(key, value)
+                if (typeof v !== "undefined") {
+                    items.push(key)
+                }
             }
-        }
+        }, true)
 
 
         return items.length > 0 ? items : null
     }
 
+
     /**
      * Iterate storage
      * @param {IteratorCallback} callback
+     * @param {boolean} [raw]
      */
-    forEach(callback) {
+    forEach(callback, raw = false) {
         if (typeof this.#storage.forEach === "function") {
             this.#storage.forEach(callback)
             return
@@ -288,8 +295,9 @@ class AaStorageEngine {
         // 要保持外面forEach 进行删除操作时安全，就必须要遍历一个独立的数组，而不是直接遍历并操作原数组（破坏序列）
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i]
-            let value = this.getItem(key)
-            if (callback(value, key) === BreakSignal) {
+            let value = raw ? this.#storage.getItem(key) : this.getItem(key)
+
+            if (callback(key, value) === BreakSignal) {
                 break
             }
         }
@@ -303,7 +311,7 @@ class AaStorageEngine {
             return this.#storage.getAll()
         }
         let data = {}
-        this.forEach((value, key) => {
+        this.forEach((key, value) => {
             data[key] = value
         })
         return data
@@ -321,7 +329,7 @@ class AaStorageEngine {
      */
     setItem(key, value, options) {
         if (this.#encapsulate) {
-            value = AaStorageEngine.makeValue(value, options)
+            value = AaStorageEngine.encodeValue(value, options)
         }
         const args = this.#withOptions && options ? [key, value, options] : [key, value]
         this.#storage.setItem(...args)
@@ -345,39 +353,7 @@ class AaStorageEngine {
      */
     getItem(key) {
         let value = this.#storage.getItem(key)
-        if (!this.#encapsulate || typeof value !== "string") {
-            return value
-        }
-        const match = value.match(/^([a-zA-Z]):(.+):(\d*)$/)
-        if (!match) {
-            return value
-        }
-        let type = match[1]
-        value = match[2]
-        let expireTo = number(match[3])
-        switch (type.toLowerCase()) {
-            case atype.aliasOf(null):
-                value = (value === "null") ? null : undefined
-                break
-            case atype.aliasOf('number'):
-                value = int32(value)
-                break;
-            case atype.aliasOf('boolean'):
-                value = bool(value)
-                break;
-            case atype.aliasOf('array'):
-            case atype.aliasOf('struct'):
-                value = JSON.parse(value)
-                break;
-            case atype.aliasOf('date'):
-                value = new Date(value)
-                break;
-        }
-        if (expireTo > 0 && Date.now() - expireTo >= 0) {
-            this.removeItem(key)
-            return null
-        }
-        return value
+        return this.decodeValue(key, value)
     }
 
     /**
@@ -430,7 +406,6 @@ class AaStorageEngine {
         }
 
         this.forEach((_, k) => {
-            log.print(k, key.test(k))
             if (key.test(k) || (wild && wild.test(k))) {
                 const args = this.#withOptions && options ? [k, options] : [k]
                 this.#storage.removeItem(...args)
@@ -466,11 +441,53 @@ class AaStorageEngine {
     }
 
     /**
+     *
+     * @param value
+     * @return {string|number|boolean|Date|string|*}
+     *      undefined on expired
+     */
+    decodeValue(key, value) {
+        if (!this.#encapsulate || typeof value !== "string") {
+            return value
+        }
+        const match = value.match(/^([a-zA-Z]):(.+):(\d*)$/)
+        if (!match) {
+            return value
+        }
+        let type = match[1]
+        value = match[2]
+        let expireTo = number(match[3])
+        switch (type.toLowerCase()) {
+            case atype.aliasOf(null):
+                value = (value === "null") ? null : undefined
+                break
+            case atype.aliasOf('number'):
+                value = int32(value)
+                break;
+            case atype.aliasOf('boolean'):
+                value = bool(value)
+                break;
+            case atype.aliasOf('array'):
+            case atype.aliasOf('struct'):
+                value = JSON.parse(value)
+                break;
+            case atype.aliasOf('date'):
+                value = new Date(value)
+                break;
+        }
+        if (expireTo > 0 && Date.now() - expireTo >= 0) {
+            this.removeItem(key)
+            return void ''
+        }
+        return value
+    }
+
+    /**
      * @param {any} value
      * @param {StorageOptions} [options]
      * @return {number|string}
      */
-    static makeValue(value, options) {
+    static encodeValue(value, options) {
         let ok = true;
         const type = atype.of(value)
         switch (type) {
@@ -511,6 +528,7 @@ class AaStorageEngine {
         value = st + ':' + value + ':' + string(expires)   // base64数字会变得更长
         return value
     }
+
 
 }
 

@@ -125,7 +125,7 @@ class AaRawFetch {
     #fillUpHeaders(headers) {
         // 填充以  X- 开头的自定义header
         headers = struct(headers)
-        this.#storage.forEachEntire((value, key) => {
+        this.#storage.forEachEntire((key, value) => {
             if (key.indexOf('X-') === 0) {
                 headers[key] = value
             }
@@ -184,7 +184,7 @@ class AaRawFetch {
         }
         this.#cleanTimer = setTimeout(() => {
             const now = new Date().valueOf()
-            this.#requests.forEach((value, key) => {
+            this.#requests.forEach((key, value) => {
                 if (value + 400 * time.Millisecond > now) {
                     this.#requests.delete(key)
                 }

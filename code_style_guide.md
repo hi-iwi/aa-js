@@ -41,8 +41,11 @@ const fn = (x, y) => {
 }
 ```
 
-## forEach((value, key) =>{})
+## forEach((key, value) =>{})
 
+(value, key) 是反人性的，(key, value) 才更符合人类思维，减少人类出错
+
+### 例外情况：
 ```js
 [].forEach((value, index) => {
 })

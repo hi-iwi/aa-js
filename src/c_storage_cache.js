@@ -46,7 +46,7 @@ class AaCache {
         const is = defval(pattern, 'is')
         const not = defval(pattern, 'not')
         data = new map(data)
-        data.forEach((value, key) => {
+        data.forEach((key, value) => {
             let keyname = this.formatKeyname(table, key)
             // 这个要放在最前面，抵消默认忽视下划线结尾的临时变量规则
             if ((typeof is === "string" && key === is) || (is instanceof RegExp && is.test(key))) {
