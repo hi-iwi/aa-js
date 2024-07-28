@@ -19,7 +19,6 @@ class AaAccount {
 
     initFetchUrl(url) {
         this.#fetchUrl = url
-        log.print(url)
         if (!this.#auth.authed()) {
             return
         }
