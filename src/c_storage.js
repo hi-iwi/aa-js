@@ -250,7 +250,6 @@ class AaStorageEngine {
         let items = []
         // 这里是是获取raw数据
         this.forEach((key, value) => {
-            log.print(key, value)
             if (array(aparam, 'PersistentNames').includes(key)) {
                 items.push(key)
                 return
@@ -353,16 +352,16 @@ class AaStorageEngine {
 
     /**
      * Get items matched with key
-     * @param {RegExp} key
+     * @param {RegExp} reg
      */
-    getItems(key) {
-        if (!(key instanceof RegExp)) {
-            log.error('storage.getItems: key must be a RegExp', key)
+    getItems(reg) {
+        if (!(reg instanceof RegExp)) {
+            log.error('storage.getItems: key must be a RegExp', reg)
             return
         }
         let items = {}
         this.forEach((key, value) => {
-            if (key.test(key)) {
+            if (reg.test(key)) {
                 items[key] = value
             }
         })
