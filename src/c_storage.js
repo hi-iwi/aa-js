@@ -272,8 +272,13 @@ class AaStorageEngine {
             this.#storage.forEach(callback)
             return
         }
-        for (let i = 0; i < this.length; i++) {
-            let key = this.key(i)
+        const keys = Object.keys(this.#storage)
+        if (!keys) {
+            return
+        }
+        // 要保持外面forEach 进行删除操作时安全，就必须要遍历一个独立的数组，而不是直接遍历并操作原数组（破坏序列）
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i]
             let value = this.getItem(key)
             if (callback(value, key) === BreakSignal) {
                 break
@@ -406,6 +411,7 @@ class AaStorageEngine {
         }
 
         this.forEach((_, k) => {
+            log.print(k, key.test(k))
             if (key.test(k) || (wild && wild.test(k))) {
                 const args = this.#withOptions && options ? [k, options] : [k]
                 this.#storage.removeItem(...args)

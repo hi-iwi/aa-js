@@ -169,8 +169,12 @@ class AaAuth {
         }
         this.#validateTried = true  // fetch 可能失败，就有可能会一直尝试；因此增加一个程序层防重
         const url = token['validate_api']
+        let authorization = this.getAuthorization()
+
         this.#rawFetch.fetch(url, {
-            mustAuth: false,
+            headers: {
+                'Authorization': authorization,
+            }
         }).then(_ => {
             this.#sessionSetItem('checked', true)
         }).catch(err => {
@@ -195,11 +199,11 @@ class AaAuth {
             "conflict"     : token.hasOwnProperty('conflict') ? bool(token["conflict"]) : void false,
             "expires_in"   : expiresIn,
             "refresh_api"  : string(token, "refresh_api"),  // 非必要
-            "refresh_token": string(token, "refresh_token"),
+            "refresh_token": string(token, "refresh_token"),// 非必要
             "scope"        : token.hasOwnProperty('scope') ? token["secure"] : null,
             "secure"       : token.hasOwnProperty('secure') ? bool(token["secure"]) : void false,
             "token_type"   : token["token_type"],
-            "validate_api" : string(token, "validate_api"),
+            "validate_api" : string(token, "validate_api"),// 非必要
         }
     }
 
@@ -354,7 +358,7 @@ class AaAuth {
      * @note 非手动退出，就不要清空所有数据，避免用户缓存的文章丢失
      */
     clear() {
-        this.#storage.removeEntire(/^aa:auth:\./)
+        this.#storage.removeEntire(/^aa:auth:/)
         this.#token = null // clear program cache
     }
 

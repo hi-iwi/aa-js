@@ -6,6 +6,7 @@
 class AaImgSrc {
     name = 'aa-img-src'
 
+
     // @property {int}
     provider
     cropPattern
@@ -23,6 +24,12 @@ class AaImgSrc {
     // @type {File} for upload
     #multipleFile
 
+
+    valid() {
+        return len(this.cropPattern) > 0 && len(this.resizePattern) > 0
+    }
+
+
     setThumbnail(thumbnail) {
         this.#thumbnail = thumbnail
     }
@@ -30,6 +37,9 @@ class AaImgSrc {
     getThumbnail(width, height) {
         if (this.#thumbnail) {
             return this.#thumbnail
+        }
+        if (!this.valid()) {
+            return ""
         }
         return this.crop(width, height).url
     }
@@ -129,33 +139,28 @@ class AaImgSrc {
         return matched ? [w, h] : [maxWidth, maxHeight]
     }
 
-    /**
-     * @param [maxWidth]
-     */
-    maxWidth(maxWidth) {
-        const env = AaEnv
-        const borderWidth = Math.min(env.maxWidth(), this.width)
-
-    }
 
     /**
      * Crop image to the closest size after resizing by window.devicePixelRatio
      * @param {number} width
      * @param {number} height
-     * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
+     * @return {ImgResizedData|null} 返回struct是最合适的，方便直接并入组件 state
      */
     crop(width, height) {
+        if (!this.valid()) {
+            return null
+        }
         [width, height] = this.#allowedSize(width, height)
         const pattern = string(this.cropPattern)
         const url = pattern.replace(/\${WIDTH}/g, string(width)).replace(/\${HEIGHT}/g, string(height))
         const ratio = decimal.div(width, height)
         return {
-            width       : width,
-            height      : height,
-            ratio       : ratio,
-            url         : url,
-            originWidth : this.width,
-            originHeight: this.height,
+            width         : width,
+            height        : height,
+            ratio         : ratio,
+            url           : url,
+            originalWidth : this.width,
+            originalHeight: this.height,
         }
     }
 
@@ -163,9 +168,12 @@ class AaImgSrc {
      * Resize image to the closest size after resizing by window.devicePixelRatio
      * @param {number|MAX} [maxWidth]
      * @param {number} [maxHeight]
-     * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
+     * @return {ImgResizedData|null} 返回struct是最合适的，方便直接并入组件 state
      */
     resize(maxWidth = MAX, maxHeight) {
+        if (!this.valid()) {
+            return null
+        }
         if (!maxWidth || maxWidth === MAX) {
             maxWidth = AaEnv.maxWidth()
         }
@@ -173,26 +181,29 @@ class AaImgSrc {
         const ratio = decimal.div(width, height)
         if (maxHeight > 0 && height > maxHeight) {
             height = maxHeight
-            width = ratio.beDiv(maxWidth)
+            width = ratio.beDiv(maxWidth).toReal()
         }
 
         const pattern = string(this.resizePattern)
         const url = pattern.replace(/\${MAXWIDTH}/g, maxWidth)
         return {
-            width       : width,
-            height      : height,
-            ratio       : ratio,
-            url         : url,
-            originWidth : this.width,
-            originHeight: this.height,
+            width         : width,
+            height        : height,
+            ratio         : ratio,
+            url           : url,
+            originalWidth : this.width,
+            originalHeight: this.height,
         }
     }
 
     /**
      * Get the original image, return resized if original image not exists
-     * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
+     * @return {ImgResizedData|null} 返回struct是最合适的，方便直接并入组件 state
      */
     getOriginal() {
+        if (!this.valid()) {
+            return null
+        }
         if (!this.origin) {
             return this.resize(this.width, this.height)
         }
@@ -233,6 +244,20 @@ class AaImgSrc {
             size    : size,
             width   : width,
             height  : height,
+        }
+    }
+
+    /**
+     * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
+     */
+    static zeroResizedData() {
+        return {
+            width         : 0,
+            height        : 0,
+            ratio         : new decimal(0),
+            url           : "",
+            originalWidth : 0,
+            originalHeight: 0,
         }
     }
 

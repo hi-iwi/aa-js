@@ -145,11 +145,10 @@ class log {
         if (dbg.disabled()) {
             return
         }
-        console.log('%c------------------------------------', 'background:#999;color:#fff;')
+        console.log('')
         for (let i = 0; i < args.length; i++) {
             console.log(i + '.', args[i])
         }
-        console.log('%c------------------------------------', 'background:#999;color:#fff;')
     }
 
     static breakpoint(...args) {
