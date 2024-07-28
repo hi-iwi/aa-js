@@ -1,7 +1,7 @@
 /**
  * @typedef {string} ImageBase64
  * @typedef {{path: string, filetype: number, size: number, provider: number, allowed: (number[][]|null), origin: string, width: number, crop_pattern: string, resize_pattern: string, height: number,thumbnail?: string,  multiple_file?: string}} ImgSrcStruct
- * @typedef {{width: number, url: string, height: number, ratio: decimal, originalWidth: number, originalHeight: number}} ImgResizedData
+ * @typedef {{width: number, url: string, height: number, ratio: Decimal, originalWidth: number, originalHeight: number}} ImgResizedData
  */
 class AaImgSrc {
     name = 'aa-img-src'
@@ -141,10 +141,10 @@ class AaImgSrc {
 
     /**
      * Get Ratio of width/height
-     * @return {decimal}
+     * @return {Decimal}
      */
     ratio() {
-        return decimal.div(this.width, this.height)
+        return Decimal.div(this.width, this.height)
     }
 
     /**
@@ -160,7 +160,7 @@ class AaImgSrc {
         [width, height] = this.#allowedSize(width, height)
         const pattern = string(this.cropPattern)
         const url = pattern.replace(/\${WIDTH}/g, string(width)).replace(/\${HEIGHT}/g, string(height))
-        const ratio = decimal.div(width, height)
+        const ratio = Decimal.div(width, height)
         return {
             width         : width,
             height        : height,
@@ -185,7 +185,7 @@ class AaImgSrc {
             maxWidth = AaEnv.maxWidth()
         }
         let [width, height] = this.#allowedSize(maxWidth)
-        const ratio = decimal.div(width, height)
+        const ratio = Decimal.div(width, height)
         if (maxHeight > 0 && height > maxHeight) {
             height = maxHeight
             width = ratio.beDiv(maxWidth).toReal()
@@ -214,7 +214,7 @@ class AaImgSrc {
         if (!this.origin) {
             return this.resize(this.width, this.height)
         }
-        const ratio = decimal.div(this.width, this.height)
+        const ratio = Decimal.div(this.width, this.height)
         return {
             width         : this.width,
             height        : this.height,
@@ -261,7 +261,7 @@ class AaImgSrc {
         return {
             width         : 0,
             height        : 0,
-            ratio         : new decimal(0),
+            ratio         : decimal(0),
             url           : "",
             originalWidth : 0,
             originalHeight: 0,

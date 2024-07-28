@@ -80,10 +80,6 @@ class Aa {
 
     }
 
-    decimal(vv, vk) {
-        return new decimal(vv, vk)
-    }
-
     /**
      *
      * @param {ImgSrcStruct|AaImgSrc} obj

@@ -1,16 +1,15 @@
-// @import decimal.Scale
-class decimal {
-    name = 'aa-decimal'
+class Decimal {
+    name = 'aa-Decimal'
 
-    static Scale = 4  // 万分之一   Math.pow(10, decimal.Scale)
-    static Units = Math.pow(10, decimal.Scale)
+    static Scale = 4  // 万分之一   Math.pow(10, Decimal.Scale)
+    static Units = Math.pow(10, Decimal.Scale)
     static Max = parseInt("".padEnd((Math.ceil(Number.MAX_SAFE_INTEGER / 10) + '').length, "9")) // 最多支持999亿.9999
 
 
-    type = "decimal"
-    // https://www.splashlearn.com/math-vocabulary/decimals/decimal-point
+    type = "Decimal"
+    // https://www.splashlearn.com/math-vocabulary/Decimals/Decimal-point
     // https://learn.microsoft.com/en-us/sql/t-sql/data-types/precision-scale-and-length-transact-sql?view=sql-server-ver16
-    // [whole -> precision - scale][decimal point = .][mantissa -> scale]
+    // [whole -> precision - scale][Decimal point = .][mantissa -> scale]
     value     // 值
     // mantissa // 小数值
     // whole // 整数值
@@ -20,13 +19,13 @@ class decimal {
      * @type {number}
      * @protected
      */
-    scale = decimal.Scale// 小数位数，如 12345.6789.scale  ==> 4 = len('6789')
+    scale = Decimal.Scale// 小数位数，如 12345.6789.scale  ==> 4 = len('6789')
     /**
      * @type {number}
      * @readonly
      * @protected
      */
-    units = decimal.Units
+    units = Decimal.Units
 
     set scale(scale) {
         this.setScale(scale)
@@ -40,19 +39,19 @@ class decimal {
     }
 
     /**
-     * Divide two numbers and convert its result to decimal
+     * Divide two numbers and convert its result to Decimal
      * @param a
      * @param b
-     * @return {decimal}
+     * @return {Decimal}
      */
     static div(a, b) {
         return new this(a * this.Units / b) // 使用 this. 可以传递到子类
     }
 
     /**
-     *
-     * @param {money|number|string} vv
+     * @param {number|string} [vv]
      * @param {string} [vk]
+     * @param {*} [defaultV]
      */
     constructor(vv, vk, defaultV) {
         this.value = Math.floor(number(...arguments))
@@ -64,8 +63,8 @@ class decimal {
      */
     setScale(scale) {
         scale = number(scale)
-        if (scale < 0 || scale > decimal.Scale) {
-            scale = decimal.Scale
+        if (scale < 0 || scale > Decimal.Scale) {
+            scale = Decimal.Scale
         }
         this.scale = scale
         this.units = Math.pow(10, scale)
@@ -78,7 +77,7 @@ class decimal {
     }
 
     clone() {
-        return new decimal(this.value).setScale(this.scale).setRounder(this.rounder)
+        return new Decimal(this.value).setScale(this.scale).setRounder(this.rounder)
     }
 
     plus(n) {
@@ -175,7 +174,7 @@ class decimal {
         }
         let ok = false;
 
-        [s, ok] = decimal.mantissaOk(s, scale, trimScale)
+        [s, ok] = Decimal.mantissaOk(s, scale, trimScale)
         if (!ok) {
             return s
         }
@@ -192,7 +191,7 @@ class decimal {
                 }
             }
             // s 发生变化
-            [s, ok] = decimal.mantissaOk(s, scale, trimScale)
+            [s, ok] = Decimal.mantissaOk(s, scale, trimScale)
             if (!ok) {
                 return s
             }
@@ -205,7 +204,7 @@ class decimal {
      * @returns {string}
      */
     format(style = void null) {
-         style = decimal.newStyle(style)
+        style = Decimal.newStyle(style)
         return this.formatWhole(style.segmentSize, style.separator) + this.formatMantissa(style.scale, style.trimScale, style.scaleRound)
     }
 
@@ -264,4 +263,14 @@ class decimal {
         return [s, true]
     }
 
+}
+
+/**
+ *
+ * @param {number|string} vv
+ * @param {string} [vk]
+ * @param {*} [defaultV]
+ */
+function decimal(vv, vk, defaultV) {
+    return new Decimal(vv, vk, defaultV)
 }
