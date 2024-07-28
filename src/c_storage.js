@@ -162,7 +162,7 @@ class AaCookieStorage {
         if (!this.available() || !document.cookie) {
             return
         }
-        this.forEach((_, key) => {
+        this.forEach((key, _) => {
             this.removeItem(key, options)
         })
     }
@@ -246,16 +246,16 @@ class AaStorageEngine {
     }
 
 
-    getPersistentNames() {
-        let items = []
+    getPersistentValues() {
+        let items = {}
         // 这里是是获取raw数据
         this.forEach((key, value) => {
             if (array(aparam, 'PersistentNames').includes(key)) {
-                items.push(key)
+                items[key] = value
                 return
             }
             if (this.#persistentNames.includes(key)) {
-                items.push(key)
+                items[key] = value
                 return
             }
             if (!value) {
@@ -263,11 +263,11 @@ class AaStorageEngine {
             }
             const [_, persistent, expired] = this.decodeValue(key, value)
             if (persistent && !expired) {
-                items.push(key)
+                items[key] = value
             }
         }, true)
 
-        return items.length > 0 ? items : null
+        return len(items) > 0 ? items : null
     }
 
 
@@ -399,7 +399,7 @@ class AaStorageEngine {
             wild = new RegExp(source)
         }
 
-        this.forEach((_, k) => {
+        this.forEach((k,) => {
             if (key.test(k) || (wild && wild.test(k))) {
                 const args = this.#withOptions && options ? [k, options] : [k]
                 this.#storage.removeItem(...args)
@@ -412,16 +412,18 @@ class AaStorageEngine {
      * @param {[string]} [ignores]
      */
     clearExcept(ignores) {
-        let keep = this.getPersistentNames()
+        let keepData = this.getPersistentValues()
         if (len(ignores) > 0) {
-            keep = !keep ? ignores : keep.concat(ignores)
+            keepData = !keepData ? ignores : keepData.concat(ignores)
         }
-        if (!keep) {
+        if (!keepData) {
             this.#storage.clear()
             return
         }
-        this.forEach((_, key) => {
-            if (typeof keep[key] === "undefined") {
+
+        this.forEach((key, _) => {
+            if (typeof keepData[key] === "undefined") {
+                log.print("DELETE", key)
                 this.#storage.removeItem(key)
             }
         })
