@@ -262,18 +262,12 @@ class AaStorageEngine {
             if (!value) {
                 return
             }
-
-            let type = value.charAt(0)
-            // persistent data starts with uppercase
-            if (value.charAt(1) === ':' && type >= "A" && type <= "Z") {
-                let v = this.decodeValue(key, value)
-                if (typeof v !== "undefined") {
-                    items.push(key)
-                }
+            const [_, persistent, expired] = this.decodeValue(key, value)
+            if (persistent && !expired) {
+                items.push(key)
             }
         }, true)
-
-
+        
         return items.length > 0 ? items : null
     }
 
@@ -352,8 +346,9 @@ class AaStorageEngine {
      * @return {null|string|string|*}
      */
     getItem(key) {
-        let value = this.#storage.getItem(key)
-        return this.decodeValue(key, value)
+        let raw = this.#storage.getItem(key)
+        const [value, ,] = this.decodeValue(key, raw)
+        return value
     }
 
     /**
@@ -442,19 +437,22 @@ class AaStorageEngine {
 
     /**
      *
+     * @param key
      * @param value
-     * @return {string|number|boolean|Date|string|*}
-     *      undefined on expired
+     * @return {*[]}   [value, expired]
      */
     decodeValue(key, value) {
+        let expired = false
+        let persistent = false
         if (!this.#encapsulate || typeof value !== "string") {
-            return value
+            return [value, persistent, expired]
         }
         const match = value.match(/^([a-zA-Z]):(.+):(\d*)$/)
         if (!match) {
-            return value
+            return [value, persistent, expired]
         }
         let type = match[1]
+        persistent = type >= 'A' && type <= 'Z'
         value = match[2]
         let expireTo = number(match[3])
         switch (type.toLowerCase()) {
@@ -477,9 +475,9 @@ class AaStorageEngine {
         }
         if (expireTo > 0 && Date.now() - expireTo >= 0) {
             this.removeItem(key)
-            return void ''
+            return [null, persistent, true]
         }
-        return value
+        return [value, persistent, expired]
     }
 
     /**
