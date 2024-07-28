@@ -50,15 +50,13 @@ class AaFetch {
     // 一定要用static，防止传递过程中this指向问题
     fetchHook(settings) {
         // API不判断cookie，就不用考虑CSRF攻击
-        let authorization = this.#auth.getAuthorization()
-
-        if (authorization) {
-            settings.headers[aparam.Authorization] = authorization
-        } else if (settings.mustAuth) {
-            return new Promise((resolve, reject) => {
-                reject(new AError(AErrorEnum.Unauthorized, settings.dictionary))
-            })
-        }
+        return this.#auth.getAuthorization().then(authorization => {
+            if (authorization) {
+                settings.headers[aparam.Authorization] = authorization
+            } else if (settings.mustAuth) {
+                throw new AError(AErrorEnum.Unauthorized, settings.dictionary)
+            }
+        })
     }
 
     /**
@@ -92,7 +90,8 @@ class AaFetch {
                 if (typeof settings.onAuthError === "function" && settings.onAuthError(err)) {
                     return
                 }
-                if (this.#auth.triggerUnauthorized(`${settings.method} ${url}`)) {
+                const method = string(settings, 'method')
+                if (this.#auth.triggerUnauthorized(`${method} ${url}`)) {
                     return
                 }
             }
@@ -118,9 +117,7 @@ class AaFetch {
      * @note can also using .fetch.then(resolve, err=>{err.triggerDisplay})
      */
     fetchN(url, settings) {
-        return this.fetch(url, settings).catch(err => {
-            err.triggerDisplay()
-        })
+        return this.fetch(url, settings).catch(AError.alert)
     }
 
     /**
@@ -153,8 +150,8 @@ class AaFetch {
      */
     statusN(url, settings) {
         return this.status(url, settings).catch(err => {
-            log.error(`${settings.method} ${url} status error: ${err.message}`)
-            return AErrorEnum.ClientThrow   // 后面再也不用 catch 了
+            const method = string(settings, 'method')
+            AError.log(err, `${method} ${url} status error: %ERROR`)
         })
     }
 
@@ -179,7 +176,6 @@ class AaFetch {
             method    : "GET",
             dictionary: dictionary,
         }
-
         const uri = new AaURI(url, params)
         return this.fetch(uri.toString(), settings)
     }
@@ -192,9 +188,7 @@ class AaFetch {
      * @return {Promise<*>}
      */
     getN(url, params, dictionary) {
-        return this.get(url, params, dictionary).catch(err => {
-            err.triggerDisplay()
-        })
+        return this.get(url, params, dictionary).catch(AError.alert)
     }
 
     /**
@@ -225,9 +219,7 @@ class AaFetch {
      *  HEAD只返回 resp['code'] 或 HTTP状态码，忽略 resp['data'] 数据
      */
     headN(url, params, dictionary) {
-        return this.head(url, params, dictionary).catch(err => {
-            err.triggerDisplay()
-        })
+        return this.head(url, params, dictionary).catch(AError.alert)
     }
 
     /**
@@ -262,9 +254,7 @@ class AaFetch {
      * @return {Promise<*>}
      */
     deleteN(url, params, dictionary) {
-        return this.delete(url, params, dictionary).catch(err => {
-            err.triggerDisplay()
-        })
+        return this.delete(url, params, dictionary).catch(AError.alert)
     }
 
     /**
@@ -292,9 +282,7 @@ class AaFetch {
      * @return {Promise<*>}
      */
     deleteNA(url, params, dictionary) {
-        return this.deleteA(url, params, dictionary).catch(err => {
-            err.triggerDisplay()
-        })
+        return this.deleteA(url, params, dictionary).catch(AError.alert)
     }
 
     /**
@@ -339,9 +327,7 @@ class AaFetch {
      * @return {Promise<*>}
      */
     postN(url, data, dictionary) {
-        return this.post(url, data, dictionary).catch(err => {
-            err.triggerDisplay()
-        })
+        return this.post(url, data, dictionary).catch(AError.alert)
     }
 
     /**
@@ -352,9 +338,7 @@ class AaFetch {
      * @return {Promise<*>}
      */
     postNA(url, data, dictionary) {
-        return this.postA(url, data, dictionary).catch(err => {
-            err.triggerDisplay()
-        })
+        return this.postA(url, data, dictionary).catch(AError.alert)
     }
 
     /**
@@ -399,9 +383,7 @@ class AaFetch {
      * @return {Promise<*>}
      */
     putN(url, data, dictionary) {
-        return this.put(url, data, dictionary).catch(err => {
-            err.triggerDisplay()
-        })
+        return this.put(url, data, dictionary).catch(AError.alert)
     }
 
     /**
@@ -412,9 +394,7 @@ class AaFetch {
      * @return {Promise<*>}
      */
     putNA(url, data, dictionary) {
-        return this.putA(url, data, dictionary).catch(err => {
-            err.triggerDisplay()
-        })
+        return this.putA(url, data, dictionary).catch(AError.alert)
     }
 
     /**
@@ -459,9 +439,7 @@ class AaFetch {
      * @return {Promise<*>}
      */
     patchN(url, data, dictionary) {
-        return this.patch(url, data, dictionary).catch(err => {
-            err.triggerDisplay()
-        })
+        return this.patch(url, data, dictionary).catch(AError.alert)
     }
 
     /**
@@ -472,8 +450,6 @@ class AaFetch {
      * @return {Promise<*>}
      */
     patchNA(url, data, dictionary) {
-        return this.patchA(url, data, dictionary).catch(err => {
-            err.triggerDisplay()
-        })
+        return this.patchA(url, data, dictionary).catch(AError.alert)
     }
 }

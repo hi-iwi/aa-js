@@ -19,6 +19,7 @@ class AaAccount {
 
     initFetchUrl(url) {
         this.#fetchUrl = url
+        log.print(url)
         if (!this.#auth.authed()) {
             return
         }
@@ -75,25 +76,19 @@ class AaAccount {
      */
     getProfile(refresh = false) {
         if (!this.#auth.authed()) {
-            return new Promise((_, reject) => {
-                reject()
-            })
+            return APromiseReject()
         }
 
         if (!refresh) {
             let profile = this.getCachedProfile()
             if (len(profile) > 0) {
-                return new Promise((resolve, _) => {
-                    resolve(profile)
-                })
+                return APromiseResolve(profile)
             }
         }
         const fetch = this.#fetch
         const url = this.#fetchUrl
         if (!url || !fetch) {
-            return new Promise((_, reject) => {
-                reject("invalid profile fetch")
-            })
+            return APromiseReject(new Error("invalid profile fetch " + url))
         }
 
         if (this.#tx.notFree()) {
@@ -102,11 +97,14 @@ class AaAccount {
             })
         }
         this.#tx.begin()
-        return fetch.fetch(url).then(profile => {
+        return fetch.fetch(url, {
+            mustAuth: true,
+        }).then(profile => {
             this.saveProfile(profile)
             this.#tx.commit()
             return profile
         }).catch(err => {
+            this.#auth.validate()
             this.#tx.rollback()
             throw err
         })

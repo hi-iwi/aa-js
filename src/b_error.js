@@ -23,10 +23,10 @@ let _aerrorDictionaries_ = {
         "Forbidden"       : "您没有权限使用",
         "Not found"       : "糟糕，数据找不到啦~",
 
-        "Timeout"               : "请求超时，请稍后再试",
-        "Conflict"              : "异常冲突",
-        "Gone"                  : "数据已被删除",
-        
+        "Timeout" : "请求超时，请稍后再试",
+        "Conflict": "异常冲突",
+        "Gone"    : "数据已被删除",
+
         "Unsupported media type": "文件格式不正确",
 
         "No rows"          : "没有数据啦",
@@ -188,8 +188,8 @@ const AErrorEnum = {
 class AError extends Error {
     name = "AError"
 
-    // @type function to display to client
-    static display
+    // @type (err:AError)=>void
+    static alerter
 
     #code
     message // 原始数据。部分错误会把msg当作有效信息。比如 449 RetryWith 会通过该数据传递跳转URL等
@@ -228,19 +228,6 @@ class AError extends Error {
         this.#code = code
         this.message = msg
         this.#dict = dict
-    }
-
-    /**
-     * Trigger to display
-     * @return {boolean}
-     */
-    triggerDisplay() {
-        if (typeof AError.display !== "function") {
-            log.error(`${this.toString()} [AError.display is not defined]`)
-            return false
-        }
-        const result = AError.display(this)
-        return typeof result === "boolean" ? result : true
     }
 
 
@@ -384,19 +371,46 @@ class AError extends Error {
         return this.is(AErrorEnum.ClientThrow)
     }
 
-    log() {
-        if (this.isOK()) {
-            return
-        }
-        if (this.isServerErrors()) {
-            log.error(this.toString())
-        } else {
-            log.warn(this.toString())
-        }
-    }
 
     toString() {
         return `${this.code}: ` + this.getMsg()
+    }
+
+
+    /**
+     * Alert to client user
+     * @param {AError|Error|*} err 要进行广泛判断。有可能业务层处理resolve里面，出现异常未捕获并修改为AError，比如 JSON.parse()等未捕获异常
+     * @note 这里使用console.error()，而不是 log.error()，因为本身就是要展示给客户的
+     */
+    static alert(err) {
+        if (err instanceof Error) {
+            err = new AError(AErrorEnum.ClientThrow, err.toString())
+        }
+        if (!(err instanceof AError)) {
+            console.error(`AError.alert() invalid err `, err)
+        }
+        if (typeof AError.alerter !== "function") {
+            console.error(`${this.toString()} [AError.alerter is not defined]`)
+            return
+        }
+        AError.alerter(err)
+    }
+
+    /**
+     *
+     * @param  {AError|Error|*} err 有可能业务层处理resolve里面，出现异常未捕获并修改为AError，比如 JSON.parse()等未捕获异常
+     * @param {string} [pattern]  use %ERROR in pattern
+     */
+    static log(err, pattern) {
+        if (err && typeof err.toString === "function") {
+            let msg = this.toString()
+            if (pattern && typeof pattern === "string") {
+                msg = pattern.indexOf('%ERROR') > -1 ? pattern.replace('%ERROR', msg) : `${pattern} ${msg}`
+            }
+            return log.error(msg)
+        }
+
+        log.error(...arguments)
     }
 
     static newBadRequest(param, dict) {

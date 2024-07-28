@@ -161,7 +161,7 @@ class AaRawFetch {
             contentType = 'application/json'
             headers['Content-Type'] = contentType
         }
-        settings.method = settings.method.toUpperCase()
+        settings.method = string(settings, 'method', 'GET').toUpperCase()
         settings.headers = headers  // 先不要使用 new Headers()， 容易出现莫名其妙的问题。直接让fetch自己去转换
 
 
@@ -215,27 +215,20 @@ class AaRawFetch {
      *  @example 'https://luexu.com'
      *  @example 'GET https://luexu.com'
      * @param {struct|*} [settings]
-     * @param {function} [hook]
      * @return {[string, any ]|Promise}
      */
-    middleware(url, settings, hook) {
+    middleware(url, settings) {
         settings = struct(settings)
         const parts = url.trim().split(' ')
         if (parts.length > 1) {
-            const method = parts[0].toUpperCase()
-            settings.method = method
+            let method = parts[0].toUpperCase()
             if (['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'].includes(method)) {
+                settings.method = method
                 url = parts.slice(1).join(' ')
             }
         }
 
         [url, settings] = this.formatSettings(url, settings)
-        if (hook) {
-            const h = hook(settings)
-            if (h instanceof Promise) {
-                return h
-            }
-        }
         if (settings.debounce) {
             if (!this.debounce(settings.method, url, settings.body)) {
                 return new Promise((resolve, reject) => {
@@ -249,23 +242,7 @@ class AaRawFetch {
         return [uri.toString(), settings]
     }
 
-    /**
-     * Fetch data
-     * @param {RequestInfo|string} url
-     *  @example 'https://luexu.com'
-     *  @example 'GET https://luexu.com'
-     * @param {struct|*} [settings]
-     * @param {function} [hook]
-     * @return {Promise<*>}
-     */
-    fetch(url, settings, hook) {
-        // 这里 settings.headers 会被转为 new Headers(settings.headers)
-        const mw = this.middleware(url, settings, hook)
-        if (mw instanceof Promise) {
-            return mw
-        }
-        [url, settings] = [mw[0], mw[1]]
-
+    rawFetch(url, settings) {
         // 如果使用 response = await fetch();  json= await response.json() 必须要await，阻塞等待response返回
         // 这里就不用await最好，外面使用的时候，再自行 await
         return fetch(url, settings).then(resp => {
@@ -273,7 +250,7 @@ class AaRawFetch {
             if (!err.isOK()) {
                 throw err
             }
-            const method = settings.method
+            const method = string(settings, 'method', 'GET')
             if (method === 'HEAD') {
                 return {
                     code: AErrorEnum.OK,
@@ -293,12 +270,40 @@ class AaRawFetch {
             }
             return resp['data']
         }).catch(err => {
-            if (err instanceof AError) {
-                throw err
-            } else {
-                throw  new AError(AErrorEnum.ClientThrow, err.toString())
-            }
+            throw  err instanceof AError ? err : new AError(AErrorEnum.ClientThrow, err.toString())
         })
+    }
+
+    /**
+     * Fetch data
+     * @param {RequestInfo|string} url
+     *  @example 'https://luexu.com'
+     *  @example 'GET https://luexu.com'
+     * @param {struct|*} [settings]
+     * @param {function(settings:{struct}):Promise} [hook]
+     * @return {Promise<*>}
+     */
+    fetch(url, settings, hook) {
+        // 这里 settings.headers 会被转为 new Headers(settings.headers)
+        const mw = this.middleware(url, settings);
+        [url, settings] = [mw[0], mw[1]]
+
+        if (hook) {
+            return hook(settings).then(() => {
+                return this.rawFetch(url, settings)
+            })
+        }
+        return this.rawFetch(url, settings)
+    }
+
+    rawStatus(url, settings) {
+        return fetch(url, settings).then(resp => {
+            let err = new AError(resp.status)
+            if (!err.isOK()) {
+                return Number(resp.status)
+            }
+            return resp.json()
+        }).then(resp => typeof resp === "number" ? resp : number(resp, 'code'))
     }
 
     /**
@@ -309,18 +314,14 @@ class AaRawFetch {
      * @return {Promise<*>}
      */
     status(url, settings, hook) {
-        const mw = this.middleware(url, settings, hook)
-        if (mw instanceof Promise) {
-            return mw
-        }
+        const mw = this.middleware(url, settings);
         [url, settings] = [mw[0], mw[1]]
-        return fetch(url, settings).then(resp => {
-            let err = new AError(resp.status)
-            if (!err.isOK()) {
-                return Number(resp.status)
-            }
-            return resp.json()
-        }).then(resp => typeof resp === "number" ? resp : number(resp, 'code'))
+        if (hook) {
+            return hook(settings).then(() => {
+                return this.rawStatus(url, settings)
+            })
+        }
+        return this.rawStatus(url, settings)
     }
 
 

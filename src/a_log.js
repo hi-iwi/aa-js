@@ -115,7 +115,6 @@ class log {
                 args[0] = args[0].replace(match[0], '')
                 fn = console[match[1]]
             }
-
         }
         if (!(style instanceof AaLoggerStyle)) {
             fn(...args)
@@ -163,11 +162,9 @@ class log {
 function loge(...args) {
     if (len(args) === 1) {
         const err = args[0]
-        if (err instanceof AError) {
-            return err.log()
-        }
-        if (err instanceof Error) {
-            return log.error(err.toString())
+        if (err instanceof AError || err instanceof Error) {
+            AError.log(err)
+            return
         }
         return log.print(...args)
     }

@@ -3,6 +3,9 @@ let _aaTxIncr_ = 0
 
 class AaTX {
     name = 'aa-tx'
+
+    static debug = false
+
     #id = AaTX.atomicId()
     #lockAt = 0 // number, 锁状态
     #timer // 超时自动解锁
@@ -60,9 +63,8 @@ class AaTX {
     }
 
     log(msg) {
-        let dbg = false
-        if (dbg) {
-            log.info("#" + this.#id + " " + msg)
+        if (AaTX.debug) {
+            log.debug("#" + this.#id + " " + msg)
         }
     }
 

@@ -9,8 +9,14 @@ Promise.prototype.asleep = function (timeout) {
 }
 
 
-function APromise(data) {
+function APromiseResolve(...args) {
     return new Promise((resolve, reject) => {
-        resolve(data)
+        resolve(...args)
+    })
+}
+
+function APromiseReject(...args) {
+    return new Promise((_, reject) => {
+        reject(...args)
     })
 }

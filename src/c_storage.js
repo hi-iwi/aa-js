@@ -1,6 +1,6 @@
 /**
  * @import
- * @typedef {{ persistent?:boolean, expires?:number|Date, path?:string, secure?:boolean, sameSite?:string }} StorageOptions
+ * @typedef {{ persistent?:boolean, expires?:number|Date|string, path?:string, secure?:boolean, sameSite?:string }} StorageOptions
  */
 class AaCookieStorage {
     name = 'aa-cookie-storage'
@@ -78,7 +78,7 @@ class AaCookieStorage {
         if (typeof options.expires === 'number') {
             options.expires = new Date(Date.now() + options.expires)  // 多少ms后过期
         }
-        if (options.expires) {
+        if (options.expires instanceof Date) {
             options.expires = options.expires.toUTCString()
         }
         key = encodeURIComponent(key)

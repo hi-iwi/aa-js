@@ -26,15 +26,6 @@ class AaAuth {
     #fields
 
     enableCookie = true
-    cookieOptions = {
-        // domain : ,
-        path   : '/',
-        expires: Date.now() + 7 * time.Day, // Lax 允许部分第三方跳转过来时请求携带Cookie；Strict 仅允许同站请求携带cookie
-        // 微信授权登录，跳转回来。如果是strict，就不会携带cookie（防止csrf攻击）；而lax就会携带。
-        // 在 Lax 模式下只会阻止在使用危险 HTTP 方法进行请求携带的三方 Cookie，例如 POST 方式。同时，使用 Js 脚本发起的请求也无法携带三方 Cookie。
-        // 谷歌默认 sameSite=Lax
-        sameSite: 'lax', //secure  : location.protocol === "https",  // 只允许https访问
-    }
 
 
     initUnauthorizedHandler(handler) {
@@ -75,6 +66,11 @@ class AaAuth {
         return engine.getItem(keyname)
     }
 
+    static #removeItem(engine, key) {
+        const keyname = AaAuth.#storageKeyName(engine, key)
+        return engine.removeItem(keyname)
+    }
+
     #readStorage(key) {
         const r = this.#storage
         let value = r.cookie.getItem(key)
@@ -96,6 +92,10 @@ class AaAuth {
         return AaAuth.#readItem(this.#storage.local, key)
     }
 
+    #localRemoveItem(key) {
+        return AaAuth.#removeItem(this.#storage.local, key)
+    }
+
     #sessionSetItem(key, value) {
         return AaAuth.#saveItem(this.#storage.session, key, value)
     }
@@ -104,34 +104,34 @@ class AaAuth {
         return AaAuth.#readItem(this.#storage.session, key)
     }
 
-    #tryStoreCookie(key, value, opts) {
+    #cookieOptions(expires) {
+        const hostname = window.location.hostname
+        const domain = /^([\d.]+|[^.]+)$/.test(hostname) ? hostname : hostname.replace(/^[^.]+/ig, '')
+        return {
+            domain : domain,
+            path   : '/',
+            expires: expires ? expires : 0, // Lax 允许部分第三方跳转过来时请求携带Cookie；Strict 仅允许同站请求携带cookie
+            // 微信授权登录，跳转回来。如果是strict，就不会携带cookie（防止csrf攻击）；而lax就会携带。
+            // 在 Lax 模式下只会阻止在使用危险 HTTP 方法进行请求携带的三方 Cookie，例如 POST 方式。同时，使用 Js 脚本发起的请求也无法携带三方 Cookie。
+            // 谷歌默认 sameSite=Lax
+            sameSite: 'lax',
+            secure  : location.protocol === "https"  // 只允许https访问
+        }
+    }
+
+    #tryStoreCookie(key, value, expires) {
         if (!this.enableCookie) {
             this.#localSetItem(key, value)
             return
         }
-
-
-        // sameSite: Lax 仅支持GET表单、链接发送第三方站点cookie，POST/Ajax/Image等就不支持
-        //  strict 跨站点时候，完全禁止第三方 Cookie，跨站点时，任何情况下都不会发送 Cookie。换言之，只有当前网页的 URL 与请求目标一致，才会带上 Cookie。
-        // domain: .luexu.com  会让所有子站点，如 cns.luexu.com 也同时能获取到
-        // domain 前面必须要带上 .
-
-        /*
-   在服务器端设置cookie的HttpOnly属性为true。这将防止JavaScript修改cookie，因为在HttpOnly模式下，cookie只能通过HTTP协议访问，无法通过JavaScript或其它客户端脚本来修改。
-        */
-        // 由于cookie可以跨域，而 localStorage 不能跨域。
-        // 单点登录，所以这些信息都用 cookie 来保存
-        if (typeof opts === "number") {
-            opts = {
-                expires: opts,
-            }
-        }
-        opts = map.fillUp(opts, this.cookieOptions)
-        const hostname = window.location.hostname
-        opts.domain = /^([\d.]+|[^.]+)$/.test(hostname) ? hostname : hostname.replace(/^[^.]+/ig, '')
-        opts.secure = location.protocol === "https"  // 只允许https访问
-        this.#storage.cookie.setItem(key, value, opts)
+        this.#storage.cookie.setItem(key, value, this.#cookieOptions(expires))
     }
+
+    #tryDeleteCookie(key) {
+        this.#localRemoveItem(key)
+        this.#storage.cookie.removeItem(key, this.#cookieOptions(-time.Day))
+    }
+
 
     /**
      * Trigger to handle Unauthorized
@@ -143,6 +143,7 @@ class AaAuth {
             return false
         }
         log.debug("trigger unauthorized", msg)
+        this.clear()
         const result = this.#unauthorizedHandler()
         return typeof result === "boolean" ? result : true
     }
@@ -158,31 +159,63 @@ class AaAuth {
     }
 
     /**
+     * Format authorization header value
+     * @param {TokenData|null} token
+     * @return {string}
+     */
+    formatAuthorization(token) {
+        if (!token || !token['access_token'] || !token['token_type']) {
+            return ""
+        }
+        return token['token_type'] + " " + token['access_token']
+    }
+
+    /**
+     * Get authorization value in header
+     * @return {Promise<string>}
+     */
+    getAuthorization() {
+        return this.getToken().then(token => {
+            return this.formatAuthorization(token)
+        })
+    }
+
+    /**
      * Validate the availability of local access token with remote api
-     * @note 这里每次启动该实例执行一次，不存在异步竞争，不用事务
      */
     validate() {
-        const token = this.getToken()
-        let checked = this.#sessionGetItem('checked')
-        if (this.#validateTried || checked || !token || !token['validate_api']) {
-            return
-        }
-
-        this.#validateTried = true  // fetch 可能失败，就有可能会一直尝试；因此增加一个程序层防重
-        const url = token['validate_api']
-        let authorization = this.getAuthorization()
-
-        this.#rawFetch.fetch(url, {
-            headers: {
-                'Authorization': authorization,
+        this.getToken().then(token => {
+            let checked = this.#sessionGetItem('checked')
+            if (this.#validateTried || checked || !token || !token['validate_api']) {
+                return
             }
-        }).then(_ => {
-            this.#sessionSetItem('checked', true)
-        }).catch(err => {
-            if (!err.isServerErrors()) {
-                this.clear()
+
+            this.#validateTried = true  // fetch 可能失败，就有可能会一直尝试；因此增加一个程序层防重
+            const url = token['validate_api']
+            let authorization = this.formatAuthorization(token)
+
+            if (this.#tx.notFree()) {
+                setTimeout(() => {
+                    this.validate()
+                }, 300 * time.Millisecond)
+                return
             }
-            log.warn(err.toString())
+            this.#tx.begin()
+
+            this.#rawFetch.fetch(url, {
+                headers: {
+                    'Authorization': authorization,
+                }
+            }).then(_ => {
+                this.#sessionSetItem('checked', true)
+                this.#tx.commit()
+            }).catch(err => {
+                if (err instanceof AError && !err.isServerErrors()) {
+                    this.clear()
+                }
+                log.warn(err.toString())
+                this.#tx.rollback()
+            })
         })
     }
 
@@ -257,6 +290,7 @@ class AaAuth {
         this.#tryStoreCookie("access_token", this.#token['access_token'], expiresIn * time.Second)
         this.#tryStoreCookie("token_type", this.#token['token_type'], expiresIn * time.Second)
 
+
         // refresh token 不应该放到cookie里面
         this.#localSetItem("conflict", this.#token['conflict'])
         this.#localSetItem("expires_in", expiresIn)
@@ -303,21 +337,30 @@ class AaAuth {
         return token
     }
 
+    /**
+     * Get token data
+     * @param noRefresh
+     * @return {Promise<TokenData|null>}
+     */
     getToken(noRefresh = false) {
         let token = this.getCachedToken()
-        if (!noRefresh) {
+        if (!noRefresh && token) {
             const exp = (token['expires_in'] + this.#tokenAuthAt) * time.Second - Date.now()
             if (exp <= 0) {
                 return this.refresh()
             }
         }
-        return APromise(token)
+        return APromiseResolve(token)
     }
 
+    /**
+     * Refresh access token, and return new token data
+     * @return {Promise<TokenData|null>|*}
+     */
     refresh() {
         const token = this.getCachedToken()
         if (!token || !token['refresh_api'] || !token['refresh_token']) {
-            return APromise(token)
+            return APromiseResolve(token)
         }
 
         if (this.#tx.notFree()) {
@@ -353,24 +396,11 @@ class AaAuth {
 
 
     /**
-     * Get authorization value in header
-     * @return {string}
-     */
-    getAuthorization() {
-        const token = this.getToken()
-        if (!token || !token['access_token'] || !token['token_type']) {
-            return ""
-        }
-        return token['token_type'] + " " + token['access_token']
-    }
-
-
-    /**
      *  Check is  in logged in status
      * @return {boolean}
      */
     authed() {
-        const token = this.getToken()
+        const token = this.getCachedToken()
         return len(token, 'access_token') > 0 && len(token, 'token_type') > 0
     }
 
@@ -381,6 +411,8 @@ class AaAuth {
      */
     clear() {
         this.#storage.removeEntire(/^aa:auth:/)
+        this.#tryDeleteCookie('access_token')
+        this.#tryDeleteCookie('token_type')
         this.#token = null // clear program cache
     }
 

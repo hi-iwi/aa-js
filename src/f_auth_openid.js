@@ -7,10 +7,10 @@ class AaAuthOpenid {
 
     // @type {AaStorageEngine}
     #storageEngine
-    
+
     // @type {AaAuth}
     #auth
-    
+
     // @type {AaFetch}
     #fetch
 
@@ -38,7 +38,7 @@ class AaAuthOpenid {
         this.#storageEngine = storageEngine
         this.#auth = auth
         this.#fetch = fetch
-        this.#keyName = ['aa','auth','openid'].join(storageEngine.separator)
+        this.#keyName = ['aa', 'auth', 'openid'].join(storageEngine.separator)
     }
 
 
@@ -102,12 +102,14 @@ class AaAuthOpenid {
      * @return {Promise<{Authorization: *, "X-Openid": *}>}
      */
     fetchHeaders(forceRefresh = false) {
-        return this.fetch(forceRefresh).then(openid => {
-            // 动态更新 header
-            return {
-                'Authorization': this.#auth.getAuthorization(),
-                'X-Openid'     : openid,
-            }
+        return this.#auth.getAuthorization().then(authorization => {
+            return this.fetch(forceRefresh).then(openid => {
+                // 动态更新 header
+                return {
+                    'Authorization': authorization,
+                    'X-Openid'     : openid,
+                }
+            })
         })
     }
 }

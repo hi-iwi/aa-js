@@ -57,16 +57,17 @@ class AaApollo {
             return
         }
         this.#fetcher.get(this.url, {"apollo": apollo}).then(data => {
-            if (!data['apollo']) {
-                log.error("fetch " + this.url + " response invalid")
+            const apollo = string(data, 'apollo')
+            if (!apollo) {
+                log.error("fetch " + this.url + " response invalid", data)
                 return
             }
-            if (this.get() !== data['apollo']) {
-                log.debug("change apollo " + this.get() + " to " + data['apollo'])
-                this.set(data['apollo'])
+            if (this.get() !== apollo) {
+                log.debug("change apollo " + this.get() + " to " + apollo)
+                this.set(apollo)
             }
         }).catch(err => {
-            err.log()
+            AError.log(err)
         })
     }
 
