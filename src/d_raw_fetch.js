@@ -223,8 +223,8 @@ class AaRawFetch {
         const parts = url.trim().split(' ')
         if (parts.length > 1) {
             const method = parts[0].toUpperCase()
+            settings.method = method
             if (['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'].includes(method)) {
-                settings.method = method
                 url = parts.slice(1).join(' ')
             }
         }
@@ -273,7 +273,18 @@ class AaRawFetch {
             if (!err.isOK()) {
                 throw err
             }
-            return resp.json()
+            const method = settings.method
+            if (method === 'HEAD') {
+                return {
+                    code: AErrorEnum.OK,
+                    msg : AErrorEnum.code2Msg(AErrorEnum.OK),
+                }
+            }
+            try {
+                return resp.json()
+            } catch (error) {
+                throw  new AError(AErrorEnum.ClientThrow, `response '${resp.text()}' is not valid JSON`)
+            }
         }).then(resp => {
             // 捕获返回数据，修改为 resp.data
             const err = new AError(resp['code'], resp['msg'])

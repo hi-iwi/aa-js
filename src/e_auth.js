@@ -181,6 +181,7 @@ class AaAuth {
             if (!err.isServerErrors()) {
                 this.clear()
             }
+            console.log(err)
             log.warn(err.toString())
         })
     }
