@@ -2,7 +2,6 @@ class Aa {
     name = 'aa'
 
 
-
     // @type {AaRegistry}
     registry
 
@@ -24,7 +23,7 @@ class Aa {
     // @type {AaEnv}
     env = AaEnv
 
-  
+
     // @type {AaAuth}
     auth
 
@@ -55,7 +54,7 @@ class Aa {
         const auth = new AaAuth(storage, rawFetch)
         const fetch = new AaFetch(rawFetch, auth)
         const openidAuth = new AaAuthOpenid(storage.session, auth, fetch)
-        const account = new AaAccount(db, auth, fetch)
+        const account = new AaAccount(AaTX, db, auth, fetch)
         const oss = new AaOSS()
         const editor = new AaEditor(oss)
 

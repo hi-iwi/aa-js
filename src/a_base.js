@@ -23,15 +23,6 @@ const MIN = 'MIN'
 const BreakSignal = false // a signal from callback function to break forEach((value,key)) iterator
 
 
-/**
- *
- * @param {vv_vk_defaultV} args
- */
-function t(...args){
-
-}
-
-t("LOVE")
 
 /**
  * Keep-names of URL parameters 路由URL参数名

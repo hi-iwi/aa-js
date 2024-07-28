@@ -10,6 +10,7 @@ class AaAccount {
     #profile
     #selectedVuid
 
+    #tx
     // @type {AaCache}
     #db
     #auth
@@ -18,15 +19,25 @@ class AaAccount {
 
     initFetchUrl(url) {
         this.#fetchUrl = url
+        if (!this.#auth.authed()) {
+            return
+        }
+        const profile = this.getCachedProfile()
+        if (profile) {
+            return
+        }
+        this.getProfile(true).then()
     }
 
     /**
      *
+     * @param {typeof AaTX} tx
      * @param {AaCache} db
      * @param auth
      * @param {AaFetch} fetch
      */
-    constructor(db, auth, fetch) {
+    constructor(tx, db, auth, fetch) {
+        this.#tx = new tx()
         this.#db = db
         this.#auth = auth
         this.#fetch = fetch
@@ -47,6 +58,18 @@ class AaAccount {
         this.#db.drop(AaAccount.TableName)
     }
 
+    getCachedProfile() {
+        let profile = this.#profile
+        if (len(profile) > 0) {
+            return profile
+        }
+        profile = this.#db.selectAll(AaAccount.TableName)
+        if (len(profile) === 0 || len(profile['vuser']) === 0) {
+            this.#profile = null
+            return null
+        }
+        return profile
+    }
 
     /**
      * @param {boolean} [refresh]  false on  [program cache] -> [local storage] -> [remote api]; true on [remote api] only
@@ -60,15 +83,8 @@ class AaAccount {
         }
 
         if (!refresh) {
-            let profile = this.#profile
+            let profile = this.getCachedProfile()
             if (len(profile) > 0) {
-                return new Promise((resolve, _) => {
-                    resolve(profile)
-                })
-            }
-            profile = this.#db.selectAll(AaAccount.TableName)
-            if (len(profile) > 0) {
-                this.#profile = profile
                 return new Promise((resolve, _) => {
                     resolve(profile)
                 })
@@ -81,9 +97,19 @@ class AaAccount {
                 reject("invalid profile fetch")
             })
         }
+        this.#tx.begin()
+        if (this.#tx.notFree()) {
+            return asleep(200 * time.Millisecond).then(() => {
+                return this.getProfile(refresh)
+            })
+        }
         return fetch.fetch(url).then(profile => {
+            this.#tx.commit()
             this.saveProfile(profile)
             return profile
+        }).catch(err => {
+            this.#tx.rollback()
+            throw err
         })
     }
 

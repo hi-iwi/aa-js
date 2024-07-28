@@ -549,9 +549,9 @@ class AaStorageFactor {
 
     /**
      *
-     * @param {AaStorageEngine} cookieStorage
-     * @param {AaStorageEngine} localStorage
-     * @param {AaStorageEngine} sessionStorage
+     * @param {AaStorageEngine} [cookieStorage]
+     * @param {AaStorageEngine} [localStorage]
+     * @param {AaStorageEngine} [sessionStorage]
      */
     constructor(cookieStorage, localStorage, sessionStorage) {
         this.local = new AaStorageEngine(localStorage || window.localStorage, [], false, true)

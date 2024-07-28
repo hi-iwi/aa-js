@@ -181,7 +181,6 @@ class AaAuth {
             if (!err.isServerErrors()) {
                 this.clear()
             }
-            console.log(err)
             log.warn(err.toString())
         })
     }
@@ -292,6 +291,10 @@ class AaAuth {
                 "secure"       : this.#readStorage("secure"),
                 "token_type"   : this.#readStorage("token_type"),
                 "validate_api" : this.#readStorage("validate_api"),
+            }
+            token = this.validateToken(token)  // 避免改动
+            if (!token) {
+                return this.refresh
             }
             this.#token = token
             this.#tokenAuthAt = this.#readStorage("localAuthAt_")

@@ -35,7 +35,7 @@ class AaTX {
         timeout = !timeout ? 10 * time.Second : number(timeout)  // 默认10秒超时解锁
         clearTimeout(this.#timer)
         this.#timer = setTimeout(() => {
-            log.warn("tx timeout")
+            this.log('Timeout')
             this.#lock = false
         }, timeout)
     }
