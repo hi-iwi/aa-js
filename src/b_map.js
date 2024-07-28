@@ -55,12 +55,16 @@ class map {
     toQueryString(assert, sort = true) {
         let params = [];
         this.forEach((key, value) => {
+            if (typeof value === "function") {
+                value = string(value)
+            }
             if (value === "" || typeof key === "undefined" || key === null) {
                 return
             }
             if (typeof assert === "function" && assert(key, value)) {
                 return
             }
+
             if (Array.isArray(key)) {
                 key = key.join(",")  // url param，数组用逗号隔开模式
             }

@@ -47,8 +47,8 @@ class paths {
      * @param paths
      * @example join("a/b","../../../xyz")  ===>  ../xyz
      */
-    static join(...paths) {
-        let path = paths.join('/')
+    static join(...args) {
+        let path = args.join('/')
         return paths.clean(path)
     }
 

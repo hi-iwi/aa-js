@@ -179,6 +179,7 @@ class AaFetch {
             method    : "GET",
             dictionary: dictionary,
         }
+
         const uri = new AaURI(url, params)
         return this.fetch(uri.toString(), settings)
     }

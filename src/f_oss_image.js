@@ -139,6 +139,13 @@ class AaImgSrc {
         return matched ? [w, h] : [maxWidth, maxHeight]
     }
 
+    /**
+     * Get Ratio of width/height
+     * @return {decimal}
+     */
+    ratio() {
+        return decimal.div(this.width, this.height)
+    }
 
     /**
      * Crop image to the closest size after resizing by window.devicePixelRatio

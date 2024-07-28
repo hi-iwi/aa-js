@@ -156,24 +156,22 @@ class AaURI {
         }
 
         // must greater than 0,  a://xxxx
-        if (baseUrl.indexOf('://') <= 0) {
-            return
+        if (baseUrl.indexOf('://') > 0) {
+            b = baseUrl.split('://')
+            let protocol = b[0]    //  e.g. {scheme:string}, https:, tcp:,  or empty
+            let hierPart = b[1]
+            const x = hierPart.indexOf('/')
+            const host = hierPart.substring(0, x)
+            const pathname = hierPart.substring(x)
+            const [hostname, port] = AaURI.splitHost(host)
+            this.#protocol = protocol  //  e.g. {scheme:string}: http/tcp  or empty
+            this.#hostname = hostname
+            this.#port = port
+            this.#pathname = pathname
         }
-        b = baseUrl.split('://')
-        let protocol = b[0]    //  e.g. {scheme:string}, https:, tcp:,  or empty
-        let hierPart = b[1]
-        const x = hierPart.indexOf('/')
-        const host = hierPart.substring(0, x)
-        const pathname = hierPart.substring(x)
-        const [hostname, port] = AaURI.splitHost(host)
 
         this.method = method
-        this.#protocol = protocol  //  e.g. {scheme:string}: http/tcp  or empty
-        this.#hostname = hostname
-        this.#port = port
-        this.#pathname = pathname
         this.queries = queries
-
 
         this.#hash = string(hash)
         // 一定要在 queries 实例化后
@@ -278,7 +276,18 @@ class AaURI {
      * @return {{baseUrl: string, search: string, ok: ok, queries: map, url: string, hash: string}}
      */
     parse() {
+        if (!this.#protocol || !this.#hostname || !this.#port || !this.#pathname || !this.queries) {
+            return {
+                ok     : false,
+                url    : '',
+                baseUrl: '',
+                queries: this.queries,
+                search : '',
+                hash   : '',
+            }
+        }
         let newQueries = this.queries.clone(false)
+
         let port = this.#port ? ':' + this.#port : ''
         let s = this.#protocol + '://' + this.#hostname + port + this.#pathname
         let baseUrl, hash, ok, ok2;
@@ -289,6 +298,7 @@ class AaURI {
                 hash = ''
             }
         }
+
         if (baseUrl.indexOf('http:') === 0 && baseUrl.indexOf(':80/')) {
             baseUrl = baseUrl.replace(':80/', '/')
         }
@@ -296,6 +306,8 @@ class AaURI {
             baseUrl = baseUrl.replace(':443/', '/')
         }
         let search = newQueries.toQueryString()
+
+
         if (search) {
             search = '?' + search
         }
@@ -316,15 +328,7 @@ class AaURI {
 
     toString() {
         const p = this.parse()
-        let baseUrl = p.baseUrl
-        const qs = p.queries.toQueryString()
-        if (qs) {
-            baseUrl += '?' + qs
-        }
-        if (p.hash) {
-            baseUrl += '#' + this.hash
-        }
-        return baseUrl
+        return p.url
     }
 
     toJSON() {
