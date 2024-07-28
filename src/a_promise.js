@@ -7,3 +7,10 @@ Promise.prototype.asleep = function (timeout) {
         return asleep(timeout, ...params)
     });
 }
+
+
+function APromise(data) {
+    return new Promise((resolve, reject) => {
+        resolve(data)
+    })
+}

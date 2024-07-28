@@ -10,7 +10,7 @@ class AaAccount {
     #profile
     #selectedVuid
 
-    #tx
+    #tx = new AaTX()
     // @type {AaCache}
     #db
     #auth
@@ -26,18 +26,16 @@ class AaAccount {
         if (profile) {
             return
         }
-        this.getProfile(true).then()
+        this.getProfile(true).then(nif, nif)
     }
 
     /**
      *
-     * @param {typeof AaTX} tx
      * @param {AaCache} db
      * @param auth
      * @param {AaFetch} fetch
      */
-    constructor(tx, db, auth, fetch) {
-        this.#tx = new tx()
+    constructor(db, auth, fetch) {
         this.#db = db
         this.#auth = auth
         this.#fetch = fetch
@@ -105,8 +103,8 @@ class AaAccount {
         }
         this.#tx.begin()
         return fetch.fetch(url).then(profile => {
-            this.#tx.commit()
             this.saveProfile(profile)
+            this.#tx.commit()
             return profile
         }).catch(err => {
             this.#tx.rollback()

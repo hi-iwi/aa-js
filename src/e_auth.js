@@ -7,6 +7,7 @@
 class AaAuth {
     name = 'aa-auth'
 
+    #tx = new AaTX()
     // @type {AaStorageFactor}
     #storage
 
@@ -130,8 +131,6 @@ class AaAuth {
         opts.domain = /^([\d.]+|[^.]+)$/.test(hostname) ? hostname : hostname.replace(/^[^.]+/ig, '')
         opts.secure = location.protocol === "https"  // 只允许https访问
         this.#storage.cookie.setItem(key, value, opts)
-
-
     }
 
     /**
@@ -160,13 +159,15 @@ class AaAuth {
 
     /**
      * Validate the availability of local access token with remote api
+     * @note 这里每次启动该实例执行一次，不存在异步竞争，不用事务
      */
     validate() {
-        let checked = this.#sessionGetItem('checked')
         const token = this.getToken()
+        let checked = this.#sessionGetItem('checked')
         if (this.#validateTried || checked || !token || !token['validate_api']) {
             return
         }
+
         this.#validateTried = true  // fetch 可能失败，就有可能会一直尝试；因此增加一个程序层防重
         const url = token['validate_api']
         let authorization = this.getAuthorization()
@@ -234,6 +235,7 @@ class AaAuth {
             alert("授权登录绑定过其他账号，已切换至授权登录的账号。")
         }
 
+
         this.#token = {
             "access_token" : token["access_token"],
             "conflict"     : bool(token['conflict']),
@@ -270,53 +272,63 @@ class AaAuth {
         this.setFields(fields)
     }
 
-
-    getToken(noRefresh = false) {
+    getCachedToken() {
         // 由于access token经常使用，并且可能会由于第三方登录，导致修改cookie。
         // 因此，查询变量方式效率更高，且改动相对无时差
         let token = this.#token
-        if (!token) {
-            const accessToken = this.#readStorage("access_token")
+        if (token) {
+            return token
+        }
+        const accessToken = this.#readStorage("access_token")
 
-            if (!accessToken) {
-                return null
-            }
-            token = {
-                "access_token" : accessToken,
-                "conflict"     : this.#readStorage("conflict"),
-                "expires_in"   : this.#readStorage("expires_in"),
-                "refresh_api"  : this.#readStorage("refresh_api"),
-                "refresh_token": this.#readStorage("refresh_token"),
-                "scope"        : this.#readStorage("scope"),
-                "secure"       : this.#readStorage("secure"),
-                "token_type"   : this.#readStorage("token_type"),
-                "validate_api" : this.#readStorage("validate_api"),
-            }
-            token = this.validateToken(token)  // 避免改动
-            if (!token) {
-                return this.refresh
-            }
+        if (!accessToken) {
+            return null
+        }
+        token = {
+            "access_token" : accessToken,
+            "conflict"     : this.#readStorage("conflict"),
+            "expires_in"   : this.#readStorage("expires_in"),
+            "refresh_api"  : this.#readStorage("refresh_api"),
+            "refresh_token": this.#readStorage("refresh_token"),
+            "scope"        : this.#readStorage("scope"),
+            "secure"       : this.#readStorage("secure"),
+            "token_type"   : this.#readStorage("token_type"),
+            "validate_api" : this.#readStorage("validate_api"),
+        }
+        token = this.validateToken(token)  // 避免改动
+        if (token) {
             this.#token = token
             this.#tokenAuthAt = this.#readStorage("localAuthAt_")
         }
+        return token
+    }
+
+    getToken(noRefresh = false) {
+        let token = this.getCachedToken()
         if (!noRefresh) {
             const exp = (token['expires_in'] + this.#tokenAuthAt) * time.Second - Date.now()
             if (exp <= 0) {
                 return this.refresh()
             }
-
         }
-        return this.#token
+        return APromise(token)
     }
 
     refresh() {
-        const token = this.getToken(true)
+        const token = this.getCachedToken()
         if (!token || !token['refresh_api'] || !token['refresh_token']) {
-            return null
+            return APromise(token)
         }
+
+        if (this.#tx.notFree()) {
+            return asleep(300 * time.Millisecond).then(() => {
+                return this.refresh()
+            })
+        }
+        this.#tx.begin()
         const refreshToken = token['refresh_token']
         const url = token['refresh_api']
-        this.#rawFetch.fetch(url, {
+        return this.#rawFetch.fetch(url, {
             mustAuth           : false,
             preventTokenRefresh: true,
             data               : {
@@ -325,11 +337,17 @@ class AaAuth {
             }
         }).then(data => {
             this.setToken(data)
+            this.#validateTried = true
+            this.#sessionSetItem('checked', true)
+            this.#tx.commit()
+            return this.#token
         }).catch(err => {
             if (!err.isServerErrors()) {
                 this.clear()
             }
             log.error(err.toString())
+            this.#tx.rollback()
+            return null
         })
     }
 

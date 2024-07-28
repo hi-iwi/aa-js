@@ -22,8 +22,6 @@ const MAX = 'MAX'
 const MIN = 'MIN'
 const BreakSignal = false // a signal from callback function to break forEach((value,key)) iterator
 
-
-
 /**
  * Keep-names of URL parameters 路由URL参数名
  */
@@ -46,6 +44,7 @@ const aparam = {
     Logout         : "logout",
     PersistentNames: ["_debug", "apollo", "logout"],
 }
+
 
 
 /**
