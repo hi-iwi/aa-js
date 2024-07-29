@@ -130,15 +130,16 @@ cookie-name = token
 9. set xxx(value)   set property
 10. get xxx()       get property
 11. len()
-12. initXXX()
-13. init()
-14. constructor()
-15. other methods()
-16. valueOf()
-17. toString()
-18. toJSON()
-19. log()
-20. static methods()
+12. data()
+13. initXXX()
+14. init()
+15. constructor()
+16. other methods()
+17. valueOf()
+18. toString()
+19. toJSON()
+20. log()
+21. static methods()
 
 ```js
 class Demo {

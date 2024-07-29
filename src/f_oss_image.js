@@ -25,6 +25,7 @@ class AaImgSrc {
     #multipleFile
 
 
+
     valid() {
         return len(this.cropPattern) > 0 && len(this.resizePattern) > 0
     }
@@ -51,7 +52,20 @@ class AaImgSrc {
     getMultipleFile(file) {
         return this.#multipleFile
     }
-
+    data() {
+        return {
+            'provider'     : this.provider,
+            'crop_pattern'  : this.cropPattern,
+            'resize_pattern': this.resizePattern,
+            'origin'       : this.origin,
+            'path'         : this.path,
+            'filetype'     : this.filetype,
+            'size'         : this.size,
+            'width'        : this.width,
+            'height'       : this.height,
+            'allowed'      : this.allowed,
+        }
+    }
     /**
      * @param {ImgSrcStruct} props
      * @param {ImageBase64|filepath} [thumbnail]
