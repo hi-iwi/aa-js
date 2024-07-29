@@ -371,4 +371,53 @@ class map {
         }
         return true
     }
+
+    /**
+     * Compare two object
+     * @param {*} target
+     * @param {*} src
+     * @warn 如果用在 react 判断是否改变props/state 去 setState，需要用 if(!map.compare()) ， 否则就是true，死循环更新
+     */
+    static compare(target, src) {
+        if (typeof target !== typeof src || len(target) !== len(src)) {
+            return false
+        }
+        if (target === null || typeof target === 'undefined') {
+            return !src             // 前面已经判断了类型一致
+        }
+        if (typeof target.valueOf === "function") {
+            return typeof src.valueOf === "function" ? target.valueOf() === src.valueOf() : false
+        }
+
+        // time, Date, OSS imageSrc/fileSrc/audioSrc/videoSrc
+        if (typeof target.toJSON === "function") {
+            return typeof src.toJSON === "function" ? target.toJSON() === src.toJSON() : false
+        }
+
+        const t = atype.of(target)
+        // "array", "boolean", "date", "dom", "function", null, "number", "object", "string", "undefined"
+
+        if (t === "dom" || t === "function") {
+            return target === src
+        }
+
+        if (t === "array") {
+            let n = target.length
+            // compared len(target)   len(src) already
+            for (let i = 0; i < n; i++) {
+                if (!map.compare(target[i], src[i])) {
+                    return false
+                }
+            }
+        }
+
+        if (typeof t === "object") {
+            for (const [k, v] of Object.entries(target)) {
+                if (!map.compare(v, src[k])) {
+                    return false
+                }
+            }
+        }
+        return target === src
+    }
 }

@@ -398,7 +398,7 @@ class AError extends Error {
 
     /**
      *
-     * @param  {AError|Error|*} err 有可能业务层处理resolve里面，出现异常未捕获并修改为AError，比如 JSON.parse()等未捕获异常
+     * @param {AError|Error|*} err 有可能业务层处理resolve里面，出现异常未捕获并修改为AError，比如 JSON.parse()等未捕获异常
      * @param {string} [pattern]  use %ERROR in pattern
      */
     static log(err, pattern) {
