@@ -104,6 +104,14 @@ class Aa {
         return new AaApollo(this.fetch, url, fingerprintGenerator, loginDataHandler, storage)
     }
 
+    /**
+     * @param {TimeParam} [timeA] default to now()
+     * @param {TimeParam} [timeB] default to now()
+     */
+    timeDiff(timeA, timeB) {
+        new Date()
+    }
+
 }
 
 

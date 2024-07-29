@@ -1,5 +1,8 @@
-// @import time.MinDatetime, time.MaxDatetime
-
+/**
+ * @typedef {string} DateString
+ * @typedef {string} DatetimeString
+ * @typedef {Date|DateString|DatetimeString|number} TimeParam
+ */
 class AaDateZero extends Date {
     name = 'aa-date-zero'
     value = '0000-00-00 00:00:00'
@@ -301,13 +304,13 @@ class AaDateString {
     }
 
     static setMinDatetime(datetime) {
-         AaDateString.minDatetime = datetime
+        AaDateString.minDatetime = datetime
         AaDateString.minYear = datetime.substring(0, 4)
         AaDateString.minDate = datetime.substring(0, 10)
     }
 
     static setMaxDatetime(datetime) {
-         AaDateString.maxDatetime = datetime
+        AaDateString.maxDatetime = datetime
         AaDateString.maxYear = datetime.substring(0, 4)
         AaDateString.maxDate = datetime.substring(0, 10)
     }
@@ -480,7 +483,6 @@ class AaDateValidator {
 class time {
     name = 'aa-time'
 
-    // MinDate    : '0000-00-00',
     static Millisecond = 1
     static Second = 1000 * time.Millisecond
     static Minute = 60 * time.Second
@@ -837,7 +839,7 @@ class time {
      * @param {time|Date|string|number} [d1]  default to now, a.k.a. new Date()
      */
     diff(d1) {
-        return new timeDifference(this, d1)
+        return new TimeDiff(this, d1)
     }
 
     // 只保留特殊常用的函数，其他的如果需要用。就调用 xxx.date.xxxx 直接调用即可
@@ -852,6 +854,14 @@ class time {
     // 用于json序列号
     toJSON() {
         return this.toString()
+    }
+
+    static dateString(str) {
+
+    }
+
+    static datetimeString(str) {
+
     }
 
     static minDatetime() {
@@ -901,7 +911,7 @@ class time {
 }
 
 
-class timeDifference {
+class TimeDiff {
     name = 'aa-date-difference'
 
     // differences in milliseconds
@@ -916,10 +926,13 @@ class timeDifference {
     secondsPart
     millisecondsPart
 
-
-    constructor(d0, d1) {
-        d0 = d0 instanceof time ? d0 : new time(d0)
-        d1 = d1 instanceof time ? d1 : new time(d1)  // new time(undfined) equals to new time(new Date())
+    /**
+     * @param {TimeParam} [timeA] default to now()
+     * @param {TimeParam} [timeB] default to now()
+     */
+    constructor(timeA, timeB) {
+        const d0 = timeA instanceof time ? timeA : new time(timeA)
+        const d1 = timeB instanceof time ? timeB : new time(timeB)  // new time(undfined) equals to new time(new Date())
         if (!d0.validator.isValid(true) || !d0.validator.isValid(true)) {
             log.error("date difference: invalid date", d0, d1)
             return
@@ -1057,9 +1070,9 @@ class timeDifference {
             'I': this.minutesPart,
             'S': this.secondsPart
         }
-        let ls = timeDifference.loadDiff(layout, p)
+        let ls = TimeDiff.loadDiff(layout, p)
         if (!noCarry) {
-            p = timeDifference.carryTimeDiff(p, ls)
+            p = TimeDiff.carryTimeDiff(p, ls)
         }
 
         if (p['Y'] > 0 && !ls['Y']) {
@@ -1242,4 +1255,18 @@ class timeDifference {
     }
 
 
+}
+
+
+/**
+ * New a {VMoney} instance
+ * @param {number|string} vv
+ * @param {string} [vk]
+ * @param {*} [defaultV]
+ */
+function date(vv, vk, defaultV) {
+    vv = defval(...arguments)
+    const t = new time(vv)
+    t.setPattern('YYYY-MM-DD')
+    return t
 }

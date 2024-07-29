@@ -14,34 +14,34 @@ A Javascript SDK of AaGo
 
 ### type caster functions
 
-| name       | results                | description                                                        |
-|------------|------------------------|--------------------------------------------------------------------|
-| array()    | array                  |                                                                    |
-| bool()     | boolean                |                                                                    |
-| booln()    | number                 | 0 on false; 1 on true                                              |
-| date()     | string                 | convert to YYYY-MM-DD format string                                |
-| datetime() | string                 | convert to YYYY-MM-DD HH:II:SS format string                       |
-| decimal()  | Decimal                | alias to new Decimal()                                             |
-| float32()  | number                 |                                                                    |
-| float64()  | number                 |                                                                    |
-| func()     | function               |                                                                    |
-| int8()     | number&#124;RangeError | integer in range [-128, 127]                                       |
-| int16()    | number&#124;RangeError | integer in range [-32768, 32767]                                   |
-| int24()    | number&#124;RangeError | integer in range [-8388608, 8388607]                               |
-| int32()    | number&#124;RangeError | integer in range [-2147483648, 2147483647]                         |
-| int64a()   | string&#124;RangeError |                                                                    |
-| intMax     | number&#124;RangeError | integer in range [Number.MIN_SAFE_INTEGER,Number.MAX_SAFE_INTEGER] |
-| uint8()    | number&#124;RangeError | integer in range [0, 255]                                          |
-| uint16()   | number&#124;RangeError | integer in range [0, 65535]                                        |
-| uint24()   | number&#124;RangeError | integer in range [0, 16777215]                                     |
-| uint32()   | number&#124;RangeError | integer in range [0, 4294967295]                                   |
-| uint64a()  | string&#124;RangeError |                                                                    |
-| money()    | Money                  | alias to new Money()                                               |
-| number()   | number                 |                                                                    |
-| percent()  | Percent                | alias to new Percent()                                             |
-| string()   | string                 |                                                                    |
-| struct()   | {[key:string]:*}       |                                                                    |
-| vmoney()   | VMoney                 | alias to new VMoney()                                              |
+| name       | results                  | description                                                        |
+|------------|--------------------------|--------------------------------------------------------------------|
+| array()    | array                    |                                                                    |
+| bool()     | boolean                  |                                                                    |
+| booln()    | number                   | 0 on false; 1 on true                                              |
+| date()     | time<YY-MM-DD>           |                                                                    |
+| datetime() | time<YYY-MM-DD HH:II:SS> |                                                                    |
+| decimal()  | Decimal                  | alias to new Decimal()                                             |
+| float32()  | number                   |                                                                    |
+| float64()  | number                   |                                                                    |
+| func()     | function                 |                                                                    |
+| int8()     | number&#124;RangeError   | integer in range [-128, 127]                                       |
+| int16()    | number&#124;RangeError   | integer in range [-32768, 32767]                                   |
+| int24()    | number&#124;RangeError   | integer in range [-8388608, 8388607]                               |
+| int32()    | number&#124;RangeError   | integer in range [-2147483648, 2147483647]                         |
+| int64a()   | string&#124;RangeError   |                                                                    |
+| intMax     | number&#124;RangeError   | integer in range [Number.MIN_SAFE_INTEGER,Number.MAX_SAFE_INTEGER] |
+| uint8()    | number&#124;RangeError   | integer in range [0, 255]                                          |
+| uint16()   | number&#124;RangeError   | integer in range [0, 65535]                                        |
+| uint24()   | number&#124;RangeError   | integer in range [0, 16777215]                                     |
+| uint32()   | number&#124;RangeError   | integer in range [0, 4294967295]                                   |
+| uint64a()  | string&#124;RangeError   |                                                                    |
+| money()    | Money                    | alias to new Money()                                               |
+| number()   | number                   |                                                                    |
+| percent()  | Percent                  | alias to new Percent()                                             |
+| string()   | string                   |                                                                    |
+| struct()   | {[key:string]:*}         |                                                                    |
+| vmoney()   | VMoney                   | alias to new VMoney()                                              |
 
 ### constants
 
@@ -91,6 +91,7 @@ A Javascript SDK of AaGo
 | paths             | static    | handle paths                          |
 | strings           | static    | handle strings                        |
 | time              |           | handle date and time                  |
+| [TimeDiff]        |           | use `aa.timeDiff()` instead           |
 | Decimal           |           |                                       |
 | Money             |           |                                       |
 | Percent           |           |                                       |
