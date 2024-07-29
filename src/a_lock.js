@@ -20,11 +20,6 @@ class AaLock {
         return this.#lockAt > 0 && (this.#lockAt + this.#timeout > Date.now())
     }
 
-    isFree() {
-        return !this.isLocked()
-    }
-
-
     /**
      * Start transaction
      * @param {number} [timeout] in millisecond
@@ -50,7 +45,6 @@ class AaLock {
         clearTimeout(this.#timer)
         this.#lockAt = 0
     }
-
 
 
     destroy() {
