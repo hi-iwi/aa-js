@@ -16,6 +16,7 @@ A Javascript SDK of AaGo
 
 | name       | results                  | description                                                        |
 |------------|--------------------------|--------------------------------------------------------------------|
+| aerror()   | AError                   | alias to new AError()                                              |
 | array()    | array                    |                                                                    |
 | bool()     | boolean                  |                                                                    |
 | booln()    | number                   | 0 on false; 1 on true                                              |

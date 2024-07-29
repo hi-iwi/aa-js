@@ -212,15 +212,18 @@ class AError extends Error {
 
     /**
      *
-     * @param code
-     * @param {string|{[key:string]:string}} [msg]
-     * @param {{[key:string]:string}} [dict] 创建的时候更接近业务，而输出的时候往往由框架或底层完成。因此字典创建时期提供更合理
+     * @param {number|Error} code
+     * @param {string|struct} [msg]
+     * @param {struct} [dict] 创建的时候更接近业务，而输出的时候往往由框架或底层完成。因此字典创建时期提供更合理
      * @example
      *  new AError(code)
      *  new AError(code, dict)        new AError(400, {})
      */
     constructor(code, msg, dict) {
-        if (!dict && typeof msg === "object") {
+        if (code instanceof Error) {
+            msg = code.toString()
+            code = AErrorEnum.ClientThrow
+        } else if (!dict && typeof msg === "object") {
             dict = msg
             msg = ''
         }
@@ -376,6 +379,13 @@ class AError extends Error {
         return `${this.code}: ` + this.getMsg()
     }
 
+    log(pattern) {
+        let msg = this.toString()
+        if (pattern) {
+            msg = string(pattern).indexOf('%ERROR') > -1 ? pattern.replace('%ERROR', msg) : `${pattern} ${msg}`
+        }
+        log.error(msg)
+    }
 
     /**
      * Alert to client user
@@ -396,22 +406,6 @@ class AError extends Error {
         AError.alerter(err)
     }
 
-    /**
-     *
-     * @param {AError|Error|*} err 有可能业务层处理resolve里面，出现异常未捕获并修改为AError，比如 JSON.parse()等未捕获异常
-     * @param {string} [pattern]  use %ERROR in pattern
-     */
-    static log(err, pattern) {
-        if (err && typeof err.toString === "function") {
-            let msg = err.toString()
-            if (pattern && typeof pattern === "string") {
-                msg = pattern.indexOf('%ERROR') > -1 ? pattern.replace('%ERROR', msg) : `${pattern} ${msg}`
-            }
-            return log.error(msg)
-        }
-
-        log.error(...arguments)
-    }
 
     static newBadRequest(param, dict) {
         return new AError(AErrorEnum.BadRequest, "Bad request `" + param + "`", dict)
@@ -435,4 +429,18 @@ class AError extends Error {
 
         return new AError(AErrorEnum.ServerException, "", dict)
     }
+}
+
+/**
+ *
+ * @param {number|Error} code
+ * @param args
+ * @warn 有可能业务层处理resolve里面，出现异常未捕获并修改为AError，比如 JSON.parse()等未捕获异常。因此，catch里使用 err，必须要先
+ *  err = aerror(err) 避免异常
+ */
+function aerror(code, ...args) {
+    if (code instanceof AError) {
+        return code
+    }
+    return new AError(code, ...args)
 }

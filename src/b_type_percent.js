@@ -34,10 +34,14 @@ class Percent extends Decimal {
 
 /**
  * New a {Percent} instance
- * @param {number|string} vv
+ * @param {number|string|struct|Percent} vv
  * @param {string} [vk]
  * @param {*} [defaultV]
  */
 function percent(vv, vk, defaultV) {
-    return new Percent(...arguments)
+    vv = defval(...arguments)
+    if (vv instanceof Percent) {
+        return vv
+    }
+    return new Percent(vv)
 }

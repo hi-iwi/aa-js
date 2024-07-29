@@ -48,10 +48,14 @@ class Money extends Decimal {
 
 /**
  * New a {Money} instance
- * @param {number|string} vv
+ * @param {number|string|struct|Money} vv
  * @param {string} [vk]
  * @param {*} [defaultV]
  */
 function money(vv, vk, defaultV) {
-    return new Money(...arguments)
+    vv = defval(...arguments)
+    if (vv instanceof Money) {
+        return vv
+    }
+    return new Money(vv)
 }

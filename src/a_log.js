@@ -163,9 +163,10 @@ function loge(...args) {
     if (len(args) === 1) {
         const err = args[0]
         if (err instanceof AError || err instanceof Error) {
-            AError.log(err)
+            log.error(err.toString())
             return
         }
+
         return log.print(...args)
     }
     return log.println(...args)

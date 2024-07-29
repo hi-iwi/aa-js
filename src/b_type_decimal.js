@@ -213,9 +213,11 @@ class Decimal {
     toReal() {
         return this.value / this.units
     }
-    valueOf(){
+
+    valueOf() {
         return this.value
     }
+
     toJSON() {
         return this.value
     }
@@ -269,10 +271,14 @@ class Decimal {
 
 /**
  *
- * @param {number|string} vv
+ * @param {number|string|struct|Decimal} vv
  * @param {string} [vk]
  * @param {*} [defaultV]
  */
 function decimal(vv, vk, defaultV) {
-    return new Decimal(vv, vk, defaultV)
+    vv = defval(...arguments)
+    if (vv instanceof Decimal) {
+        return vv
+    }
+    return new Decimal(vv)
 }

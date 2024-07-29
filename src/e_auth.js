@@ -152,7 +152,7 @@ class AaAuth {
      * Prepare checking login status before doing something
      */
     prepare() {
-        if (this.authed()) {
+        if (this.authed2()) {
             return
         }
         this.triggerUnauthorized()
@@ -385,12 +385,13 @@ class AaAuth {
             this.#tx.commit()
             return this.#token
         }).catch(err => {
+            err = aerror(err)
             if (!err.isServerErrors()) {
                 this.clear()
             }
             log.error(err.toString())
             this.#tx.rollback()
-            return null
+            throw err
         })
     }
 
@@ -399,9 +400,13 @@ class AaAuth {
      *  Check is  in logged in status
      * @return {boolean}
      */
-    authed() {
+    authed2() {
         const token = this.getCachedToken()
         return len(token, 'access_token') > 0 && len(token, 'token_type') > 0
+    }
+
+    authed() {
+
     }
 
 

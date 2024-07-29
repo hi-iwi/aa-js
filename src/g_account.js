@@ -19,6 +19,9 @@ class AaAccount {
 
     initFetchUrl(url) {
         this.#fetchUrl = url
+        this.#auth.getToken().catch(err=>{
+
+        })
         if (!this.#auth.authed()) {
             return
         }

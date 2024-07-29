@@ -150,8 +150,9 @@ class AaFetch {
      */
     statusN(url, settings) {
         return this.status(url, settings).catch(err => {
+            err = aerror(err)
             const method = string(settings, 'method')
-            AError.log(err, `${method} ${url} status error: %ERROR`)
+            err.log(`${method} ${url} status error: %ERROR`)
         })
     }
 

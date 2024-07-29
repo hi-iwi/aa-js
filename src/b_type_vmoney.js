@@ -26,10 +26,14 @@ class VMoney extends Money {
 
 /**
  * New a {VMoney} instance
- * @param {number|string} vv
+ * @param {number|string|struct|VMoney} vv
  * @param {string} [vk]
  * @param {*} [defaultV]
  */
 function vmoney(vv, vk, defaultV) {
-    return new VMoney(...arguments)
+    vv = defval(...arguments)
+    if (vv instanceof VMoney) {
+        return vv
+    }
+    return new VMoney(vv)
 }

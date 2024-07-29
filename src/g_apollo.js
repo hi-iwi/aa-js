@@ -67,7 +67,7 @@ class AaApollo {
                 this.set(apollo)
             }
         }).catch(err => {
-            AError.log(err)
+            aerror(err).log()
         })
     }
 
