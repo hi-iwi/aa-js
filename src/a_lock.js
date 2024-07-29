@@ -25,7 +25,7 @@ class AaLock {
      * @param {number} [timeout] in millisecond
      */
     lock(timeout) {
-        this.log('Begin')
+        this.log('Lock')
         this.#lockAt = Date.now()  // BEGIN 事务开启
         timeout = number(timeout)
         if (timeout > 0) {
@@ -35,7 +35,7 @@ class AaLock {
         }
         clearTimeout(this.#timer)
         this.#timer = setTimeout(() => {
-            this.log(`Timeout (${timeout}ms)`)
+            this.log(`Lock timeout (${timeout}ms)`)
             this.#lockAt = 0
         }, timeout)
     }
@@ -48,7 +48,7 @@ class AaLock {
 
 
     destroy() {
-        this.log('Destroy')
+        this.log('Destroy lock')
         clearTimeout(this.#timer)
     }
 
