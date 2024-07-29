@@ -1,7 +1,23 @@
 # Code Style Guide
 
+
+## 命名规则
+
+* _fields_: []string|{[key:string}:typeFunc}    :  一个类似结构体或object的class，用 _files_ :["key"]   来描述有效字段。主要用于
+  map.merge/strictMerge/overwrite
+
+* (vv, vk, defaultV) ====>  (vk ? (vv[vk] ? vv[vk] : defaultV) : vv )
+    * Golang 至今未支持三元写法，因此不代表某种习惯就必须要所有人接受。这里规定一种写法并无障碍，并非强制性要求。
+    * 等同于  (vk ? (vv[vk] ? vv[vk] : defaultV) : vv )，尚未习惯的，可以使用这种常规写法
+* ::new()
+* .clone()  ===> 深度复制该类
+* .init(data)   ===> 重置数据
+    * 注意：.init() 不能返回 this，也不能传递本对象来重新赋值。因为内部无法修改 this 指针。
+
+
+
 # JSDoc types
- 
+
 ```js
 /**
  * @type (number|string)[]
@@ -13,14 +29,17 @@ const numOrStrArray = [1, 2, 3, '4', '5', 6, 7]
  */
 
 const structArray = [
-    {name  : "aario",
-        age: 18
+    {
+        name: "aario",
+        age : 18
     },
-    {name  : "Aario",
-        age: 28
+    {
+        name: "Aario",
+        age : 28
     },
-    {name  : "AARIO",
-        age: 38
+    {
+        name: "AARIO",
+        age : 38
     },
 ]
 
@@ -46,12 +65,39 @@ const fn = (x, y) => {
 (value, key) 是反人性的，(key, value) 才更符合人类思维，减少人类出错
 
 ### 例外情况：
+
 ```js
 [].forEach((value, index) => {
 })
 new Map().forEach((value, key, map) => {
 
 })
+```
+
+## base class interface
+
+
+* 通用命名规则
+    * toJSON()    JSON.stringify() 能识别该方法； aa fetch 也需要识别该方法序列化对象
+    * toString()  '' + new Date() 会用该方法返回的string
+    * valueOf()  +new Date() 会用该方法返回的number
+    * 
+```
+// pseudo-code
+interface BaseClass {
+    ?len():number     
+    ?valueOf(): any                // refer to .value, if neccessary. e.g. +new Date()  ==> will call this
+    ?toString(): string            // '' + new BaseClass()  ===> will call this
+    ?toJSON(): string              // for JSON.stringify
+    
+    readonly name: string    // name of this class
+    ?value: any              // the value of this class, if neccessary
+}
+
+class XXX{
+  constructor(){}
+ }
+
 ```
 
 ## cookie name rule
@@ -76,11 +122,11 @@ cookie-name = token
 1. variable keep word `name`, to name this class
 2. static Constants
 3. static variables
-4. private static #variables       ---> 尽量不要使用私有静态变量!!!
+4. private static #variables ---> 尽量不要使用私有静态变量!!!
 5. variables
 6. private #variables
 7. setXXX()         set property
-8. getXXX()         get property 
+8. getXXX()         get property
 9. set xxx(value)   set property
 10. get xxx()       get property
 11. len()

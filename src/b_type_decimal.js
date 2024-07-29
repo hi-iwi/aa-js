@@ -213,7 +213,9 @@ class Decimal {
     toReal() {
         return this.value / this.units
     }
-
+    valueOf(){
+        return this.value
+    }
     toJSON() {
         return this.value
     }

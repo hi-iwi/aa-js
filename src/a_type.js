@@ -457,15 +457,6 @@ function not(...args) {
 
 /**
  * @param {vv_vk_defaultV} [args]
- * @return {boolean}
- */
-function nullable(...args) {
-    let v = defval(...args)
-    return len(v) === 0 ? null : v
-}
-
-/**
- * @param {vv_vk_defaultV} [args]
  * @return {string}
  */
 function string(...args) {

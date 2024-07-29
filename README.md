@@ -6,92 +6,121 @@ A Javascript SDK of AaGo
 
 [code style guide](https://github.com/hi-iwi/aa-js/blob/main/code_style_guide.md)
 
-## 入口方法
+## Entry
 
 * aa = new Aa()
 
-## base class interface
-
-```
-// pseudo-code
-interface BaseClass {
-    ?valueOf(): any                // refer to .value, if neccessary. e.g. +new Date()  ==> will call this
-    ?toString(): string            // '' + new BaseClass()  ===> will call this
-    ?toJSON(): string              // for JSON.stringify
-    
-    readonly name: string    // name of this class
-    ?value: any              // the value of this class, if neccessary
-}
-
-class XXX{
-  constructor(){}
- }
-
-```
-
 ## global variables
 
-下划线开头的变量表示private私有变量，禁止外部使用！
+### type caster functions
 
-* AErrorEnum
-* AError
-* AaTx
-* nif nil function
-* defval()   defined value
-* len()      length of everything
+| name       | results                | description                                                        |
+|------------|------------------------|--------------------------------------------------------------------|
+| array()    | array                  |                                                                    |
+| bool()     | boolean                |                                                                    |
+| booln()    | number                 | 0 on false; 1 on true                                              |
+| date()     | string                 | convert to YYYY-MM-DD format string                                |
+| datetime() | string                 | convert to YYYY-MM-DD HH:II:SS format string                       |
+| decimal()  | Decimal                | alias to new Decimal()                                             |
+| float32()  | number                 |                                                                    |
+| float64()  | number                 |                                                                    |
+| func()     | function               |                                                                    |
+| int8()     | number&#124;RangeError | integer in range [-128, 127]                                       |
+| int16()    | number&#124;RangeError | integer in range [-32768, 32767]                                   |
+| int24()    | number&#124;RangeError | integer in range [-8388608, 8388607]                               |
+| int32()    | number&#124;RangeError | integer in range [-2147483648, 2147483647]                         |
+| int64a()   | string&#124;RangeError |                                                                    |
+| intMax     | number&#124;RangeError | integer in range [Number.MIN_SAFE_INTEGER,Number.MAX_SAFE_INTEGER] |
+| uint8()    | number&#124;RangeError | integer in range [0, 255]                                          |
+| uint16()   | number&#124;RangeError | integer in range [0, 65535]                                        |
+| uint24()   | number&#124;RangeError | integer in range [0, 16777215]                                     |
+| uint32()   | number&#124;RangeError | integer in range [0, 4294967295]                                   |
+| uint64a()  | string&#124;RangeError |                                                                    |
+| money()    | Money                  | alias to new Money()                                               |
+| number()   | number                 |                                                                    |
+| percent()  | Percent                | alias to new Percent()                                             |
+| string()   | string                 |                                                                    |
+| struct()   | {[key:string]:*}       |                                                                    |
+| vmoney()   | VMoney                 | alias to new VMoney()                                              |
 
-* not()
-* nullable()
-* Round()
-* RoundTrim()
-* RoundAway()
-* RoundReverse()
+### constants
 
-* new atype()  type check
-* new map()
-* log.xx
-* fmt.xx
-*
-    * slice.xxx
-* type convert: cast (vv, vk) to such type
-    * string()
-    * number()
-    * struct()   map struct {[key:string]:*}
-    * array()
-    * date()     keep word: convert to YYYY-MM-DD format string
-    * datetime() keep word: convert to YYYY-MM-DD HH:II:SS format string
-    * func()     convert to function
-    * bool()
-    * booln()  convert to boolean number
-    * float64()
-    * float32()
-    * int64a() cast to int64 number string
-    * int32()
-    * int24()
-    * int16()
-    * int8()
-    * uint64a() cast to uint64 number string
-    * uint32()
-    * uint24()
-    * uint16()
-    * uint8()
+| name           | type       | description                                                              |
+|----------------|------------|--------------------------------------------------------------------------|
+| aparam         | struct     | Keep-names of URL parameters                                             |
+| AErrorEnum     |            |                                                                          |
+| BreakSignal    | boolean    | a signal from callback function to break forEach((value,key)) iterator   |
+| nif            | function   | nil function, a function does nothing                                    |
+| MAX            | string     | a global parameter to indicate passed a MAX value                        |
+| MIN            | string     | a global parameter to indicate passed a MIN value                        |
+| -------------  | ---------- | ------------------------------------------------------------------------ |
+| AaFileTypeEnum |            |                                                                          |
+|                |            |                                                                          |
 
-## 命名规则
+### global functions
 
-* _fields_: []string|{[key:string}:typeFunc}    :  一个类似结构体或object的class，用 _files_ :["key"]   来描述有效字段。主要用于
-  map.merge/strictMerge/overwrite
+| name           | return          | description                      |
+|----------------|-----------------|----------------------------------|
+| asleep()       | Promise         | a promise sleep for a while      |
+| defval()       | any except null | Return defined value             |
+| len()          | number          | length of anything               |
+| loge()         |                 | alias to new log().println()     |
+| not()          | boolean         | same to !something               |
+| Round()        |                 |                                  |
+| RoundTrim()    |                 | Trim the tail                    |
+| RoundAway()    |                 | Round away from the origin point |
+| RoundReverse() |                 |                                  |
+|                |                 |                                  |
 
-* (vv, vk, defaultV) ====>  (vk ? (vv[vk] ? vv[vk] : defaultV) : vv )
-    * Golang 至今未支持三元写法，因此不代表某种习惯就必须要所有人接受。这里规定一种写法并无障碍，并非强制性要求。
-    * 等同于  (vk ? (vv[vk] ? vv[vk] : defaultV) : vv )，尚未习惯的，可以使用这种常规写法
-* ::new()
-* .clone()  ===> 深度复制该类
-* .init(data)   ===> 重置数据
-    * 注意：.init() 不能返回 this，也不能传递本对象来重新赋值。因为内部无法修改 this 指针。
+### global classes
 
+| name              | type      | description                           |
+|-------------------|-----------|---------------------------------------|
+| atype             | static    | types detector                        |
+| AaLoggerStyle     |           |                                       |
+| log               |           |                                       |
+| AaTX              |           | a simple transaction lock             |
+| ---------------   | --------- | ---------------------------           |
+| [AaEnv]           | private   | use `aa.env` instead                  |
+| AError            |           | Error with code                       |
+| fmt               | static    | format                                |
+| htmls             | static    | handle HTML elements                  |
+| map               |           | a map struct                          |
+| mathn             | static    | normal mathematics                    |
+| maths             | static    | special mathematics                   |
+| paths             | static    | handle paths                          |
+| strings           | static    | handle strings                        |
+| time              |           | handle date and time                  |
+| Decimal           |           |                                       |
+| Money             |           |                                       |
+| Percent           |           |                                       |
+| VMoney            |           |                                       |
+| ---------------   | --------- | ---------------------------           |
+| [AaRegistry]      |           | use `aa.registry()` instead           |
+| [AaCookieStorage] |           | use `aa.storage()` instead            |
+| [AaStorageEngine] |           | use `aa.storage()` instead            |
+| [AaStorageFactor] |           | use `aa.storage()` instead            |
+| [AaCache]         |           | use `aa.cache()` or `aa.db()` instead |
+| [AaURI]           |           | use `aa.url()` or `aa.URI` instead    |
+| ---------------   | --------- | ---------------------------           |
+| [AaRawFetch]      |           | use `aa.fetch()` instead              |
+| [AaScrollEvent]   |           | use `aa.scrollEvent` instead          |
+| [AaAuth]          |           | use `aa.auth` instead                 |
+| [AaAuthOpenid]    |           | use `aa.openidAuth` instead           |
+| [AaFetch]         |           | use `aa.fetch()` instead              |
+| [AaOSS]           |           | use `aa.oss` instead                  |
+| [AaAudioSrc]      |           | use `aa.audioSrc` instead             |
+| [AaFileSrc]       |           | use `aa.fileSrc` instead              |
+| [AaImgSrc]        |           | use `aa.imgSrc` instead               |
+| [AaVideoSrc]      |           | use `aa.videoSrc` instead             |
+| ---------------   | --------- | ---------------------------           |
+| [AaAccount]       |           | use `aa.account` instead              |
+| [AaApollo]        |           | use `aa.apollo()` instead             |
+| [AaEditor]        |           | use `aa.editor` instead               |
+| [Aa]              |           | use `aa` instead                      |
 
-* 通用命名规则
-    * toJSON()    JSON.stringify() 能识别该方法； aa fetch 也需要识别该方法序列化对象
-    * toString()  '' + new Date() 会用该方法返回的string
-    * valueOf()  +new Date() 会用该方法返回的number
+### extended methods
 
+| name             | return          | description                         |
+|------------------|-----------------|-------------------------------------|
+| Promise.asleep() | Promise         | make this promise sleep for a while |

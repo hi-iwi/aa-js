@@ -71,13 +71,9 @@ class Aa {
         this.editor = editor
     }
 
-    tx() {
-        return new AaTX()
-    }
 
     url(url = window.location.href, params = {}) {
         return new AaURI(url, params)
-
     }
 
     /**
