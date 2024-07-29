@@ -403,7 +403,7 @@ class AError extends Error {
      */
     static log(err, pattern) {
         if (err && typeof err.toString === "function") {
-            let msg = this.toString()
+            let msg = err.toString()
             if (pattern && typeof pattern === "string") {
                 msg = pattern.indexOf('%ERROR') > -1 ? pattern.replace('%ERROR', msg) : `${pattern} ${msg}`
             }
