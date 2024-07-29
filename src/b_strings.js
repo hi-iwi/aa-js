@@ -149,4 +149,14 @@ class strings {
         return null
     }
 
+    static joinWith(separator, condition, ...args) {
+        if (!condition) {
+            return string(args, 0)
+        }
+        return args.join(separator).trim()
+    }
+
+    static join(condition, ...args) {
+        return strings.joinWith(' ', condition, ...args)
+    }
 }
