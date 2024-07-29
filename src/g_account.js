@@ -17,19 +17,23 @@ class AaAccount {
     #fetch
     #fetchUrl
 
-    initFetchUrl(url) {
-        this.#fetchUrl = url
-        this.#auth.getToken().catch(err=>{
 
-        })
-        if (!this.#auth.authed()) {
-            return
-        }
+    #initProfile() {
         const profile = this.getCachedProfile()
         if (profile) {
             return
         }
         this.getProfile(true).then(nif, nif)
+    }
+
+    initFetchUrl(url) {
+        this.#fetchUrl = url
+        const authed = aa.auth.authed(token => {
+            this.#initProfile()
+        })
+        if (authed) {
+            this.#initProfile()
+        }
     }
 
     /**

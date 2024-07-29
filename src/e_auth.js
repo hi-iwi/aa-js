@@ -152,7 +152,7 @@ class AaAuth {
      * Prepare checking login status before doing something
      */
     prepare() {
-        if (this.authed2()) {
+        if (this.authed()) {
             return
         }
         this.triggerUnauthorized()
@@ -397,16 +397,20 @@ class AaAuth {
 
 
     /**
-     *  Check is  in logged in status
+     * Check whether is in logged in status
+     * @param {(token:{TokenData})=>void} [callback] callback when re-logged in with refresh token
      * @return {boolean}
+     * @warn 这个不够准确！！一般用于根据不同登录状态提前渲染不同模块，渲染后
      */
-    authed2() {
+    authed(callback) {
         const token = this.getCachedToken()
-        return len(token, 'access_token') > 0 && len(token, 'token_type') > 0
-    }
-
-    authed() {
-
+        const authed = len(token, 'access_token') > 0 && len(token, 'token_type') > 0
+        if (!authed && typeof callback === "function") {
+            this.getToken().then(token => {
+                callback(token)
+            }, nif)
+        }
+        return authed
     }
 
 
