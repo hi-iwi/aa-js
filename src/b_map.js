@@ -336,4 +336,39 @@ class map {
         }
         return target
     }
+
+    /**
+     * Whether object contains all of these elements
+     * @param {map|struct} obj
+     * @param {string|array} params
+     */
+    static containAll(obj, ...params) {
+        if (params.length === 1 && Array.isArray(params)) {
+            params = params[0]
+        }
+        for (let i = 0; i < params.length; i++) {
+            if (!obj.hasOwnProperty(params[i])) {
+                return false
+            }
+        }
+        return true
+    }
+
+    /**
+     * Whether object contains any of these elements
+     * @param obj
+     * @param params
+     * @return {boolean}
+     */
+    static containAny(obj, ...params) {
+        if (params.length === 1 && Array.isArray(params)) {
+            params = params[0]
+        }
+        for (let i = 0; i < params.length; i++) {
+            if (obj.hasOwnProperty(params[i])) {
+                return true
+            }
+        }
+        return true
+    }
 }

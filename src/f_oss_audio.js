@@ -1,16 +1,14 @@
-
 //@TODO
 class AaAudioSrc {
     name = 'aa-audio-src'
 
-    process
+    provider
+    pattern
+    origin
     path
     filetype
-    ext
     size
-    width
-    height
-    allowed
+    duration
 
     // aaFetch 层会处理该数据
     toJSON() {

@@ -2,13 +2,16 @@
 class AaVideoSrc {
     name = 'aa-video-src'
 
-    process
+    provider
+    pattern
+    origin
     path
+    preview
     filetype
-    ext
     size
     width
     height
+    duration
     allowed
 
     // aaFetch 层会处理该数据

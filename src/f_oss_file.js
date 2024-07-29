@@ -3,14 +3,12 @@
 class AaFileSrc {
     name = 'aa-file-src'
 
-    process
+    provider
     path
     filetype
-    ext
     size
-    width
-    height
-    allowed
+    checksum
+    info
 
     // aaFetch 层会处理该数据
     toJSON() {

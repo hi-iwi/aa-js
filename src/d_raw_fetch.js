@@ -112,6 +112,16 @@ class AaRawFetch {
 
     // @TODO support other content-types
     serializeData(data, contentType = 'application/json') {
+        for (const [key, value] of Object.entries(data)) {
+            if (!atype.isStruct(value)) {
+                continue
+            }
+            // may be oss file
+            if (map.containAll(value, 'provider', 'path', 'filetype', 'size')) {
+                data[key] = value['path']
+            }
+        }
+
         //  这里会识别对象的 .toJSON() 方法
         return JSON.stringify(data)
     }
