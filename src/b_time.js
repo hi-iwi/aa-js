@@ -622,7 +622,7 @@ class time {
         return new Date(this.year(), this.month(), 0).getDate()
     }
 
-    datetime() {
+    toDatetimeString() {
         return this.format("YYYY-MM-DD HH:II:SS")
     }
 
@@ -856,12 +856,26 @@ class time {
         return this.toString()
     }
 
-    static dateString(str) {
-
+    static dateString(vv, vk, defaultV) {
+        vv = defval(...arguments)
+        try {
+            let d = new time(vv)
+            return d.toDateString()
+        } catch (err) {
+            console.error(err)
+        }
+        return AaDateString.minDate
     }
 
-    static datetimeString(str) {
-
+    static datetimeString(vv, vk, defaultV) {
+        vv = defval(...arguments)
+        try {
+            let d = new time(vv)
+            return d.toDatetimeString()
+        } catch (err) {
+            console.error(err)
+        }
+        return AaDateString.minDatetime
     }
 
     static minDatetime() {
@@ -1259,14 +1273,23 @@ class TimeDiff {
 
 
 /**
- * New a {VMoney} instance
+ * New a {time} in `YYYY-MM-DD` pattern
  * @param {number|string} vv
  * @param {string} [vk]
  * @param {*} [defaultV]
  */
 function date(vv, vk, defaultV) {
     vv = defval(...arguments)
-    const t = new time(vv)
-    t.setPattern('YYYY-MM-DD')
-    return t
+    return new time(vv).setPattern('YYYY-MM-DD')
+}
+
+/**
+ * New a {time} in `YYYY-MM-DD HH:II:SS` pattern
+ * @param {number|string} vv
+ * @param {string} [vk]
+ * @param {*} [defaultV]
+ */
+function datetime(vv, vk, defaultV) {
+    vv = defval(...arguments)
+    return new time(vv).setPattern('YYYY-MM-DD HH:II:SS')
 }
