@@ -25,7 +25,6 @@ class AaImgSrc {
     #multipleFile
 
 
-
     valid() {
         return len(this.cropPattern) > 0 && len(this.resizePattern) > 0
     }
@@ -52,47 +51,47 @@ class AaImgSrc {
     getMultipleFile(file) {
         return this.#multipleFile
     }
+
     data() {
         return {
-            'provider'     : this.provider,
+            'provider'      : this.provider,
             'crop_pattern'  : this.cropPattern,
             'resize_pattern': this.resizePattern,
-            'origin'       : this.origin,
-            'path'         : this.path,
-            'filetype'     : this.filetype,
-            'size'         : this.size,
-            'width'        : this.width,
-            'height'       : this.height,
-            'allowed'      : this.allowed,
+            'origin'        : this.origin,
+            'path'          : this.path,
+            'filetype'      : this.filetype,
+            'size'          : this.size,
+            'width'         : this.width,
+            'height'        : this.height,
+            'allowed'       : this.allowed,
         }
     }
+
     /**
-     * @param {ImgSrcStruct} props
+     * @param {ImgSrcStruct|AaImgSrc|string|*} [data]
      * @param {ImageBase64|filepath} [thumbnail]
      * @param {File} [multipleFile]
      */
-    init(props, thumbnail, multipleFile) {
-        if (arguments.length > 2) {
-            props['thumbnail'] = thumbnail
-            props['multipleFile'] = multipleFile
-        }
-
-        map.overwrite(this, props, key => {
+    init(data, thumbnail, multipleFile) {
+        map.overwrite(this, data, key => {
             key = fmt.toCamelCase(key)
             if (['thumbnail', 'multipleFile'].includes(key)) {
                 key = '#' + key
             }
             return key
         })
+
+        this.#thumbnail = thumbnail
+        this.#multipleFile = multipleFile
     }
 
     /**
-     * @param {ImgSrcStruct} props
+     * @param {ImgSrcStruct|AaImgSrc|string|*} [data]
      * @param {ImageBase64|filepath} [thumbnail]
      * @param {File} [multipleFile]
      */
-    constructor(props, thumbnail, multipleFile) {
-        this.init(props, thumbnail, multipleFile)
+    constructor(data, thumbnail, multipleFile) {
+        this.init(data, thumbnail, multipleFile)
     }
 
     /**
@@ -243,6 +242,7 @@ class AaImgSrc {
     toJSON() {
         return this.path
     }
+
 
     /**
      *

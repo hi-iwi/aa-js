@@ -75,18 +75,18 @@ class Aa {
 
     /**
      *
-     * @param {ImgSrcStruct|AaImgSrc} obj
+     * @param {ImgSrcStruct|AaImgSrc|string|*} [data]
      * @param {ImageBase64|filepath} [thumbnail]
      * @param {File} [multipleFile]
      * @return {AaImgSrc}
      */
-    imgSrc(obj, thumbnail, multipleFile) {
-        if (obj instanceof AaImgSrc) {
-            obj.setThumbnail(thumbnail)
-            obj.setMultipleFile(multipleFile)
-            return obj
+    imgSrc(data, thumbnail, multipleFile) {
+        if (data instanceof AaImgSrc) {
+            data.setThumbnail(thumbnail)
+            data.setMultipleFile(multipleFile)
+            return data
         }
-        return new AaImgSrc(obj, thumbnail, multipleFile)
+        return new AaImgSrc(...arguments)
     }
 
     /**

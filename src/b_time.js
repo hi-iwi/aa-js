@@ -413,7 +413,7 @@ class AaDateValidator {
             const v = date instanceof Date ? date.valueOf() : new Date(date).valueOf()
             if (isNaN(v)) {
                 this.#type = d.InvalidDate
-                return this
+                return
             }
             switch (v) {
                 case d.#minYearTs:
@@ -440,8 +440,9 @@ class AaDateValidator {
         } catch (e) {
             this.#type = AaDateValidator.InvalidDate
         }
-        return this
+        return
     }
+
 
     constructor(s, strict = true) {
         this.init(s, strict)
@@ -518,14 +519,15 @@ class time {
     init(date, strict = true) {
         this.resetPatter()
         let zone = this.timezoneOffset
-        // timestamp
+        // unix time
         if (typeof date === "number") {
             date = new Date(date)
         } else if (typeof date === "string") {
             this.setPattern(date)
             let ds = new AaDateString(date, this.timezoneOffset)
             this.validator.init(ds, strict)
-            if (this.validator.isMin() || this.validator.isMax()) {
+            if (this.validator.isMin()) {
+                this.#date = new AaDateZero(date)
                 return
             }
             date = new Date(ds.toString())
@@ -858,22 +860,27 @@ class time {
 
     static dateString(vv, vk, defaultV) {
         vv = defval(...arguments)
-        try {
-            let d = new time(vv)
-            return d.toDateString()
-        } catch (err) {
-            console.error(err)
+        if (vv) {
+            try {
+                let d = new time(vv)
+                return d.toDateString()
+            } catch (err) {
+                console.error(err)
+            }
         }
+
         return AaDateString.minDate
     }
 
     static datetimeString(vv, vk, defaultV) {
         vv = defval(...arguments)
-        try {
-            let d = new time(vv)
-            return d.toDatetimeString()
-        } catch (err) {
-            console.error(err)
+        if (vv) {
+            try {
+                let d = new time(vv)
+                return d.toDatetimeString()
+            } catch (err) {
+                console.error(err)
+            }
         }
         return AaDateString.minDatetime
     }

@@ -146,7 +146,7 @@ class log {
         }
         console.log('')
         for (let i = 0; i < args.length; i++) {
-            console.log(i + '.', args[i])
+            console.log(`[${i}] ${args[i]}`)
         }
     }
 

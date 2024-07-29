@@ -271,7 +271,7 @@ class Decimal {
 
 /**
  *
- * @param {number|string|struct|Decimal} vv
+ * @param {number|string|struct|Decimal} [vv]
  * @param {string} [vk]
  * @param {*} [defaultV]
  */
