@@ -99,11 +99,11 @@ class maths {
         if (!value) {
             value = maxHeight
         }
-        return  maths.pixel(value)
+        return maths.pixel(value)
     }
 
     /**
-     * 转换字节
+     * Format bytes to B/KB/MB/GB/TB/PB/EB/ZB/YB
      * @param {number} bytes
      * @param {number} decimals
      * @returns {[number, string]}

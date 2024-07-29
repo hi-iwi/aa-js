@@ -7,9 +7,6 @@ class Aa {
 
     scrollEvent
 
-    // @type {AaTX}
-    TX = AaTX
-
     // @type {AaStorageFactor}
     storage
     cache

@@ -77,10 +77,10 @@ A Javascript SDK of AaGo
 
 | name              | type      | description                           |
 |-------------------|-----------|---------------------------------------|
+| AaLock            |           | a simple lock                         |
 | atype             | static    | types detector                        |
 | AaLoggerStyle     |           |                                       |
 | log               |           |                                       |
-| AaTX              |           | a simple transaction lock             |
 | ---------------   | --------- | ---------------------------           |
 | [AaEnv]           | private   | use `aa.env` instead                  |
 | AError            |           | Error with code                       |

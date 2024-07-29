@@ -10,7 +10,7 @@ class AaAccount {
     #profile
     #selectedVuid
 
-    #tx = new AaTX()
+    #tx = new AaLock()
     // @type {AaCache}
     #db
     #auth
@@ -97,21 +97,21 @@ class AaAccount {
             return APromiseReject(new Error("invalid profile fetch " + url))
         }
 
-        if (this.#tx.notFree()) {
+        if (this.#tx.isLocked()) {
             return asleep(200 * time.Millisecond).then(() => {
                 return this.getProfile(refresh)
             })
         }
-        this.#tx.begin()
+        this.#tx.lock()
         return fetch.fetch(url, {
             mustAuth: true,
         }).then(profile => {
             this.saveProfile(profile)
-            this.#tx.commit()
+            this.#tx.unlock()
             return profile
         }).catch(err => {
             this.#auth.validate()
-            this.#tx.rollback()
+            this.#tx.unlock()
             throw err
         })
     }

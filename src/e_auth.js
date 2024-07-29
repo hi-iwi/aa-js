@@ -7,7 +7,7 @@
 class AaAuth {
     name = 'aa-auth'
 
-    #tx = new AaTX()
+    #tx = new AaLock()
     // @type {AaStorageFactor}
     #storage
 
@@ -194,13 +194,13 @@ class AaAuth {
             const url = token['validate_api']
             let authorization = this.formatAuthorization(token)
 
-            if (this.#tx.notFree()) {
+            if (this.#tx.isLocked()) {
                 setTimeout(() => {
                     this.validate()
                 }, 300 * time.Millisecond)
                 return
             }
-            this.#tx.begin()
+            this.#tx.lock()
 
             this.#rawFetch.fetch(url, {
                 headers: {
@@ -208,13 +208,13 @@ class AaAuth {
                 }
             }).then(_ => {
                 this.#sessionSetItem('checked', true)
-                this.#tx.commit()
+                this.#tx.unlock()
             }).catch(err => {
                 if (err instanceof AError && !err.isServerErrors()) {
                     this.clear()
                 }
                 log.warn(err.toString())
-                this.#tx.rollback()
+                this.#tx.unlock()
             })
         })
     }
@@ -363,12 +363,12 @@ class AaAuth {
             return APromiseResolve(token)
         }
 
-        if (this.#tx.notFree()) {
+        if (this.#tx.isLocked()) {
             return asleep(300 * time.Millisecond).then(() => {
                 return this.refresh()
             })
         }
-        this.#tx.begin()
+        this.#tx.lock()
         const refreshToken = token['refresh_token']
         const url = token['refresh_api']
         return this.#rawFetch.fetch(url, {
@@ -382,7 +382,7 @@ class AaAuth {
             this.setToken(data)
             this.#validateTried = true
             this.#sessionSetItem('checked', true)
-            this.#tx.commit()
+            this.#tx.unlock()
             return this.#token
         }).catch(err => {
             err = aerror(err)
@@ -390,7 +390,7 @@ class AaAuth {
                 this.clear()
             }
             log.error(err.toString())
-            this.#tx.rollback()
+            this.#tx.unlock()
             throw err
         })
     }

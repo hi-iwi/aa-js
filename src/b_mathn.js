@@ -7,6 +7,9 @@ class mathn {
     static Wan = 10000 // 万
     static Yii = 100000000 // 亿
 
+    static Million = 1000000 // 100万
+    static Billion = 1000000000 // 10亿
+
 
     /**
      * Get the value of the closest key in a setting
