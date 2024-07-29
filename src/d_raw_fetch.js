@@ -92,15 +92,15 @@ class AaRawFetch {
         if (isDataAllQueryString || ["GET", "HEAD", "OPTION", "DELETE"].includes(method)) {
             const p = new AaURI(url, data).parse()
             if (!p.ok) {
-                throw new SyntaxError("miss parameter(s) in url: " + url + ' ' + JSON.stringify(data))
+                throw new SyntaxError(`miss parameter(s) in url: ${method} ${url} ${JSON.stringify(data)}`)
             }
             return [p.url, null]
         }
 
         let queries, ok;
         [url, queries, ok] = AaURI.lookup(url, data)
-        if (ok) {
-            throw new AError(AErrorEnum.BadRequest, "miss parameter(s) in url: " + url + ' ' + JSON.stringify(data))
+        if (!ok) {
+            throw new SyntaxError(`miss parameter(s) in url: ${method} ${url} ${JSON.stringify(data)}`)
         }
 
         if (len(queries) === 0) {
