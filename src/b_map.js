@@ -103,9 +103,15 @@ class map {
         return this.props.hasOwnProperty(key) && (allowUndefined || typeof this.props[key] != "undefined")
     }
 
-    get(key, cast = string) {
+    /**
+     * Get from map
+     * @param {string} key
+     * @param {(value:any)=>any} [cast]
+     * @return {*}
+     */
+    get(key, cast) {
         let v = this.has(key) ? this.props[key] : void 0
-        return cast(v)
+        return typeof cast === 'function' ? cast(v) : v
     }
 
     keys() {

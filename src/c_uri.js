@@ -400,27 +400,23 @@ class AaURI {
         }
         s = string(s)
         if (!s) {
-            return [s, queries]
+            return [s, queries, false]
         }
         const ps = s.match(/{[\w:-]+}/ig)
         if (!ps) {
-            return [s, queries]
+            return [s, queries, true]
         }
         if (!newQueries) {
-            //  对data进行了局部删除，一定要深度拷贝一下，避免一些不必要的麻烦
+            //  对data进行了局部删除，一定要拷贝一下，避免一些不必要的麻烦
             newQueries = queries.clone(false)
         }
         for (let i = 0; i < ps.length; i++) {
             let m = ps[i]
             let k = m.replace(/^{([\w-]+)[:}].*$/ig, '$1')
-            let v = newQueries.get(k)
-            if (Array.isArray(v)) {
-                v = v.join(",")  // url param，数组用逗号隔开模式
-            }
-            if (v !== "") {
-                s = s.replace(new RegExp(m, 'g'), v)
-                newQueries.delete(k)
-            }
+            let v = newQueries.get(k, string)  // 支持array, AaImgSrc, Decimal, time 等所有格式数据
+            s = s.replace(new RegExp(m, 'g'), v)
+            newQueries.delete(k)
+
         }
         const ok = !(/\/{[\w:-]+}/.test(s))  // 判定是否还有未替换的url param
         return [s, newQueries, ok]

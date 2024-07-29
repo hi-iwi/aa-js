@@ -464,9 +464,24 @@ function string(...args) {
     if (v === null) {
         return ""
     }
+
+    // toJSON 一定是最终数据
+    if (typeof v.toJSON === "function") {
+        return string(v.toJSON())
+    }
+
+
+    // array, AaImgSrc, Decimal, Money, Percent, VMoney, Time, Date
+    // [1,2,3].toString() ==> 1,2,3
+    // Time toString 更接近 toJSON，比 valueOf() 更适合
     if (typeof v.toString === "function") {
         return v.toString()
     }
+    // time, Date
+    if (typeof v.valueOf === "function") {
+        return string(v.valueOf())
+    }
+
 
     return v + ''
 }

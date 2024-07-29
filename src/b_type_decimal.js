@@ -218,8 +218,9 @@ class Decimal {
         return this.value
     }
 
+
     toJSON() {
-        return this.value
+        return String(this.value)
     }
 
 
