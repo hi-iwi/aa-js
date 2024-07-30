@@ -121,9 +121,13 @@ class AaRawFetch {
                 data[key] = value['path']
             }
         }
-
-        //  这里会识别对象的 .toJSON() 方法
-        return JSON.stringify(data)
+        try {
+            //  这里会识别对象的 .toJSON() 方法
+            return JSON.stringify(data)
+        } catch (e) {
+            log.error(e.toString(), data)
+        }
+        return ''
     }
 
 
