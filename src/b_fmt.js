@@ -95,4 +95,95 @@ class fmt {
         }
         return !s ? "" : s[0].toUpperCase() + s.substring(1)
     }
+
+    // 将阿拉伯数字，转为小写中文
+
+    /**
+     * Convert Arabic numerals to Chinese numerals
+     * @param {number|string} num
+     * @param {boolean} [financial] convert to financial numerals (`capital` numerals)
+     * @return {string}
+     */
+    static toChineseNumber(num, financial) {
+        num = float64(num)
+        let hanziNum = {
+            0: '零',
+            1: '一',
+            2: '二',
+            3: '三',
+            4: '四',
+            5: '五',
+            6: '六',
+            7: '七',
+            8: '八',
+            9: '九'
+        };
+
+        let units = ['个', '万', '亿', '万亿', '兆'];
+        let suffix = ['', '十', '百', '千'];
+        if (financial) {
+            hanziNum = {
+                0: '零',
+                1: '壹',
+                2: '贰',
+                3: '叁',
+                4: '肆',
+                5: '伍',
+                6: '陆',
+                7: '柒',
+                8: '捌',
+                9: '玖'
+            };
+            // 万之后，不用大写
+            units = ['个', '万', '亿', '万亿', '兆'];
+            suffix = ['', '拾', '佰', '仟'];
+        }
+        let s = string(num)
+        if (s.indexOf(".") > -1) {
+            const a = s.split(".")
+            let d = a[1]
+            let ds = ''
+            for (let i = 0; i < d.length; i++) {
+                ds += hanziNum[d[i]]
+            }
+            return fmt.toChineseNumber(a[0]) + "点" + ds
+        }
+        if (num === 0) {
+            return '零'
+        }
+
+        if (!(/^\d+$/.test(s))) {
+            throw new Error('Not a number');
+        }
+        if (s.length > 20) {
+            throw new Error('Number is too large');
+        }
+        let digitList = s.split('');
+        digitList.reverse();
+        let splitNumList = [];
+        let l = digitList.splice(0, 4);
+        while (l.length) {
+            splitNumList.push(l);
+            l = digitList.splice(0, 4);
+        }
+        let hanzi = '';
+        splitNumList.forEach((arr, i) => {
+            let rst = '';
+            arr.forEach((digit, j) => {
+                rst = hanziNum[digit] + suffix[j] + rst;
+            });
+            rst += units[i % 6];
+            hanzi = rst + hanzi;
+        });
+        suffix.forEach(item => (hanzi = hanzi.replace(new RegExp('零' + item, 'g'), '零')));
+        for (let i = units.length - 1; i >= 0; --i) {
+            let val = units[i];
+            hanzi = hanzi.replace(new RegExp('(零+)' + val, 'g'), (match, $1) => ($1.length === 4 ? '' : val));
+        }
+        hanzi = hanzi.replace(/零+/g, '零');
+        hanzi = hanzi.replace(/个/g, '');
+        hanzi = hanzi.replace(/^一十/, '十');
+        return hanzi;
+    }
+
 }

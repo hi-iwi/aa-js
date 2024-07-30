@@ -48,6 +48,7 @@ class Money extends Decimal {
     toCent() {
 
     }
+
     /*
      *  @param decimal|{money:decimal} rates 税率，若是struct，则表示阶梯税率
      *  {
@@ -59,37 +60,73 @@ class Money extends Decimal {
     *       0 表示不包含临界值，如 100 * Money.Yuan； 如 boundary = Money.Yuan 则表示
     * @return AaMath.Money
      */
-    tax(rates, base = 0, boundary = 0) {
+    /**
+     * Calculate tax
+     * @param {number|Decimal|struct} rates
+     *      number => decimal(n)
+     *      Decimal
+     *      struct  阶梯税率  {money:decimal}
+     *          e.g. {100*Money.Yuan:34*Percent.Percent, 200*Money.Yuan:34*Percent.Percent}
+     * @param {Money|number} [base] 基准税金
+     * @param {Money|number} [boundary] 基准税金对应基准税额
+     * @return {Money|*}   // 子类继承，使用广泛的类型
+     */
+    tax(rates, base, boundary) {
         const newMoney = this.clone()
+        if (!rates) {
+            newMoney.value = 0
+            return newMoney// 可以传递到
+        }
+
+
         // @warn  rates 的百分比，必须是 * Percent.Percent 后的
-        if (typeof rates === "number") {
-            return  newMoney.multiply(rates)
+        if (!atype.isStruct(rates)) {
+            rates = decimal(rates)
+            return newMoney.multiply(rates)
         }
-        if( rates instanceof Decimal){
-            return newMoney.multiply()
-        }
-        if (len(rates) === 0) {
-            return m
-        }
-        /*
-        rates:  {100:34*Percent.Percent, 200:34*Percent.Percent}
-         */
-        base = intMax(base)
-        let w = m.Value
-        let tax = 0
-// 由大到小排列
-        const keys = Object.keys(rates).sort((a, b) => b - a)
-        const n = keys.length
-        for (let i = 0; i < n; i++) {
-            let rate = rates[keys[i]] // 税率
-            let min = keys[i] - boundary // 区间下限
-            if (w <= min) {
+
+        boundary = money(boundary)
+        let tax = money()
+        const keys = Object.keys(rates).sort()
+        // iterate from greater to lesser
+        for (let i = keys.length - 1; i > -1; i--) {
+            const threshold = keys[i]// 阈值
+            let min = threshold - boundary.valueOf() // 区间下限   money - money  会自动转为 .valueOf()
+            if (newMoney.value <= min) {
                 continue
             }
-            let r = w - min
-            tax += AaMathOld.Money(r).MulRoundD(rate).Value
+            const r = money(newMoney.value - min)
+            newMoney.value = min
+            const rate = decimal(rates[threshold])// 税率
+            tax.plus(r.multiply(rate))
         }
-        return AaMathOld.Money(tax + base)
+
+        return base ? tax.plus(money(base)) : tax
+    }
+
+
+    toFinancialString(financial) {
+        // 阿拉伯数字转中文，
+        let c = fmt.toChineseNumber(this.toReal(), financial)
+        if (c.indexOf("点") < 0) {
+            return c + "元"
+        }
+        let g = c.split('点')
+        let s = g[0] + '元'
+        if (g.length > 1) {
+            const dime = g[1][0]
+            s += dime
+            if (dime !== '零') {
+                s += '角'
+            }
+            if (g[1].length > 1) {
+                const cent = g[1][1]
+                if (cent !== '零') {
+                    s += cent + '分'
+                }
+            }
+        }
+        return s
     }
 }
 

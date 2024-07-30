@@ -70,13 +70,13 @@ class Decimal {
         return new Decimal(this.value).setRounder(this.rounder)
     }
 
+
     /**
      * @param {Decimal|number} n
      * @return {Decimal}
      */
     plus(n) {
         if (typeof n === "number") {
-            n *= this.units
             this.value = this.rounder(this.value + n)
             return this
         }
@@ -97,13 +97,16 @@ class Decimal {
         throw new TypeError(`${this.name} plus ${n.name} is not allowed`)
     }
 
+    plusUnitsX(n) {
+        return this.plus(n * this.units)
+    }
+
     /**
      * @param {Decimal|number|*} n
      * @return {Decimal}
      */
     minus(n) {
         if (typeof n === "number") {
-            n *= this.units
             this.value = this.rounder(this.value - n)
             return this
         }
@@ -124,13 +127,17 @@ class Decimal {
         throw new TypeError(`${this.name} minus ${n.name} is not allowed`)
     }
 
+    minusUnitsX(n) {
+        return this.minus(n * this.units)
+    }
+
     /**
      * @param {Decimal|number|*} n
      * @return {Decimal}
      */
     multiply(n) {
         if (typeof n === "number") {
-            this.value = this.rounder(this.value * n)
+            this.value = this.rounder(this.value * n / this.units)
             return this
         }
 
@@ -154,6 +161,10 @@ class Decimal {
         throw new TypeError(`${this.name} multiply ${n.name} is not allowed`)
     }
 
+    multiplyUnitsX(n) {
+        return this.multiply(n * this.units)
+    }
+
     /**
      * @param {Decimal|number} n
      * @return {Decimal}
@@ -164,7 +175,7 @@ class Decimal {
         }
 
         if (typeof n === "number") {
-            this.value = this.rounder(this.value / n)
+            this.value = this.rounder(this.value * this.units / n)
             return this
         }
 
@@ -188,17 +199,21 @@ class Decimal {
         throw new TypeError(`${this.name} div ${n.name} is not allowed`)
     }
 
+    divideUnitsX(n) {
+        return this.divide(n * this.units)
+    }
+
     /**
      * @param {Decimal|number} n
      * @return {Decimal}
      */
-    beDevide(n) {
+    beDivided(n) {
         if (this.value === 0) {
             throw new RangeError(`${n}/0 zero can't be a dividend`)
         }
 
         if (typeof n === "number") {
-            n *= this.units * this.units
+            n *= this.units
             this.value = this.rounder(n / this.value)
             return this
         }
@@ -222,6 +237,10 @@ class Decimal {
         }
 
         throw new TypeError(`${this.name} div ${n.name} is not allowed`)
+    }
+
+    beDividedUnitsX(n) {
+        return this.beDivided(n * this.units)
     }
 
     // 精度
@@ -324,6 +343,13 @@ class Decimal {
     format(settings) {
         settings = Decimal.newFormatSettings(settings)
         return this.formatWhole(settings.segmentSize, settings.separator) + this.formatMantissa(settings.scale, settings.trimScale, settings.scaleRound)
+    }
+
+    fmt(scale = 2, trimScale = true) {
+        return this.format({
+            trimScale: trimScale,
+            scale    : scale,
+        })
     }
 
     info() {
