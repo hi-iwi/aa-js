@@ -1,4 +1,3 @@
-
 //@TODO
 class AaFileSrc {
     name = 'aa-file-src'
@@ -10,13 +9,13 @@ class AaFileSrc {
     checksum
     info
 
+    jsonkey
 
-    // 提供给 string() 用
-    toString() {
-        return this.path
-    }
+
+
     // aaFetch 层会处理该数据
     toJSON() {
-        return this.path
+        let key = this.jsonkey && this.hasOwnProperty(this.jsonkey) ? this.jsonkey : 'path'
+        return this[key]
     }
 }

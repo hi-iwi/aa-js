@@ -18,6 +18,7 @@ class AaImgSrc {
     width
     height
     allowed
+    jsonkey
 
     // @type {ImageBase64|filepath} for upload
     #thumbnail
@@ -64,6 +65,7 @@ class AaImgSrc {
             'width'         : this.width,
             'height'        : this.height,
             'allowed'       : this.allowed,
+            'jsonkey'       : this.jsonkey,
         }
     }
 
@@ -238,14 +240,11 @@ class AaImgSrc {
         }
     }
 
-    // 提供给 string() 用
-    toString() {
-        return this.path
-    }
 
     // aaFetch 层会处理该数据
     toJSON() {
-        return this.path
+        let key = this.jsonkey && this.hasOwnProperty(this.jsonkey) ? this.jsonkey : 'path'
+        return this[key]
     }
 
 

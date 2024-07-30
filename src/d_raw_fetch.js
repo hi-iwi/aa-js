@@ -110,15 +110,64 @@ class AaRawFetch {
         return [url, queries]
     }
 
+    /**
+     *
+     * @param {object|struct} value
+     * @return {*}
+     */
+    unpackData(value) {
+        if (!value) {
+            return value
+        }
+        if (Array.isArray(value)) {
+            if (value.length === 0) {
+                return null
+            }
+            let isBitset = true
+            for (let i = 0; i < value.length; i++) {
+                const v = this.unpackData(value[i])
+                if (!value[i] || value[i].hasOwnProperty('jsonbitset') || (typeof v !== 'number' && !(typeof v === "string" && /^\d+$/.test(v)))) {
+                    isBitset = false
+                }
+                value[i] = v
+            }
+            /**
+             * `jsonbitset` is a reserved json field ot indicate the value of this struct is a bit. Once it is in an array,
+             *      it should be calculated.
+             */
+            if (isBitset) {
+                let bitset = 0
+                for (let i = 0; i < value.length; i++) {
+                    bitset |= 1 << number(value[i])
+                }
+                return bitset
+            }
+        }
+        // .toJSON() 会被 JSON.stringify 识别，这里处理一下也无妨，以后扩展其他类型也更方便
+        if (typeof value.toJSON === "function") {
+            return value.toJSON()
+        }
+
+        /**
+         * `jsonkey` is a reserved json field to indicate the value of the key name of this struct.
+         *  1. `jsonkey` field must be a string. It can be an empty string.
+         *  2. if `jsonkey` is not an empty string, its value is the key name of the value of this struct
+         *  3. if `jsonkey` is an empty string, try the `value` or `id` or `path` properties
+         */
+        if (typeof value.jsonkey === "string") {
+            let key = value.jsonkey ? value.jsonkey : (value.hasOwnProperty('value') ? 'value' : (value.hasOwnProperty('id') ? 'id' : 'path'))
+            if (value.hasOwnProperty(key)) {
+                return value[key]
+            }
+        }
+        return value
+    }
+
     // @TODO support other content-types
     serializeData(data, contentType = 'application/json') {
         for (const [key, value] of Object.entries(data)) {
-            if (!atype.isStruct(value)) {
-                continue
-            }
-            // may be oss file
-            if (map.containAll(value, 'provider', 'path', 'filetype', 'size')) {
-                data[key] = value['path']
+            if (value !== null && typeof value === "object") {
+                data[key] = this.unpackData(value)
             }
         }
         try {
