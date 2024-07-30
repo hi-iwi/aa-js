@@ -6,14 +6,19 @@ class VMoney extends Money {
     // @override
     static Units = Math.pow(10, VMoney.Scale)
     // @override
-    type = "vmoney"
+    static Rounder = Math.round
+
     // @override
-    rounder = Math.round
+    type = 'vmoney'
+    // @override
+    group = 'money'
+
     // @override
     scale = Money.Scale
     // @override
     units = Money.Units
-
+    // @override
+    rounder = VMoney.Rounder   // 取整方式 ceil -> round up;  floor -> round down
     /**
      * @param {number|string} [vv]
      * @param {string} [vk]
