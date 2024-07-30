@@ -81,7 +81,7 @@ A Javascript SDK of AaGo
 | atype             | static    | types detector                        |
 | AaLoggerStyle     |           |                                       |
 | log               |           |                                       |
-| ---------------   | --------- | ---------------------------           |
+| ---------------   | --------- | ------------------------------------- |
 | [AaEnv]           | private   | use `aa.env` instead                  |
 | AError            |           | Error with code                       |
 | fmt               | static    | format                                |
@@ -97,14 +97,15 @@ A Javascript SDK of AaGo
 | Money             |           |                                       |
 | Percent           |           |                                       |
 | VMoney            |           |                                       |
-| ---------------   | --------- | ---------------------------           |
+| ---------------   | --------- | ------------------------------------- |
 | [AaRegistry]      |           | use `aa.registry()` instead           |
 | [AaCookieStorage] |           | use `aa.storage()` instead            |
 | [AaStorageEngine] |           | use `aa.storage()` instead            |
 | [AaStorageFactor] |           | use `aa.storage()` instead            |
 | [AaCache]         |           | use `aa.cache()` or `aa.db()` instead |
 | [AaURI]           |           | use `aa.url()` or `aa.URI` instead    |
-| ---------------   | --------- | ---------------------------           |
+| [AaValidator]     |           | use `aa.validator()` instead          |
+| ---------------   | --------- | ------------------------------------- |
 | [AaRawFetch]      |           | use `aa.fetch()` instead              |
 | [AaScrollEvent]   |           | use `aa.scrollEvent` instead          |
 | [AaAuth]          |           | use `aa.auth` instead                 |
@@ -115,7 +116,7 @@ A Javascript SDK of AaGo
 | [AaFileSrc]       |           | use `aa.fileSrc` instead              |
 | [AaImgSrc]        |           | use `aa.imgSrc` instead               |
 | [AaVideoSrc]      |           | use `aa.videoSrc` instead             |
-| ---------------   | --------- | ---------------------------           |
+| ---------------   | --------- | ------------------------------------- |
 | [AaAccount]       |           | use `aa.account` instead              |
 | [AaApollo]        |           | use `aa.apollo()` instead             |
 | [AaEditor]        |           | use `aa.editor` instead               |

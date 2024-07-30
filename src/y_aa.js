@@ -13,9 +13,10 @@ class Aa {
     db
 
 
-    // @type {AaURI}
+    // @type {typeof AaURI}
     uri = AaURI
-
+    // @type {typeof AaValidator}
+    validator = AaValidator
 
     // @type {AaEnv}
     env = AaEnv

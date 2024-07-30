@@ -9,14 +9,15 @@ Promise.prototype.asleep = function (timeout) {
 }
 
 
-function APromiseResolve(...args) {
+function APromiseResolve(data) {
     return new Promise((resolve, reject) => {
-        resolve(...args)
+        resolve(data)
     })
 }
 
-function APromiseReject(...args) {
+function APromiseReject(err) {
     return new Promise((_, reject) => {
-        reject(...args)
+        err = !err || typeof err === "string" ? aerror(AErrorEnum.ClientThrow, err) : aerror(err)
+        reject(err)
     })
 }

@@ -47,7 +47,6 @@ const aparam = {
 }
 
 
-
 /**
  * 为了方便 log 类，debug状态一律用全局
  */

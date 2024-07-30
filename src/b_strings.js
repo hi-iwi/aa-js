@@ -3,6 +3,36 @@
 // a static class
 class strings {
     name = "aa-strings"
+    static atoz = 'abcdefghijklmnopqrstuvwxyz'
+    static AtoZ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    static Atoz = strings.AtoZ + strings.atoz    //  ascii of `a` is greater than 'A'
+    static digits = '0123456789'
+    static alphaNumeric = strings.Atoz + strings.digits
+
+    /**
+     * Shuffle a string
+     * @param {string} s
+     */
+    static shuffle(s) {
+        return arrays.shuffle(s.split('')).join('')
+    }
+
+    /**
+     * Generate a random string
+     * @param {number} length
+     * @param {string} [base]
+     */
+    static random(length, base) {
+        if (!base) {
+            base = strings.alphaNumeric
+        }
+        base = strings.shuffle(base)
+        let result = ''
+        for (let i = 0; i < length; i++) {
+            result += base[Math.floor(Math.random() * base.length)]
+        }
+        return result;
+    }
 
     /**
      * Replaces the last matched text in a string, using a regular expression or search string.
@@ -32,6 +62,47 @@ class strings {
         return /[^\u4e00-\u9fa5]/.test(s)
     }
 
+    /**
+     * Convert punctuation marks from Chinese to English
+     * @param {string} s
+     */
+    static puncCn2En(s) {
+        let arr = s.split('')
+        let zh = [['～', '~'],
+            ['·', '`'],
+            ['！', '!'],
+            ['¥', '$'],
+            ['……', '^'],
+            ['…', '^'],
+            ['（', '('],
+            ['）', ')'],
+            ['——', '-'],
+            ['—', '-'],
+            ['【', '['],
+            ['】', ']'],
+            ['「', '{'],
+            ['」', '}'],
+            ['｜', '|'],
+            ['、', '\\'],
+            ['；', ';'],
+            ['：', ':'],
+            ['‘', "'"],
+            ['“', '"'],
+            ['，', ','],
+            ['《', '<'],
+            ['。', '.'],
+            ['》', '>'],
+            ['？', '?']]
+
+        arr.map((char, i) => {
+            for (let j = 0; j < zh.length; j++) {
+                if (char === zh[j][0]) {
+                    arr[i] = zh[j][1]
+                }
+            }
+        })
+        return arr.join('')
+    }
 
     // 转义 reg exp
     static escapeReg(exp) {
