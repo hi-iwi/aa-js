@@ -203,7 +203,7 @@ class AaImgSrc {
         const ratio = Decimal.div(width, height)
         if (maxHeight > 0 && height > maxHeight) {
             height = maxHeight
-            width = ratio.beDiv(maxWidth).toReal()
+            width = ratio.beDevide(maxWidth).toReal()
         }
 
         const pattern = string(this.resizePattern)

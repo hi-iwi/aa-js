@@ -158,7 +158,7 @@ class Decimal {
      * @param {Decimal|number} n
      * @return {Decimal}
      */
-    div(n) {
+    divide(n) {
         if (n === 0) {
             throw new RangeError(`zero can't be a dividend`)
         }
@@ -192,7 +192,7 @@ class Decimal {
      * @param {Decimal|number} n
      * @return {Decimal}
      */
-    beDiv(n) {
+    beDevide(n) {
         if (this.value === 0) {
             throw new RangeError(`${n}/0 zero can't be a dividend`)
         }
