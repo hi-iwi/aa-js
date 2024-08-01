@@ -193,7 +193,7 @@ class AaRawFetch {
                 headers[key] = value
             }
         })
-        map.fillUp(headers, this.#headers, null, (k, v, target) => {
+        map.fillUp(headers, this.#headers,(k, v, target) => {
             if (!target.hasOwnProperty(k)) {
                 target[k] = v
             } else {

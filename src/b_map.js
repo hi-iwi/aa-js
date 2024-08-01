@@ -279,7 +279,7 @@ class map {
     static merge(target, source, keynameConvertor) {
         for (let [k, v] of Object.entries(struct(source))) {
             if (typeof keynameConvertor === 'function') {
-                k = map.handleKeyname(source, keynameConvertor)
+                k = map.handleKeyname(target, k, keynameConvertor)
             }
             // 定义不存在undefined。undefined当作特殊情况过滤；
             if (typeof v !== "undefined" && target.hasOwnProperty(k)) {
@@ -301,7 +301,7 @@ class map {
     static strictMerge(target, source, keynameConvertor) {
         for (let [k, v] of Object.entries(struct(source))) {
             if (typeof keynameConvertor === 'function') {
-                k = map.handleKeyname(source, keynameConvertor)
+                k = map.handleKeyname(target, k, keynameConvertor)
             }
             if (typeof v === "undefined" || !target.hasOwnProperty(k)) {
                 continue
@@ -329,7 +329,9 @@ class map {
             return Object.assign(target, source)
         }
         for (let [k, v] of Object.entries(source)) {
-            k = map.handleKeyname(source, keynameConvertor)
+            if (typeof keynameConvertor === 'function') {
+                k = map.handleKeyname(target, k, keynameConvertor)
+            }
             target[k] = v
         }
         return target
@@ -349,13 +351,12 @@ class map {
         if (typeof keynameConvertor !== 'function') {
             return Object.assign({}, target, source)// 等同于{...target, ...source}
         }
-        let obj = {}
-        for (let [k, v] of Object.entries(target)) {
-            k = map.handleKeyname(target, keynameConvertor)
-            obj[k] = v
-        }
+        let obj = Object.assign({}, target)
+
         for (let [k, v] of Object.entries(source)) {
-            k = map.handleKeyname(source, keynameConvertor)
+            if (typeof keynameConvertor === 'function') {
+                k = map.handleKeyname(target, k, keynameConvertor)
+            }
             obj[k] = v
         }
         return obj
@@ -366,11 +367,10 @@ class map {
      * @description 将两个对象的差集填充进target对象。通常用于填充默认配置。
      * @param {Class|struct} target   A --> 会污染 target
      * @param {struct} defaults B
-     * @param {(v:any)=>any} [keynameConvertor]
      * @param {function} [handler]
      * @return  {Class|struct}    A = A ∪ (A - B)
      */
-    static fillUp(target, defaults, keynameConvertor, handler) {
+    static fillUp(target, defaults, handler) {
         target = struct(target)
         defaults = struct(defaults)
         if (typeof handler !== "function") {
@@ -401,20 +401,21 @@ class map {
         }
         let fields = target.hasOwnProperty('_fields_') && target._fields_ ? target._fields_ : target.constructor['_fields_'] ? target.constructor['_fields_'] : null
         for (let [k, v] of Object.entries(source)) {
-            let keyname = map.handleKeyname(source, keynameConvertor)
-            if (keyname === '_fields_' || !target.hasOwnProperty(keyname)) {
+            if (typeof keynameConvertor === 'function') {
+                k = map.handleKeyname(target, k, keynameConvertor)
+            }
+            if (k === '_fields_' || !target.hasOwnProperty(k)) {
                 continue
             }
-
             // filter by target._fields_
-            if (fields && !fields.includes(k) && !fields.includes(keyname)) {
+            if (fields && !fields.includes(k) && !fields.includes(k)) {
                 continue
             }
 
             if (typeof v === "undefined") {
-                target[keyname] = atype.zeroize(target[keyname])
+                target[k] = atype.zeroize(target[k])
             } else {
-                target[keyname] = typeof target[keyname] === "number" ? number(v) : v
+                target[k] = typeof target[k] === "number" ? number(v) : v
             }
         }
         return target
