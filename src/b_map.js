@@ -240,26 +240,26 @@ class map {
 
     /**
      *
-     * @param  {Class|struct} source
+     * @param  {Class|struct} target
      * @param  {struct} keyname
      * @param {(v:any)=>any} [convertor]
      * @return {string|*}
      */
-    static handleKeyname(source, keyname, convertor) {
+    static handleKeyname(target, keyname, convertor) {
         if (typeof convertor === 'function' && convertor !== nif) {
             keyname = convertor(keyname)
         }
 
-        if (source.hasOwnProperty(keyname)) {
+        if (target.hasOwnProperty(keyname)) {
             return keyname
         }
+        // 私有属性，访问不了
+        // let privKeyname = '#' + keyname
+        // if (source.hasOwnProperty(privKeyname)) {
+        //     return privKeyname
+        // }
 
-        let privKeyname = '#' + keyname
-
-        if (source.hasOwnProperty(privKeyname)) {
-            return privKeyname
-        }
-        for (let [k2, _] of Object.entries(source)) {
+        for (let [k2, _] of Object.entries(target)) {
             // "base_url" ===> baseUrl  or  baseURL
             if (k2.toLowerCase() === keyname.toLowerCase()) {
                 return k2
