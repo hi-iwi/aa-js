@@ -1,5 +1,6 @@
 /**
  * @import AaAuth
+ * @typedef {struct} LoginResponseData
  * @typedef {struct} Profile
  */
 
@@ -49,6 +50,10 @@ class AaAccount {
 
     }
 
+    /**
+     *
+     * @param {LoginResponseData} data
+     */
     save(data) {
         this.#auth.setToken(data['token'], data['fields'])
         this.saveProfile(data['profile'])

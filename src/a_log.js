@@ -124,15 +124,20 @@ class log {
         let sty = style.toString()
         let s = ''
         for (let i = 0; i < args.length; i++) {
-            if (typeof args[i] === "object" && typeof args[i].toString !== "function" && typeof args[i].valueOf !== "function") {
+            let v = args[i]
+            if (typeof v.valueOf === 'function') {
+                v = v.valueOf()
+            } else if (atype.toStringCallable(args[i])) {
+                v = v.toString()
+            } else if (typeof v === "object") {
                 if (s) {
                     fn("%c" + s, sty)
                     s = ''
                 }
-                fn(args[i])
+                fn(v)
                 continue
             }
-            s += args[i] + ' '
+            s += v + ' '
         }
         if (s) {
             fn("%c" + s, sty)
@@ -146,7 +151,7 @@ class log {
         }
         console.log('')
         for (let i = 0; i < args.length; i++) {
-            console.log(`[${i}] ${args[i]}`)
+            console.log(`[${i}]`, args[i])
         }
     }
 

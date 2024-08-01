@@ -220,14 +220,30 @@ class strings {
         return null
     }
 
-    static joinWith(separator, condition, ...args) {
+    static joinWith(separator, ...args) {
+        let arr = []
+        for (let i = 0; i < args.length; i++) {
+            if (typeof args[i] !== 'undefined' && args[i] !== null && args !== '') {
+                arr.push(string(args[i]))
+            }
+        }
+        return arr.join(separator)
+    }
+
+    static join(...args) {
+        return strings.joinWith(' ', ...args)
+    }
+
+    static joinByWith(separator, condition, ...args) {
         if (!condition) {
             return string(args, 0)
         }
-        return args.join(separator).trim()
+        return strings.joinWith(' ', ...args)
     }
 
-    static join(condition, ...args) {
-        return strings.joinWith(' ', condition, ...args)
+    static joinBy(condition, ...args) {
+        return strings.joinByWith(' ', condition, ...args)
     }
+
+
 }

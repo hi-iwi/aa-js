@@ -106,6 +106,13 @@ class atype {
         regexp   : "r",
     }
 
+    static toStringCallable(v) {
+        if (v && typeof v.toString === 'function') {
+            return v.toString().indexOf('[object ') !== 0
+        }
+        return false
+    }
+
     /**
      * Zeroize a value
      * @param v
@@ -474,7 +481,7 @@ function string(...args) {
     // array, AaImgSrc, Decimal, Money, Percent, VMoney, Time, Date
     // [1,2,3].toString() ==> 1,2,3
     // Time toString 更接近 toJSON，比 valueOf() 更适合
-    if (typeof v.toString === "function") {
+    if (typeof v.toString === "function" && v.toString().indexOf('[object ') !== 0) {
         return v.toString()
     }
     // time, Date

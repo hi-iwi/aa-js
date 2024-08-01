@@ -176,7 +176,7 @@ class AaURI {
         this.#hash = string(hash)
         // 一定要在 queries 实例化后
         if (len(params) > 0) {
-            this.extend(params)
+            this.setParams(params)
         }
     }
 
@@ -225,7 +225,7 @@ class AaURI {
      * @param {map|{[key:string]:*}} params
      * @return {AaURI}
      */
-    extend(params) {
+    setParams(params) {
         this.queries.extend(params)
         return this
     }
@@ -234,6 +234,7 @@ class AaURI {
         this.queries.set(key, value)
         return this
     }
+
 
     queryString(assert) {
         if (typeof assert === "string") {
@@ -379,13 +380,6 @@ class AaURI {
         return [hostname, port]
     }
 
-    /**
-     *
-     * @param url
-     */
-    static split(url) {
-
-    }
 
     /**
      * replace parameters in url string
@@ -420,5 +414,28 @@ class AaURI {
         }
         const ok = !(/\/{[\w:-]+}/.test(s))  // 判定是否还有未替换的url param
         return [s, newQueries, ok]
+    }
+
+    /**
+     *
+     * @param {string} defaultRedirect
+     * @param {struct} params
+     * @return {string}
+     */
+    static defaultRedirectURL(defaultRedirect = '/', params) {
+        const url = new AaURI(location.href)
+        let redirect = url.query("redirect")
+        if (redirect) {
+            redirect = new AaURI(redirect, UrlRemoveRedirect).toString()
+        }
+        url.setParams(UrlRemoveRedirect)
+        if (redirect.toString() !== url.toString()) {
+            if (params) {
+                redirect.setParams(params)
+            }
+            return redirect.toString()
+        }
+
+        return new AaURI(defaultRedirect ? defaultRedirect : '/', params).toString()
     }
 }

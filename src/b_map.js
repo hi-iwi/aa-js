@@ -137,11 +137,13 @@ class map {
         this.props[key] = value
     }
 
-    getOrSet(key, defaultValue, allowUndefined = false) {
-        if (!this.has(key, allowUndefined)) {
-            this.set(key, defaultValue)
+    setObject(obj) {
+        if (!obj) {
+            return
         }
-        return this.get(key)
+        for (const [key, value] of Object.entries(obj)) {
+            this.props[key] = value
+        }
     }
 
     /**
@@ -164,10 +166,30 @@ class map {
         return this
     }
 
+    getOrSet(key, defaultValue, allowUndefined = false) {
+        if (!this.has(key, allowUndefined)) {
+            this.set(key, defaultValue)
+        }
+        return this.get(key)
+    }
+
+
     // 深度复制
     clone(deep = true) {
         let obj = deep ? map.clone(this.props) : {...this.props}
         return new map(obj)
+    }
+
+    /**
+     * Create a struct with one property
+     * @param key
+     * @param value
+     * @return {struct}
+     */
+    static kv(key, value) {
+        let o = {}
+        o[key] = value
+        return o
     }
 
     static set(obj, key, value) {
@@ -217,14 +239,48 @@ class map {
     }
 
     /**
+     *
+     * @param  {Class|struct} source
+     * @param  {struct} keyname
+     * @param {(v:any)=>any} [convertor]
+     * @return {string|*}
+     */
+    static handleKeyname(source, keyname, convertor) {
+        if (typeof convertor === 'function' && convertor !== nif) {
+            keyname = convertor(keyname)
+        }
+
+        if (source.hasOwnProperty(keyname)) {
+            return keyname
+        }
+
+        let privKeyname = '#' + keyname
+
+        if (source.hasOwnProperty(privKeyname)) {
+            return privKeyname
+        }
+        for (let [k2, _] of Object.entries(source)) {
+            // "base_url" ===> baseUrl  or  baseURL
+            if (k2.toLowerCase() === keyname.toLowerCase()) {
+                return k2
+            }
+        }
+        return keyname
+    }
+
+    /**
      * Merge the contents of two objects together into the first object based on the properties of the first object
      * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名覆盖，抛弃sources对象多余属性值。常用于配置文件填充
      * @param {Class|struct} target A --> 会污染 target。 target 可以是struct，也可以是class.
      * @param {struct} source B
+     * @param {(v:any)=>any} [keynameConvertor]
      * @return {Class|struct}   A = A  ∪ (A ∩ B)
      */
-    static merge(target, source) {
+    static merge(target, source, keynameConvertor) {
         for (let [k, v] of Object.entries(struct(source))) {
+            if (typeof keynameConvertor === 'function') {
+                k = map.handleKeyname(source, keynameConvertor)
+            }
             // 定义不存在undefined。undefined当作特殊情况过滤；
             if (typeof v !== "undefined" && target.hasOwnProperty(k)) {
                 target[k] = v
@@ -239,10 +295,14 @@ class map {
      *      常用于配置文件填充
      * @param {Class|struct} target A --> 会污染 target。 target 可以是struct，也可以是class.
      * @param {struct}  source B
+     * @param {(v:any)=>any} [keynameConvertor]
      * @return  {Class|struct}     A = A ∪ (|A| ∩ |B|)
      */
-    static strictMerge(target, source) {
+    static strictMerge(target, source, keynameConvertor) {
         for (let [k, v] of Object.entries(struct(source))) {
+            if (typeof keynameConvertor === 'function') {
+                k = map.handleKeyname(source, keynameConvertor)
+            }
             if (typeof v === "undefined" || !target.hasOwnProperty(k)) {
                 continue
             }
@@ -259,10 +319,20 @@ class map {
      *
      * @param target A
      * @param source B
+     * @param {(v:any)=>any} [keynameConvertor]
      * @return {struct}    A = A ∪ B
      */
-    static assign(target, source) {
-        return Object.assign(struct(target), struct(source))
+    static assign(target, source, keynameConvertor) {
+        target = struct(target)
+        source = struct(source)
+        if (typeof keynameConvertor !== 'function') {
+            return Object.assign(target, source)
+        }
+        for (let [k, v] of Object.entries(source)) {
+            k = map.handleKeyname(source, keynameConvertor)
+            target[k] = v
+        }
+        return target
     }
 
     /**
@@ -270,10 +340,25 @@ class map {
      * @description 合并两个对象属性，若出现相同属性，则后者b的该属性覆盖前者a的该属性。若想相反覆盖，则调换位置即可
      * @param {struct} target A
      * @param {struct} source B
+     * @param {(v:any)=>any} [keynameConvertor]
      * @returns {struct}      C = A ∪ B
      */
-    static spread(target, source) {
-        return Object.assign({}, struct(target), struct(source))// 等同于{...struct(target), ...struct(source)}
+    static spread(target, source, keynameConvertor) {
+        target = struct(target)
+        source = struct(source)
+        if (typeof keynameConvertor !== 'function') {
+            return Object.assign({}, target, source)// 等同于{...target, ...source}
+        }
+        let obj = {}
+        for (let [k, v] of Object.entries(target)) {
+            k = map.handleKeyname(target, keynameConvertor)
+            obj[k] = v
+        }
+        for (let [k, v] of Object.entries(source)) {
+            k = map.handleKeyname(source, keynameConvertor)
+            obj[k] = v
+        }
+        return obj
     }
 
     /**
@@ -281,11 +366,13 @@ class map {
      * @description 将两个对象的差集填充进target对象。通常用于填充默认配置。
      * @param {Class|struct} target   A --> 会污染 target
      * @param {struct} defaults B
+     * @param {(v:any)=>any} [keynameConvertor]
      * @param {function} [handler]
      * @return  {Class|struct}    A = A ∪ (A - B)
      */
-    static fillUp(target, defaults, handler) {
+    static fillUp(target, defaults, keynameConvertor, handler) {
         target = struct(target)
+        defaults = struct(defaults)
         if (typeof handler !== "function") {
             handler = (k, v, target) => {
                 if (typeof target[k] === "undefined") {
@@ -293,7 +380,7 @@ class map {
                 }
             }
         }
-        for (let [k, v] of Object.entries(struct(defaults))) {
+        for (let [k, v] of Object.entries(defaults)) {
             handler(k, v, target, defaults)
         }
         return target
@@ -314,17 +401,7 @@ class map {
         }
         let fields = target.hasOwnProperty('_fields_') && target._fields_ ? target._fields_ : target.constructor['_fields_'] ? target.constructor['_fields_'] : null
         for (let [k, v] of Object.entries(source)) {
-            let keyname = typeof keynameConvertor === "function" ? keynameConvertor(k) : k
-            let privKeyname = '#' + keyname
-            if (!target.hasOwnProperty(keyname)) {
-                for (let [k2, _] of Object.entries(target)) {
-                    // "base_url" ===> baseUrl  or  baseURL
-                    if (k2.toLowerCase() === k.toLowerCase()) {
-                        keyname = k2
-                        break
-                    }
-                }
-            }
+            let keyname = map.handleKeyname(source, keynameConvertor)
             if (keyname === '_fields_' || !target.hasOwnProperty(keyname)) {
                 continue
             }
