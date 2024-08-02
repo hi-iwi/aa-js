@@ -52,6 +52,7 @@ A Javascript SDK of AaGo
 | AErrorEnum     |            |                                                                          |
 | BreakSignal    | boolean    | a signal from callback function to break forEach((value,key)) iterator   |
 | nif            | function   | nil function, a function does nothing                                    |
+| nip            | Promise    | nil Promise, a promise does nothing                                      |
 | MAX            | string     | a global parameter to indicate passed a MAX value                        |
 | MIN            | string     | a global parameter to indicate passed a MIN value                        |
 | OPTIONAL       | boolean    | a global parameter to indicate passed a optional value                   |

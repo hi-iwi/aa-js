@@ -87,7 +87,7 @@ class AaAccount {
      */
     getProfile(refresh = false) {
         if (!this.#auth.authed()) {
-            return APromiseReject()
+            return nip
         }
 
         if (!refresh) {
@@ -99,7 +99,7 @@ class AaAccount {
         const fetch = this.#fetch
         const url = this.#fetchUrl
         if (!url || !fetch) {
-            return APromiseReject(new Error("invalid profile fetch " + url))
+            return APromiseReject("invalid profile fetch " + url)
         }
 
         if (this.#lock.isLocked()) {
@@ -116,7 +116,7 @@ class AaAccount {
         }).catch(err => {
             this.#auth.validate()
             throw err
-        }).finally(()=>{
+        }).finally(() => {
             this.#lock.unlock()
         })
     }
