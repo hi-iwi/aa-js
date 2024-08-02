@@ -5,16 +5,16 @@
 class AaAuthOpenid {
     name = 'aa-auth-openid'
 
-    // @type {AaStorageEngine}
+    /** @type {AaStorageEngine} */
     #storageEngine
 
-    // @type {AaAuth}
+    /** @type {AaAuth} */
     #auth
 
-    // @type {AaFetch}
+    /** @type {AaFetch} */
     #fetch
 
-    // @type {string}
+    /** @type {string} */
     #fetchUrl
 
     #openid

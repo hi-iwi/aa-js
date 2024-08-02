@@ -37,20 +37,20 @@ class AaURI {
 
     method
 
-    // @type boolean
+    /** @type boolean */
     #isTemplate = false   // is using template
-    // @type string e.g. {scheme:string}, https:, tcp:
+    /** @type string e.g. {scheme:string}, https:, tcp: */
     #protocol
-    // @type string
+    /** @type string */
     #hostname
-    // @type string
+    /** @type string */
     #port
-    // @type string
+    /** @type string */
     #pathname
-    // @type {map}
+    /** @type {map} */
     queries
 
-    // @type string
+    /** @type string */
     #hash  // alias to location.hash
 
 

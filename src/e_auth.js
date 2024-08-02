@@ -8,21 +8,21 @@ class AaAuth {
     name = 'aa-auth'
 
     #lock = new AaLock()
-    // @type {AaStorageFactor}
+    /** @type {AaStorageFactor} */
     #storage
 
-    // @type {AaRawFetch}
+    /** @type {AaRawFetch} */
     #rawFetch
 
-    // @type {function}  外部可以使用、修改
+    /** @type {function}  外部可以使用、修改 */
     #unauthorizedHandler
 
-    // @type {TokenData}
+    /** @type {TokenData} */
     #token
     #tokenAuthAt = 0
     #validateTried = false
 
-    // @type {string[]|null}  Auth fields
+    /** @type {string[]|null}  Auth fields */
     #fields
 
     enableCookie = true

@@ -1,7 +1,7 @@
 class AaCache {
     name = 'aa-cache'
 
-    // @type {AaStorageEngine}
+    /** @type {AaStorageEngine} */
     #storageEngine
 
     /**

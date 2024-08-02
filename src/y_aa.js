@@ -2,43 +2,43 @@ class Aa {
     name = 'aa'
 
 
-    // @type {AaRegistry}
+    /** @type {AaRegistry} */
     registry
 
     scrollEvent
 
-    // @type {AaStorageFactor}
+    /** @type {AaStorageFactor} */
     storage
     cache
     db
 
 
-    // @type {typeof AaURI}
+    /** @type {typeof AaURI} */
     uri = AaURI
-    // @type {typeof AaValidator}
+    /** @type {typeof AaValidator} */
     validator = AaValidator
 
-    // @type {AaEnv}
+    /** @type {AaEnv} */
     env = AaEnv
 
 
-    // @type {AaAuth}
+    /** @type {AaAuth} */
     auth
 
 
-    // @type {AaFetch}
+    /** @type {AaFetch} */
     fetch
 
-    // @type {AaAuthOpenid}
+    /** @type {AaAuthOpenid} */
     openidAuth
 
-    // @type {AaAccount}
+    /** @type {AaAccount} */
     account
 
-    // @type {AaOSS}
+    /** @type {AaOSS} */
     oss
 
-    // @type {AaEditor}
+    /** @type {AaEditor} */
     editor
 
     constructor() {

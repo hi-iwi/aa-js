@@ -20,9 +20,9 @@ class AaImgSrc {
     allowed
     jsonkey
 
-    // @type {ImageBase64|filepath} for upload
+    /** @type {ImageBase64|filepath} for upload */
     #thumbnail
-    // @type {File} for upload
+    /** @type {File} for upload */
     #multipleFile
 
 

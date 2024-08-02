@@ -491,9 +491,9 @@ class time {
     static Day = 24 * time.Hour
 
 
-    // @type Date
+    /** @type Date */
     #date
-    // @type AaDateValidator
+    /** @type AaDateValidator */
     #validator = new AaDateValidator("Invalid Date")
 
     pattern = 'YYYY-MM-DD HH:II:SS'
@@ -796,7 +796,7 @@ class time {
             return s.replace(/[YMDHISs]/g, '0').replace(/Z/g, this.timezoneOffset)
         }
 
-        // @type {[{key:string}:[padZero:number, *]}
+        /** @type {[{key:string}:[padZero:number, *]} */
         // padZero: 0 no pad;  > 0 pad left; < 0 pad right
         const o = {
             "Y+": [4, this.year()],// 年份-> 固定是4位

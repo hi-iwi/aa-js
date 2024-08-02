@@ -5,7 +5,7 @@
  * @typedef {{condition: Condition|null, trigger: Trigger, pause: boolean}} Event
  */
 class AaScrollEvent {
-    // @type {Map}
+    /** @type {Map} */
     #events
 
 

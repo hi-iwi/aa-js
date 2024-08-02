@@ -6,12 +6,12 @@
 class AaApollo {
     name = 'aa-apollo'
 
-    // @type {AaFetch}
+    /** @type {AaFetch} */
     #fetcher
     #fingerprintGenerator
     #loginDataHandler
 
-    // @type {AaStorageEngine}
+    /** @type {AaStorageEngine} */
     #storage
 
     paramName = aparam.Apollo //  参数名 --> 阿波罗计划

@@ -4,13 +4,13 @@
 class AaEditor {
     name = 'aa-editor'
     #oss
-    //@type {ImgSrcDataMaker|null}
+    /** @type {ImgSrcDataMaker|null} */
     imgSrcDataMaker
     videoSrcDataMaker
     audioSrcDataMaker
     fileSrcDataMaker
 
-    // @type {[string]} e.g. ".className",  "#ID",  "tag"
+    /** @type {[string]} e.g. ".className",  "#ID",  "tag" */
     whiteList = [".hidden-url"]
 
     /**

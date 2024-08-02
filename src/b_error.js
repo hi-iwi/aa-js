@@ -2,10 +2,10 @@
  * @import atype
  * @private
  */
-// @type {(null|{[key:number]:string})}
+/** @type {(null|{[key:number]:string})} */
 let _aerrorCode2MsgMap_ = null
 
-// @type  {{[key:string]:(null|{[key:string]:string})}}
+/** @type  {{[key:string]:(null|{[key:string]:string})}} */
 let _aerrorDictionaries_ = {
     'en'   : null,  // will init later   必须要增加一个en模式的，这样直接匹配到可以直接输出
     'zh-CN': {
@@ -188,7 +188,7 @@ const AErrorEnum = {
 class AError extends Error {
     name = "AError"
 
-    // @type (err:AError)=>void
+    /** @type (err:AError)=>void */
     static alerter
 
     #code

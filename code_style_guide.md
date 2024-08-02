@@ -18,15 +18,12 @@
 
 # JSDoc types
 
+* 使用 `/** @type {xxx} */` ，而不是 `// @type {xxx}`。后者编辑器无法识别
 ```js
-/**
- * @type (number|string)[]
- */
+/** @type (number|string)[] */
 const numOrStrArray = [1, 2, 3, '4', '5', 6, 7]
 
-/**
- * @type {{name:string, age:number}[]}
- */
+/** @type {{name:string, age:number}[]} */
 
 const structArray = [
     {
@@ -44,18 +41,14 @@ const structArray = [
 ]
 
 // @warn struct must be enclosed in {{ }}
-/**
- * @type {{a:string, b?:number, c:number}}    b?: optional
- */
+/** @type {{a:string, b?:number, c:number}}    b?: optional */
 const definedStruct = {
     a: "Aario",
     c: 100
 }
 
 
-/**
- * @type {(x:number, y:number)=>void}
- */
+/**  @type {(x:number, y:number)=>void} */
 const fn = (x, y) => {
 }
 ```

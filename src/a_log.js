@@ -35,7 +35,7 @@ class AaLoggerStyle {
 class log {
     name = 'aa-log'
 
-    // @type {(s:string)=>void}
+    /** @type {(s:string)=>void} */
     static alertEffect = s => console.log(s)
     static _breakpointIncr = 0
 

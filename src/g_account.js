@@ -12,7 +12,7 @@ class AaAccount {
     #selectedVuid
 
     #lock = new AaLock()
-    // @type {AaCache}
+    /** @type {AaCache} */
     #db
     #auth
     #fetch
