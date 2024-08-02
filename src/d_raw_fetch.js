@@ -184,7 +184,8 @@ class AaRawFetch {
      * @return {struct}
      */
     #fillUpHeaders(headers) {
-         // 填充以  X- 开头的自定义header
+        headers = struct(headers)
+        // 填充以  X- 开头的自定义header
         this.#storage.forEachEntire((key, value) => {
             if (key.indexOf('X-') === 0) {
                 headers[key] = value
@@ -212,7 +213,6 @@ class AaRawFetch {
      */
     formatSettings(url, settings) {
         let headers = settings.headers
-
         settings = map.fillUp(settings, this.#defaultSettings)   // 要允许外面扩展配置
 
         headers = this.#fillUpHeaders(headers)
