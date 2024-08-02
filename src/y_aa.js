@@ -69,7 +69,9 @@ class Aa {
         this.editor = editor
     }
 
-
+    mselects(opts, cast, inherit = false){
+        return new AaMultiLevelSelects(...arguments)
+    }
     url(url = window.location.href, params = {}) {
         return new AaURI(url, params)
     }

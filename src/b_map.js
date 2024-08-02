@@ -88,14 +88,22 @@ class map {
         let result = []   // React 会需要通过这个渲染array/struct
         if (!sort) {
             for (let [key, value] of Object.entries(this.props)) {
-                result.push(callback(key, value))
+                const r = callback(key, value)
+                if (r === BREAK_SIGNAL) {
+                    return result
+                }
+                result.push(r)
             }
             return result
         }
         let keys = this.keys().sort()
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i]
-            result.push(callback(key, this.get(key)))
+            const r = callback(key, this.get(key))
+            if (r === BREAK_SIGNAL) {
+                return result
+            }
+            result.push(r)
         }
         return result
     }
@@ -207,7 +215,11 @@ class map {
         }
         let result = [] // React 会需要通过这个渲染array/struct
         for (const [key, value] of Object.entries(o)) {
-            result.push(callable(key, value))
+            const r = callable(key, value)
+            if (r === BREAK_SIGNAL) {
+                return result
+            }
+            result.push(r)
         }
         return result
     }

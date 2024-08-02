@@ -10,6 +10,18 @@ function run(method, ...args) {
     }
 }
 
+function range(start, end, step, callback) {
+    step = Math.abs(step)
+    if (start < end) {
+        for (let i = start; i < end; i += step) {
+            callback(i)
+        }
+    }
+    for (let i = start; i > end; i -= step) {
+        callback(i)
+    }
+}
+
 /**
  * Return defined value
  * @param {*} [vv]

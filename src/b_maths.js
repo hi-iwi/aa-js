@@ -123,12 +123,12 @@ class maths {
      * 千分位表示法
      * @param {NumberX} num
      * @param {number} n
-     * @param {string} delimiter
+     * @param {string} separator
      * @returns {string}
      */
-    static thousands(num, n = 3, delimiter = ',') {
+    static thousands(num, n = 3, separator = ',') {
         num = String(num)
-        if (!n || !delimiter || num.length <= n) {
+        if (!n || !separator || num.length <= n) {
             return num
         }
         const neg = num[0] === '-' ? 1 : 0
@@ -136,7 +136,7 @@ class maths {
         let j = 0
         for (let i = num.length - 1; i >= neg; i--) {
             if (j > 0 && j % n === 0) {
-                s2 = delimiter + s2
+                s2 = separator + s2
             }
             s2 = num[i] + s2
             j++

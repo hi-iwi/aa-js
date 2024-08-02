@@ -67,18 +67,22 @@ class AaCookieStorage {
      * @param {(value:any)=>any} [valueHandler]
      */
     forEach(callback, valueHandler) {
+        let result = []   // React 会需要通过这个渲染array/struct
         const all = this.getAll()
         if (!all) {
-            return
+            return result
         }
         for (let [key, value] of Object.entries(all)) {
             if (typeof valueHandler === "function") {
                 value = valueHandler(value)
             }
-            if (callback(key, value) === BreakSignal) {
+            const r = callback(key, value)
+            if (r === BREAK_SIGNAL) {
                 break
             }
+            result.push(r)
         }
+        return result
     }
 
     /**
@@ -307,22 +311,24 @@ class AaStorageEngine {
      */
     forEach(callback, raw = false) {
         if (typeof this.#storage.forEach === "function") {
-            this.#storage.forEach(callback)
-            return
+            return this.#storage.forEach(callback)
         }
+        let result = []
         const keys = Object.keys(this.#storage)
         if (!keys) {
-            return
+            return result
         }
         // 要保持外面forEach 进行删除操作时安全，就必须要遍历一个独立的数组，而不是直接遍历并操作原数组（破坏序列）
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i]
             let value = raw ? this.#storage.getItem(key) : this.getItem(key)
-
-            if (callback(key, value) === BreakSignal) {
+            const r = callback(key, value)
+            if (r === BREAK_SIGNAL) {
                 break
             }
+            result.push(r)
         }
+        return result
     }
 
     getAll() {
