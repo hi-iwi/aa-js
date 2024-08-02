@@ -4,6 +4,11 @@
 
 //  react state  数字 001231 === 1231 == 001231.000  这些数值都没有变化，state就不会触发
 
+function run(method, ...args) {
+    if (typeof method === 'function') {
+        method(...args)
+    }
+}
 
 /**
  * Return defined value

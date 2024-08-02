@@ -63,18 +63,19 @@ A Javascript SDK of AaGo
 
 ### global functions
 
-| name           | return          | description                      |
-|----------------|-----------------|----------------------------------|
-| asleep()       | Promise         | a promise sleep for a while      |
-| defval()       | any except null | Return defined value             |
-| len()          | number          | length of anything               |
-| loge()         |                 | alias to new log().println()     |
-| not()          | boolean         | same to !something               |
-| Round()        |                 |                                  |
-| RoundTrim()    |                 | Trim the tail                    |
-| RoundAway()    |                 | Round away from the origin point |
-| RoundReverse() |                 |                                  |
-|                |                 |                                  |
+| name           | return          | description                           |
+|----------------|-----------------|---------------------------------------|
+| asleep()       | Promise         | a promise sleep for a while           |
+| defval()       | any except null | Return defined value                  |
+| len()          | number          | length of anything                    |
+| loge()         |                 | alias to new log().println()          |
+| not()          | boolean         | same to !something                    |
+| Round()        |                 |                                       |
+| RoundTrim()    |                 | Trim the tail                         |
+| RoundAway()    |                 | Round away from the origin point      |
+| RoundReverse() |                 |                                       |
+| run()          |                 | run if the first argument is callable |
+|                |                 |                                       |
 
 ### global classes
 

@@ -77,29 +77,29 @@ class map {
     }
 
 
-    entries() {
-        return Object.entries(this.props)
-    }
-
     /**
      *
      * @param {IteratorCallback} callback
      * @param sort
+     * @return {*[]}
      */
     forEach(callback, sort = false) {
         // 这种方式forEach 中进行删除未遍历到的值是安全的
+        let result = []   // React 会需要通过这个渲染array/struct
         if (!sort) {
-            for (let [key, value] of this.entries()) {
-                callback(key, value)
+            for (let [key, value] of Object.entries(this.props)) {
+                result.push(callback(key, value))
             }
-            return
+            return result
         }
         let keys = this.keys().sort()
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i]
-            callback(key, this.get(key))
+            result.push(callback(key, this.get(key)))
         }
+        return result
     }
+
 
     /**
      * Check map has property key, and its value is not undefined
@@ -193,6 +193,25 @@ class map {
         return new map(obj)
     }
 
+
+    /**
+     *
+     * @param {array|struct} o
+     * @param {(key:StringN, value:any)=>*} callable
+     * @param [sort]
+     * @return {*[]}
+     */
+    static forEach(o, callable, sort = false) {
+        if (o instanceof map) {
+            return o.forEach(callable, sort)
+        }
+        let result = [] // React 会需要通过这个渲染array/struct
+        for (const [key, value] of Object.entries(o)) {
+            result.push(callable(key, value))
+        }
+        return result
+    }
+
     /**
      * Create a struct with one property
      * @param {StringN} key
@@ -261,7 +280,7 @@ class map {
      * @returns {struct|null}
      */
     static clone(obj) {
-         return obj ? JSON.parse(JSON.stringify(obj)) : obj
+        return obj ? JSON.parse(JSON.stringify(obj)) : obj
     }
 
     /**l
