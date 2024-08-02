@@ -6,7 +6,7 @@
 class AaRawFetch {
     name = 'aa-raw-fetch'
 
-/** @type {AaStorageFactor} */
+    /** @type {AaStorageFactor} */
     #storage
 
 
@@ -54,9 +54,7 @@ class AaRawFetch {
     }
 
     initGlobalHeaders(headers) {
-        if (atype.isStruct(headers)) {
-            this.#headers = headers
-        }
+        this.#headers = headers
     }
 
     /**
@@ -78,10 +76,10 @@ class AaRawFetch {
      *     根据 iris 路由规则来
      *     /api/v1/{name:uint64}/hello
      *     /api/v1/{name}
-     * @param method
-     * @param url
-     * @param data
-     * @param isDataAllQueryString
+     * @param {string} method
+     * @param {string} url
+     * @param {struct|map} [data]
+     * @param {boolean} [isDataAllQueryString]
      * @return {[string, any]}
      */
     lookup(method, url, data, isDataAllQueryString = false) {
@@ -112,7 +110,7 @@ class AaRawFetch {
 
     /**
      *
-     * @param {object|struct} value
+     * @param {*} value
      * @return {*}
      */
     unpackData(value) {
@@ -182,18 +180,17 @@ class AaRawFetch {
 
     /**
      * Merge headers with global headers
-     * @param {{[key:string]}} [headers]
+     * @param {struct} [headers]
      * @return {struct}
      */
     #fillUpHeaders(headers) {
-        // 填充以  X- 开头的自定义header
-        headers = struct(headers)
+         // 填充以  X- 开头的自定义header
         this.#storage.forEachEntire((key, value) => {
             if (key.indexOf('X-') === 0) {
                 headers[key] = value
             }
         })
-        map.fillUp(headers, this.#headers,(k, v, target) => {
+        map.fillUp(headers, this.#headers, (k, v, target) => {
             if (!target.hasOwnProperty(k)) {
                 target[k] = v
             } else {
@@ -209,7 +206,7 @@ class AaRawFetch {
 
     /**
      *
-     * @param {RequestInfo} url
+     * @param {string} url
      * @param {struct} settings
      * @return {(*|Object)[]|(*|Object)[]}
      */
@@ -274,10 +271,10 @@ class AaRawFetch {
 
     /**
      *
-     * @param {RequestInfo|string} url
+     * @param { string} url
      *  @example 'https://luexu.com'
      *  @example 'GET https://luexu.com'
-     * @param {struct|*} [settings]
+     * @param {struct} [settings]
      * @return {[string, any ]|Promise}
      */
     middleware(url, settings) {
@@ -305,6 +302,12 @@ class AaRawFetch {
         return [uri.toString(), settings]
     }
 
+    /**
+     *
+     * @param {RequestInfo|string} url
+     * @param {struct} settings
+     * @return {Promise<{msg: string, code: number}>}
+     */
     rawFetch(url, settings) {
         // 如果使用 response = await fetch();  json= await response.json() 必须要await，阻塞等待response返回
         // 这里就不用await最好，外面使用的时候，再自行 await
@@ -323,7 +326,7 @@ class AaRawFetch {
             try {
                 return resp.json()
             } catch (error) {
-                throw  new AError(AErrorEnum.ClientThrow, `response '${resp.text()}' is not valid JSON`)
+                throw new AError(AErrorEnum.ClientThrow, `response '${resp.text()}' is not valid JSON`)
             }
         }).then(resp => {
             // 捕获返回数据，修改为 resp.data
@@ -333,7 +336,7 @@ class AaRawFetch {
             }
             return resp['data']
         }).catch(err => {
-            throw  err instanceof AError ? err : new AError(AErrorEnum.ClientThrow, err.toString())
+            throw err instanceof AError ? err : new AError(AErrorEnum.ClientThrow, err.toString())
         })
     }
 

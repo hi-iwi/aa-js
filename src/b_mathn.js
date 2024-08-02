@@ -10,18 +10,20 @@ class mathn {
     static Million = 1000000 // 100万
     static Billion = 1000000000 // 10亿
 
+    static ComparisonSymbols = ['>', '<', '=', '==', '>=', '<=']
+
 
     /**
      * Get the value of the closest key in a setting
-     * @param {numbers[]} values
+     * @param {NumberX[]} values
      * @param {ComparisonSymbol} symbol
      *      >           the closest and greater value
      *      <           the closest and lesser value
      *      = or ==     the closest value, may be lesser, equal to or greater
      *      >=          the closest and greater value or equal value
      *      <=          the closest and lesser value or equal value
-     * @param {numbers} value
-     * @return {numbers}
+     * @param {NumberX} value
+     * @return {number}
      */
     static closest(values, symbol, value) {
         values.sort() // Ascending order 字符串和数字都一样能排序
@@ -49,8 +51,6 @@ class mathn {
                 }
             }
         }
-
-        throw new RangeError(`invalid comparison symbol '${symbol}'`)
     }
 
 }

@@ -54,6 +54,8 @@ A Javascript SDK of AaGo
 | nif            | function   | nil function, a function does nothing                                    |
 | MAX            | string     | a global parameter to indicate passed a MAX value                        |
 | MIN            | string     | a global parameter to indicate passed a MIN value                        |
+| OPTIONAL       | boolean    | a global parameter to indicate passed a optional value                   |
+| REQUIRED       | boolean    | equal to !OPTIONAL                                                       |
 | -------------  | ---------- | ------------------------------------------------------------------------ |
 | AaFileTypeEnum |            |                                                                          |
 |                |            |                                                                          |
@@ -81,6 +83,7 @@ A Javascript SDK of AaGo
 | atype             | static    | types detector                        |
 | AaLoggerStyle     |           |                                       |
 | log               |           |                                       |
+| panic             | static    | assert/panic                          |
 | ---------------   | --------- | ------------------------------------- |
 | [AaEnv]           | private   | use `aa.env` instead                  |
 | AError            |           | Error with code                       |
@@ -124,6 +127,6 @@ A Javascript SDK of AaGo
 
 ### extended methods
 
-| name             | return          | description                         |
-|------------------|-----------------|-------------------------------------|
-| Promise.asleep() | Promise         | make this promise sleep for a while |
+| name             | return  | description                         |
+|------------------|---------|-------------------------------------|
+| Promise.asleep() | Promise | make this promise sleep for a while |

@@ -136,7 +136,7 @@ class AaAccount {
 
     /**
      * Get vuser with vtype
-     * @param {number|string} vtype
+     * @param {NumberX} vtype
      * @return {Promise<Vuser>}
      */
     searchVuser(vtype) {

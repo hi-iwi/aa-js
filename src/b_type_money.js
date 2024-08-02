@@ -37,9 +37,9 @@ class Money extends Decimal {
 
 
     /**
-     * @param {number|string} [vv]
-     * @param {string} [vk]
-     * @param {*} [defaultV]
+     * @param {struct|NumberX} [vv]
+     * @param {StringN} [vk]
+     * @param {NumberX} [defaultV]
      */
     constructor(vv, vk, defaultV) {
         super(...arguments)
@@ -62,14 +62,14 @@ class Money extends Decimal {
      */
     /**
      * Calculate tax
-     * @param {number|Decimal|struct} rates
+     * @param {number|struct|Decimal} rates
      *      number => decimal(n)
      *      Decimal
      *      struct  阶梯税率  {money:decimal}
      *          e.g. {100*Money.Yuan:34*Percent.Percent, 200*Money.Yuan:34*Percent.Percent}
-     * @param {Money|number} [base] 基准税金
-     * @param {Money|number} [boundary] 基准税金对应基准税额
-     * @return {Money|*}   // 子类继承，使用广泛的类型
+     * @param {number|Money} [base] 基准税金
+     * @param {number|Money} [boundary] 基准税金对应基准税额
+     * @return {Money}   // 子类继承，使用广泛的类型
      */
     tax(rates, base, boundary) {
         const newMoney = this.clone()
@@ -105,6 +105,11 @@ class Money extends Decimal {
     }
 
 
+    /**
+     *
+     * @param {boolean} financial
+     * @return {string}
+     */
     toFinancialString(financial) {
         // 阿拉伯数字转中文，
         let c = fmt.toChineseNumber(this.toReal(), financial)
@@ -133,9 +138,10 @@ class Money extends Decimal {
 
 /**
  * New a {Money} instance
- * @param {number|string|struct|Money} [vv]
- * @param {string} [vk]
- * @param {*} [defaultV]
+ * @param {struct|Money|NumberX} [vv]
+ * @param {StringN} [vk]
+ * @param {Money|NumberX} [defaultV]
+ * @return {Money}
  */
 function money(vv, vk, defaultV) {
     vv = defval(...arguments)

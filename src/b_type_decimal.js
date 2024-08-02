@@ -26,7 +26,11 @@ class Decimal {
     units = Decimal.Units
     rounder = Decimal.Rounder   // 取整方式 ceil -> round up;  floor -> round down
 
-
+    /**
+     *
+     * @param {number} num
+     * @return {Decimal}
+     */
     static unitsX(num) {
         const self = this  // 使用 this （不能用 this.constructor()). 可以传递到子类
         const units = self.Units
@@ -35,8 +39,8 @@ class Decimal {
 
     /**
      * Divide two numbers and convert its result to Decimal
-     * @param a
-     * @param b
+     * @param {number} a
+     * @param {number} b
      * @return {Decimal}
      */
     static div(a, b) {
@@ -46,9 +50,9 @@ class Decimal {
     }
 
     /**
-     * @param {number|string} [vv]
-     * @param {string} [vk]
-     * @param {*} [defaultV]
+     * @param {struct|NumberX} [vv]
+     * @param {StringN} [vk]
+     * @param {NumberX} [defaultV]
      */
     constructor(vv, vk, defaultV) {
         this.value = Math.floor(number(...arguments))
@@ -57,7 +61,7 @@ class Decimal {
 
     /**
      * Set rounder for this instance
-     * @param rounder
+     * @param {function} rounder
      * @return {Decimal}
      */
     setRounder(rounder) {
@@ -67,7 +71,8 @@ class Decimal {
 
 
     clone() {
-        return new Decimal(this.value).setRounder(this.rounder)
+        const self = this.constructor  // 使用 this.constructor(). 可以传递到子类
+        return new self(this.value).setRounder(this.rounder)
     }
 
 
@@ -102,17 +107,13 @@ class Decimal {
     }
 
     /**
-     * @param {Decimal|number|*} n
+     * @param {Decimal|number} n
      * @return {Decimal}
      */
     minus(n) {
         if (typeof n === "number") {
             this.value = this.rounder(this.value - n)
             return this
-        }
-
-        if (!(n instanceof Decimal)) {
-            throw new TypeError(`${this.name} minus ${n} is invalid`)
         }
 
         if (n.name === this.name) {
@@ -132,7 +133,7 @@ class Decimal {
     }
 
     /**
-     * @param {Decimal|number|*} n
+     * @param {Decimal|number} n
      * @return {Decimal}
      */
     multiply(n) {
@@ -141,9 +142,6 @@ class Decimal {
             return this
         }
 
-        if (!(n instanceof Decimal)) {
-            throw new TypeError(`${this.name} multiply ${n} is invalid`)
-        }
 
         // money * decimal ==> money, decimal * decimal ==> decimal
         if (n.group === 'decimal') {
@@ -179,9 +177,6 @@ class Decimal {
             return this
         }
 
-        if (!(n instanceof Decimal)) {
-            throw new TypeError(`${this.name} div ${n} is invalid`)
-        }
 
         // money / decimal ==> money, decimal / decimal ==> decimal
         if (n.group === 'decimal') {
@@ -218,9 +213,6 @@ class Decimal {
             return this
         }
 
-        if (!(n instanceof Decimal)) {
-            throw new TypeError(`${this.name} be divided by ${n} is invalid`)
-        }
 
         // money / [decimal] ==> money, decimal / [decimal] ==> decimal
         if (this.group === 'decimal') {
@@ -239,6 +231,11 @@ class Decimal {
         throw new TypeError(`${this.name} div ${n.name} is not allowed`)
     }
 
+    /**
+     *
+     * @param {number} n
+     * @return {Decimal}
+     */
     beDividedUnitsX(n) {
         return this.beDivided(n * this.units)
     }
@@ -264,7 +261,7 @@ class Decimal {
 
     /**
      * 小数值  -->  使用小数表示，不能用整数，因为  123.0001
-     * @param withSign
+     * @param {boolean} withSign
      * @returns {number}
      */
     mantissa(withSign = false) {
@@ -285,7 +282,7 @@ class Decimal {
      * 整数部分字符形式表示
      * @param {number} segmentSize 整数部分每segmentSize位使用separator隔开
      * @param {string} separator
-     * @returns {string|number}
+     * @returns {string}
      */
     formatWhole(segmentSize = 0, separator = ',') {
         let w = this.whole()
@@ -395,9 +392,9 @@ class Decimal {
     }
 
     /**
-     * @param s
-     * @param scale
-     * @param trimScale
+     * @param {string} s
+     * @param {number} scale
+     * @param {boolean} trimScale
      * @return {(string|boolean)[]}
      * @protected
      */
@@ -419,9 +416,10 @@ class Decimal {
 
 /**
  *
- * @param {number|string|struct|Decimal} [vv]
- * @param {string} [vk]
- * @param {*} [defaultV]
+ * @param {struct|NumberX|Decimal} [vv]
+ * @param {StringN} [vk]
+ * @param {NumberX|Decimal} [defaultV]
+ * @return {Decimal}
  */
 function decimal(vv, vk, defaultV) {
     vv = defval(...arguments)

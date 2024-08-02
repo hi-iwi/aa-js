@@ -1,7 +1,18 @@
+/**
+ *
+ * @param {UnixTimeMillisecond} timeout
+ * @param params
+ * @return {Promise<number>}
+ */
 function asleep(timeout, ...params) {
     return new Promise(resolve => setTimeout(resolve, timeout, ...params))
 }
 
+/**
+ *
+ * @param {UnixTimeMillisecond} timeout
+ * @return {Promise<number>}
+ */
 Promise.prototype.asleep = function (timeout) {
     return this.then((...params) => {
         return asleep(timeout, ...params)

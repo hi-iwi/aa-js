@@ -1,7 +1,7 @@
 /**
  * @typedef {string} DateString
  * @typedef {string} DatetimeString
- * @typedef {Date|DateString|DatetimeString|number} TimeParam
+ * @typedef {time|Date|DateString|DatetimeString|number} TimeParam
  */
 class AaDateZero extends Date {
     name = 'aa-date-zero'
@@ -169,7 +169,7 @@ class AaDateString {
      * @param {string} s
      * @param {string} [zone]
      */
-    init(s, zone) {
+    init(s, zone = AaDateString.localTimezoneOffsetString) {
         this.raw = s
         s = s.replace(' ', 'T')
         let reg = /[-+][01]\d:[0-5]\d$/
@@ -331,6 +331,11 @@ class AaDateString {
         return s
     }
 
+    /**
+     *
+     * @param {string|Date|number} [offset]
+     * @return {string}
+     */
     static parseTimezoneOffsetString(offset) {
         if (offset && typeof offset === "string") {
             if (!['-', '+'].includes(offset[0])) {
@@ -377,29 +382,39 @@ class AaDateValidator {
 
     #type
 
+    get type() {
+        return this.#type
+    }
+
 
     /**
      *
-     * @param {AaDateString|string|number|Date} date
+     * @param {AaDateValidator|AaDateString|string|number|Date} value
      * @param {boolean} strict
      */
-    init(date, strict = true) {
+    init(value, strict = true) {
+        if (value instanceof AaDateValidator) {
+            this.#type = value.type
+            return
+        }
+
+
         const d = AaDateValidator
-        date = typeof date === "string" ? new AaDateString(date) : date
-        if (date instanceof AaDateString) {
-            if (date.isZero()) {
-                this.#type = date.isYear() ? d.ZeroYear : (date.isDate() ? d.ZeroDate : d.ZeroDatetime)
+        value = typeof value === "string" ? new AaDateString(value) : value
+        if (value instanceof AaDateString) {
+            if (value.isZero()) {
+                this.#type = value.isYear() ? d.ZeroYear : (value.isDate() ? d.ZeroDate : d.ZeroDatetime)
                 return
             }
-            if (date.isMin(strict)) {
-                this.#type = date.isYear() ? d.MinYear : (date.isDate() ? d.MinDate : d.MinDatetime)
+            if (value.isMin(strict)) {
+                this.#type = value.isYear() ? d.MinYear : (value.isDate() ? d.MinDate : d.MinDatetime)
                 return
             }
-            if (date.isMax()) {
-                this.#type = date.isYear() ? d.MaxYear : (date.isDate() ? d.MaxDate : d.MaxDatetime)
+            if (value.isMax()) {
+                this.#type = value.isYear() ? d.MaxYear : (value.isDate() ? d.MaxDate : d.MaxDatetime)
                 return
             }
-            date = date.toString()
+            value = value.toString()
         }
 
 
@@ -410,7 +425,7 @@ class AaDateValidator {
             // RangeError: invalid date (Firefox)
             // RangeError: Invalid Date (Safari)
 
-            const v = date instanceof Date ? date.valueOf() : new Date(date).valueOf()
+            const v = value instanceof Date ? value.valueOf() : new Date(value).valueOf()
             if (isNaN(v)) {
                 this.#type = d.InvalidDate
                 return
@@ -443,9 +458,13 @@ class AaDateValidator {
         return
     }
 
-
-    constructor(s, strict = true) {
-        this.init(s, strict)
+    /**
+     *
+     * @param {AaDateString|string|number|Date} value
+     * @param {boolean} strict
+     */
+    constructor(value, strict = true) {
+        this.init(value, strict)
     }
 
 
@@ -514,35 +533,81 @@ class time {
         return this.#date
     }
 
-
-    // @param {Date|string|number} date
-    init(date, strict = true) {
-        this.resetPatter()
-        let zone = this.timezoneOffset
-        // unix time
-        if (typeof date === "number") {
-            date = new Date(date)
-        } else if (typeof date === "string") {
-            this.setPattern(date)
-            let ds = new AaDateString(date, this.timezoneOffset)
-            this.validator.init(ds, strict)
-            if (this.validator.isMin()) {
-                this.#date = new AaDateZero(date)
-                return
-            }
-            date = new Date(ds.toString())
+    /**
+     *
+     * @param args
+     * @return {(Date|time|string)[]}
+     */
+    #parseArgs(...args) {
+        let l = args.length
+        let offset = void ''
+        if (l === 0) {
+            return [new Date(), offset]
+        }
+        if (args[0] instanceof time || args[0] instanceof Date) {
+            return args[0]
+        }
+        if (typeof args[0] === "undefined" || args[0] === null) {
+            args[0] = new Date()
         }
 
-        if (date instanceof Date) {
-            this.#date = date
-            this.validator.init(date, strict)
+        // parse zone
+        if (l > 1 && args[l - 1] && typeof args[l - 1] === "string") {
+            offset = args[l - 1]
+            l--  // 移除最后一位
+        }
+        //  new time(year:number, month:number, day:number, hour?:number, minute?:number, second?:number, millisecond?:number, zone?:string)
+        if (l > 1) {
+            return [new Date(...args.slice(0, l)), offset]
+        }
+        let value = args[0]
+        if (typeof value === "number") {
+            return [new Date(value), offset]
+        }
+
+        return [value, offset]
+    }
+
+    // @param {Date|string|number} date
+    init(...args) {
+        let [value, offset] = this.#parseArgs(...args)
+        if (offset) {
+            this.timezoneOffset = offset
+        } else {
+            offset = this.timezoneOffset
+        }
+
+        if (value instanceof time) {
+            this.setPattern(value.pattern)
+            this.validator.init(value.validator)
+            this.#date = value.date
+            return
+        }
+
+        this.resetPattern()
+
+        // unix time
+        if (typeof value === "string") {
+            this.setPattern(value)
+            let ds = new AaDateString(value, offset)
+            this.validator.init(ds)
+            if (this.validator.isMin()) {
+                this.#date = new AaDateZero(value)
+                return
+            }
+            value = new Date(ds.toString())
+        }
+
+        if (value instanceof Date) {
+            this.#date = value
+            this.validator.init(value)
             if (this.validator.isValid(true)) {
-                this.timezoneOffset = zone  // set after valid date
+                this.timezoneOffset = offset  // set after valid date
             }
             return
         }
-        date = new Date("Invalid Date")
-        this.#date = date
+        value = new Date("Invalid Date")
+        this.#date = value
         this.validator.setInvalid()
 
     }
@@ -564,35 +629,16 @@ class time {
      *  @throws {TypeError}
      */
     constructor(...args) {
-        let l = args.length
-        if (l === 0) {
-            this.init(new Date())
-            return
-        }
-        if (args[0] instanceof time) {
-            return args[0]
-        }
-        if (typeof args[0] === "undefined" || args[0] === null) {
-            args[0] = new Date()
-        }
-
-        // parse zone
-        if (l > 1 && args[l - 1] && typeof args[l - 1] === "string") {
-            this.timezoneOffset = args[l - 1]
-            l--  // 移除最后一位
-        }
-        //  new time(year:number, month:number, day:number, hour?:number, minute?:number, second?:number, millisecond?:number, zone?:string)
-        let arg = l === 1 ? args[0] : new Date(...args.slice(0, l))
-        this.init(arg)
+        this.init(...args)
     }
 
-    resetPatter() {
+    resetPattern() {
         this.pattern = 'YYYY-MM-DD HH:II:SS'
     }
 
     /**
      *
-     * @param pattern   YYYY-MM-DD HH:II:SS.sssZ  or  2024-07-15 00:00:00.000+08:00
+     * @param {string} pattern   YYYY-MM-DD HH:II:SS.sssZ  or  2024-07-15 00:00:00.000+08:00
      * @return {time}
      */
     setPattern(pattern) {
@@ -796,7 +842,7 @@ class time {
             return s.replace(/[YMDHISs]/g, '0').replace(/Z/g, this.timezoneOffset)
         }
 
-        /** @type {[{key:string}:[padZero:number, *]} */
+
         // padZero: 0 no pad;  > 0 pad left; < 0 pad right
         const o = {
             "Y+": [4, this.year()],// 年份-> 固定是4位
@@ -859,6 +905,8 @@ class time {
     }
 
     static dateString(vv, vk, defaultV) {
+        
+
         vv = defval(...arguments)
         if (vv) {
             try {
@@ -873,6 +921,7 @@ class time {
     }
 
     static datetimeString(vv, vk, defaultV) {
+        
         vv = defval(...arguments)
         if (vv) {
             try {
@@ -904,7 +953,7 @@ class time {
     /**
      * Unix timestamp  https://en.wikipedia.org/wiki/Unix_time
      * @description the number of seconds which have passed since 1970-01-01 00:00:00
-     * @param {Date|string} date?
+     * @param {Date|string} date
      * @return {number}
      */
     static unix(date = new Date()) {
@@ -913,10 +962,15 @@ class time {
 
     /**
      * Extract the date string to YYYYMM style number
-     * @param {string} date
+     * @param {time|Date|string} date
      * @return number
      */
     static toYearMonthNumber(date) {
+        if (date instanceof time) {
+            return parseInt(date.format('YYYYMM'))
+        } else if (date instanceof Date) {
+            return parseInt(date.getFullYear() + (' ' + date.getMonth() + 1).padStart(2, '0'))
+        }
         let ds = new AaDateString(date)
         return parseInt(ds.year() + '' + ds.month())
     }
@@ -1006,6 +1060,7 @@ class TimeDiff {
      * @return number
      */
     inYears(round = Math.round) {
+        
         if (round.name === 'floor') {
             return this.yearsPart
         } else if (round.name === 'ceil') {
@@ -1021,6 +1076,7 @@ class TimeDiff {
      * @return number
      */
     inMonths(round = Math.round) {
+        
         let months = this.yearsPart * 12 + this.monthsPart
         if (round.name === 'floor') {
             return months
@@ -1037,6 +1093,7 @@ class TimeDiff {
      * @return number
      */
     inDays(round = Math.round) {
+        
         return round(this.diff / time.Day)
     }
 
@@ -1046,6 +1103,7 @@ class TimeDiff {
      * @return number
      */
     inHours(round = Math.round) {
+        
         return round(this.diff / time.Hour)
     }
 
@@ -1055,6 +1113,7 @@ class TimeDiff {
      * @return number
      */
     inMinutes(round = Math.round) {
+        
         return round(this.diff / time.Minute)
     }
 
@@ -1064,6 +1123,7 @@ class TimeDiff {
      * @return number
      */
     inSeconds(round = Math.round) {
+        
         return round(this.diff / time.Second)
     }
 
@@ -1073,7 +1133,7 @@ class TimeDiff {
 
     /**
      * Format date with specified formats
-     * @param layout
+     * @param {string} layout
      * @param noCarry
      * @return {string}
      */
@@ -1082,7 +1142,6 @@ class TimeDiff {
         if (!this.valid || this.diff < time.Second) {
             return ""
         }
-        layout = string(layout)
         let p = {
             'Y': this.yearsPart,
             'M': this.monthsPart,
@@ -1153,7 +1212,7 @@ class TimeDiff {
 
     /**
      * Format date friendly
-     * @param {string|{[key:string]:string}} dict
+     * @param {string|struct} [dict]
      * @return {string}
      */
     formatFriendly(dict = 'zh-CN') {
@@ -1203,6 +1262,12 @@ class TimeDiff {
         return this.diff
     }
 
+    /**
+     *
+     * @param {string} layout
+     * @param {struct} p
+     * @return {{S: boolean, D: boolean, H: boolean, Y: boolean, I: boolean, M: boolean}}
+     */
     static loadDiff(layout, p) {
         let ls = {
             'Y': false,
@@ -1235,6 +1300,12 @@ class TimeDiff {
         return ls
     }
 
+    /**
+     *
+     * @param {struct} p
+     * @param {struct} ls
+     * @return {struct}
+     */
     static carryTimeDiff(p, ls) {
         const arr = ['S', 'I', 'H', 'D', 'M', 'Y']
         let g = false
@@ -1281,9 +1352,10 @@ class TimeDiff {
 
 /**
  * New a {time} in `YYYY-MM-DD` pattern
- * @param {number|string} vv
- * @param {string} [vk]
- * @param {*} [defaultV]
+ * @param {struct|NumberX|string} vv
+ * @param {StringN} [vk]
+ * @param {time|Date|NumberX|string} [defaultV]
+ * @return {time}
  */
 function date(vv, vk, defaultV) {
     vv = defval(...arguments)
@@ -1292,9 +1364,10 @@ function date(vv, vk, defaultV) {
 
 /**
  * New a {time} in `YYYY-MM-DD HH:II:SS` pattern
- * @param {number|string} vv
- * @param {string} [vk]
- * @param {*} [defaultV]
+ * @param {struct|NumberX|string} vv
+ * @param {StringN} [vk]
+ * @param {time|Date|NumberX|string} [defaultV]
+ * @return {time}
  */
 function datetime(vv, vk, defaultV) {
     vv = defval(...arguments)

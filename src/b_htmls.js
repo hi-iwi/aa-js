@@ -35,6 +35,9 @@ class htmls {
 
     // 对文章中敏感词进行马赛克化
     static fuzzy(s, tag = htmls.fuzzyTag) {
+        if (!s || !tag) {
+            return s
+        }
         s = s.replace(/[\r\n]+/g, '<br>')
         s = s.replace(/<s>\s*\d+\s*:\s*(\d+)\s*<\/s>/ig, (m, l) => tag.repeat(l))
         return s
@@ -42,13 +45,14 @@ class htmls {
 
     /**
      * HTML encode
-     * @param s
+     * @param {StringN} s
      * @return {string|string|*|string}
      */
     static encode(s) {
         if (!s) {
             return ""
         }
+        
         s = string(s)
         let i = 0
         let tags = {} // html 标签内
@@ -76,13 +80,14 @@ class htmls {
 
     /**
      * HTML decode
-     * @param s
+     * @param {StringN} s
      * @return {string}
      */
     static decode(s) {
         if (!s) {
             return ""
         }
+        
         s = string(s)
         while (s.indexOf("&amp;") > -1) {
             s = s.replace("&amp;", "&")
@@ -104,6 +109,7 @@ class htmls {
         if (!s) {
             return ""
         }
+        
         s = string(s)
         for (const [k, v] of Object.entries(_aaHtmlEncoder_)) {
             if (s.indexOf(k) > -1) {
@@ -116,6 +122,7 @@ class htmls {
     }
 
     static decodeText(s) {
+        
         s = string(s).replace(new RegExp('<br>', 'g'), '\r\n')
         s = htmls.decode(s)
         return s

@@ -14,11 +14,12 @@ class map {
     }
 
     /**
-     * @param {struct|FormData|jsonstr} props
+     * @param {struct|FormData|jsonstr} [props]
      */
     init(props) {
         if (!props) {
             this.props = {}
+            return
         }
         this.props = map.parse(props)
     }
@@ -53,6 +54,7 @@ class map {
     }
 
     toQueryString(assert, sort = true) {
+
         let params = [];
         this.forEach((key, value) => {
             if (typeof value === "function") {
@@ -61,7 +63,7 @@ class map {
             if (value === "" || typeof key === "undefined" || key === null) {
                 return
             }
-            if (typeof assert === "function" && assert(key, value)) {
+            if (assert && assert(key, value)) {
                 return
             }
 
@@ -99,13 +101,19 @@ class map {
         }
     }
 
+    /**
+     * Check map has property key, and its value is not undefined
+     * @param {StringN} key
+     * @param allowUndefined
+     * @return {boolean}
+     */
     has(key, allowUndefined = false) {
         return this.props.hasOwnProperty(key) && (allowUndefined || typeof this.props[key] != "undefined")
     }
 
     /**
      * Get from map
-     * @param {string} key
+     * @param {StringN} key
      * @param {(value:any)=>any} [cast]
      * @return {*}
      */
@@ -126,28 +134,26 @@ class map {
         this.props = {}
     }
 
+    /**
+     * Delete a key in this map
+     * @param {StringN} key
+     */
     delete(key) {
         delete this.props[key]
     }
 
+    /**
+     * Set an item
+     * @param {StringN} key
+     * @param value
+     */
     set(key, value) {
-        if (!key) {
-            return
-        }
         this.props[key] = value
     }
 
-    setObject(obj) {
-        if (!obj) {
-            return
-        }
-        for (const [key, value] of Object.entries(obj)) {
-            this.props[key] = value
-        }
-    }
 
     /**
-     *
+     * Extend items from an object
      * @param {map|struct} obj
      */
     extend(obj) {
@@ -166,6 +172,13 @@ class map {
         return this
     }
 
+    /**
+     * Get or set
+     * @param {StringN} key
+     * @param defaultValue
+     * @param allowUndefined
+     * @return {*}
+     */
     getOrSet(key, defaultValue, allowUndefined = false) {
         if (!this.has(key, allowUndefined)) {
             this.set(key, defaultValue)
@@ -182,7 +195,7 @@ class map {
 
     /**
      * Create a struct with one property
-     * @param key
+     * @param {StringN} key
      * @param value
      * @return {struct}
      */
@@ -192,12 +205,25 @@ class map {
         return o
     }
 
+    /**
+     * Set item into a struct
+     * @param {struct|*} obj
+     * @param {StringN} key
+     * @param value
+     * @return {{[p: string]: *}|*}
+     */
     static set(obj, key, value) {
         obj = struct(obj)
         obj[key] = value
         return obj
     }
 
+    /**
+     * Get value from a struct
+     * @param {struct|*} obj
+     * @param {StringN} key
+     * @return {*}
+     */
     static get(obj, key) {
         return !obj ? void 0 : obj[key]
     }
@@ -231,27 +257,27 @@ class map {
 
     /**
      * Clone an object 深度复制一个对象；浅复制，就自行  newObj  = {...obj}
-     * @param obj
-     * @returns {any}
+     * @param {struct|map} obj
+     * @returns {struct|null}
      */
     static clone(obj) {
-        return obj ? JSON.parse(JSON.stringify(obj)) : obj
+         return obj ? JSON.parse(JSON.stringify(obj)) : obj
     }
 
-    /**
+    /**l
      *
      * @param  {Class|struct} target
-     * @param  {struct} keyname
+     * @param  {StringN} key
      * @param {(v:any)=>any} [convertor]
-     * @return {string|*}
+     * @return {StringN}
      */
-    static handleKeyname(target, keyname, convertor) {
-        if (typeof convertor === 'function' && convertor !== nif) {
-            keyname = convertor(keyname)
+    static handleKeyname(target, key, convertor) {
+        if (convertor && convertor !== nif) {
+            key = convertor(key)
         }
 
-        if (target.hasOwnProperty(keyname)) {
-            return keyname
+        if (target.hasOwnProperty(key)) {
+            return key
         }
         // 私有属性，访问不了
         // let privKeyname = '#' + keyname
@@ -261,24 +287,24 @@ class map {
 
         for (let [k2, _] of Object.entries(target)) {
             // "base_url" ===> baseUrl  or  baseURL
-            if (k2.toLowerCase() === keyname.toLowerCase()) {
+            if (k2.toLowerCase() === key.toLowerCase()) {
                 return k2
             }
         }
-        return keyname
+        return key
     }
 
     /**
      * Merge the contents of two objects together into the first object based on the properties of the first object
      * @description 以第一个对象target的属性为基础，使用后面sources对象与target相同属性名覆盖，抛弃sources对象多余属性值。常用于配置文件填充
      * @param {Class|struct} target A --> 会污染 target。 target 可以是struct，也可以是class.
-     * @param {struct} source B
+     * @param {Class|struct} source B
      * @param {(v:any)=>any} [keynameConvertor]
      * @return {Class|struct}   A = A  ∪ (A ∩ B)
      */
     static merge(target, source, keynameConvertor) {
         for (let [k, v] of Object.entries(struct(source))) {
-            if (typeof keynameConvertor === 'function') {
+            if (keynameConvertor) {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
             // 定义不存在undefined。undefined当作特殊情况过滤；
@@ -300,7 +326,7 @@ class map {
      */
     static strictMerge(target, source, keynameConvertor) {
         for (let [k, v] of Object.entries(struct(source))) {
-            if (typeof keynameConvertor === 'function') {
+            if (keynameConvertor) {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
             if (typeof v === "undefined" || !target.hasOwnProperty(k)) {
@@ -325,7 +351,7 @@ class map {
     static assign(target, source, keynameConvertor) {
         target = struct(target)
         source = struct(source)
-        if (typeof keynameConvertor !== 'function') {
+        if (keynameConvertor) {
             return Object.assign(target, source)
         }
         for (let [k, v] of Object.entries(source)) {
@@ -348,13 +374,13 @@ class map {
     static spread(target, source, keynameConvertor) {
         target = struct(target)
         source = struct(source)
-        if (typeof keynameConvertor !== 'function') {
+        if (!keynameConvertor) {
             return Object.assign({}, target, source)// 等同于{...target, ...source}
         }
         let obj = Object.assign({}, target)
 
         for (let [k, v] of Object.entries(source)) {
-            if (typeof keynameConvertor === 'function') {
+            if (keynameConvertor) {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
             obj[k] = v
@@ -373,7 +399,7 @@ class map {
     static fillUp(target, defaults, handler) {
         target = struct(target)
         defaults = struct(defaults)
-        if (typeof handler !== "function") {
+        if (!handler) {
             handler = (k, v, target) => {
                 if (typeof target[k] === "undefined") {
                     target[k] = v
@@ -401,7 +427,7 @@ class map {
         }
         let fields = target.hasOwnProperty('_fields_') && target._fields_ ? target._fields_ : target.constructor['_fields_'] ? target.constructor['_fields_'] : null
         for (let [k, v] of Object.entries(source)) {
-            if (typeof keynameConvertor === 'function') {
+            if (keynameConvertor) {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
             if (k === '_fields_' || !target.hasOwnProperty(k)) {
@@ -423,7 +449,7 @@ class map {
 
     /**
      * Whether object contains all of these elements
-     * @param {map|struct} obj
+     * @param {struct} obj
      * @param {string|array} params
      */
     static containAll(obj, ...params) {

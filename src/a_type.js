@@ -1,10 +1,14 @@
+/**
+ * @typedef { "array"|"boolean"|"class"|"date"|"dom"|"function"|"null"|"number"|"struct"|"string"|"undefined"|"regexp"} atypes
+ */
+
 //  react state  数字 001231 === 1231 == 001231.000  这些数值都没有变化，state就不会触发
 
 
 /**
  * Return defined value
  * @param {*} [vv]
- * @param {string|number} [vk]
+ * @param {StringN} [vk]
  * @param {*} [defaultV]
  * @returns {null|*} return any type except type `undefined`
  * @note Golang 至今未支持三元写法，因此不代表某种习惯就必须要所有人接受。这里规定一种写法并无障碍，并非强制性要求。
@@ -76,6 +80,7 @@ function Round(round) {
     }
     throw new ReferenceError('invalid Round type')
 }
+
 
 class atype {
     static array = "array"

@@ -21,18 +21,31 @@ class AaCookieStorage {
         return all ? Object.keys(all).length : 0
     }
 
+    // constructor() {
+    //     super()
+    //
+    // }
 
     available() {
         return typeof document !== 'undefined'
     }
 
+    /**
+     *
+     * @param {number} index
+     * @return {string|null}
+     */
     key(index) {
         const all = this.getAll()
         const keys = all ? Object.keys(all) : []
         return keys.length > index ? keys[index] : null
     }
 
-
+    /**
+     *
+     * @param {string} value
+     * @return {string}
+     */
     #read(value) {
         if (value[0] === '"') {
             value = value.slice(1, -1)
@@ -40,6 +53,10 @@ class AaCookieStorage {
         return value.replace(/(%[\dA-F]{2})+/gi, decodeURIComponent)
     }
 
+    /**
+     * @param {string} value
+     * @return {string}
+     */
     #write(value) {
         return encodeURIComponent(value).replace(/%(2[346BF]|3[AC-F]|40|5[BDE]|60|7[BCD])/g, decodeURIComponent)
     }
@@ -106,6 +123,10 @@ class AaCookieStorage {
         document.cookie = key + '=' + this.#write(value) + s
     }
 
+    /**
+     * Get all
+     * @return {struct|null}
+     */
     getAll() {
         if (!this.available() || !document.cookie) {
             return null
@@ -129,6 +150,11 @@ class AaCookieStorage {
         return data
     }
 
+    /**
+     *
+     * @param {string} key
+     * @return {*|null}
+     */
     getItem(key) {
         if (!this.available() || !document.cookie) {
             return
@@ -207,15 +233,16 @@ class AaStorageEngine {
     // }
 
     /**
-     * @param storage
-     * @param {[string]} [persistentNames]
+     * @param {Storage|function|object} storage
+     * @param {string[]} [persistentNames]
      * @param {boolean} [withOptions]
      * @param {boolean} [encapsulate]
      */
     init(storage, persistentNames, withOptions, encapsulate) {
-        if (storage && typeof storage === "object") {
-            this.#storage = storage
-        }
+        panic.arrayErrorType(persistentNames, 'string', OPTIONAL)
+
+        this.#storage = storage
+
         if (typeof persistentNames !== "undefined") {
             this.setPersistentNames(persistentNames)
         }
@@ -227,8 +254,9 @@ class AaStorageEngine {
         }
     }
 
+
     /**
-     * @param storage
+     * @param {Storage|function|object} storage
      * @param {[string]} [persistentNames]
      * @param {boolean} [withOptions]
      * @param {boolean} [encapsulate]
@@ -239,9 +267,10 @@ class AaStorageEngine {
 
 
     /**
-     * @param {[string]} persistentNames
+     * @param {string[]} persistentNames
      */
     setPersistentNames(persistentNames) {
+        panic.arrayErrorType(persistentNames, 'string', OPTIONAL)
         this.#persistentNames = persistentNames ? persistentNames : []
     }
 
@@ -355,10 +384,6 @@ class AaStorageEngine {
      * @param {RegExp} reg
      */
     getItems(reg) {
-        if (!(reg instanceof RegExp)) {
-            log.error('storage.getItems: key must be a RegExp', reg)
-            return
-        }
         let items = {}
         this.forEach((key, value) => {
             if (reg.test(key)) {
@@ -385,11 +410,6 @@ class AaStorageEngine {
      * @param {StorageOptions} [options]
      */
     removeItems(key, options) {
-        if (!(key instanceof RegExp)) {
-            log.error('storage.removeItems: key must be a RegExp', key)
-            return
-        }
-
         let wild = null
         const sep = this.separator
         const sub = this.subSeparator
@@ -409,9 +429,11 @@ class AaStorageEngine {
 
     /**
      * Clear all data except persistent data and ignores data from this storage
-     * @param {[string]} [ignores]
+     * @param {string[]} [ignores]
      */
     clearExcept(ignores) {
+        panic.arrayErrorType(ignores, 'string', OPTIONAL)
+
         let keepData = this.getPersistentValues()
         if (len(ignores) > 0) {
             keepData = !keepData ? ignores : keepData.concat(ignores)
@@ -438,7 +460,7 @@ class AaStorageEngine {
 
     /**
      *
-     * @param key
+     * @param {string} key
      * @param value
      * @return {*[]}   [value, expired]
      */
@@ -484,7 +506,7 @@ class AaStorageEngine {
     /**
      * @param {any} value
      * @param {StorageOptions} [options]
-     * @return {number|string}
+     * @return {*}
      */
     static encodeValue(value, options) {
         let ok = true;
@@ -549,14 +571,14 @@ class AaStorageFactor {
 
     /**
      *
-     * @param {AaStorageEngine} [cookieStorage]
-     * @param {AaStorageEngine} [localStorage]
-     * @param {AaStorageEngine} [sessionStorage]
+     * @param {Storage} [cookieStorage]
+     * @param {Storage} [localStorage]
+     * @param {Storage} [sessionStorage]
      */
     constructor(cookieStorage, localStorage, sessionStorage) {
-        this.local = new AaStorageEngine(localStorage || window.localStorage, [], false, true)
-        this.session = new AaStorageEngine(sessionStorage || window.sessionStorage, [], false, true)
-        this.cookie = new AaStorageEngine(cookieStorage || new AaCookieStorage(), [], true, false)
+        this.local = new AaStorageEngine(localStorage ? localStorage : window.localStorage, [], false, true)
+        this.session = new AaStorageEngine(sessionStorage ? sessionStorage : window.sessionStorage, [], false, true)
+        this.cookie = new AaStorageEngine(cookieStorage ? cookieStorage : new AaCookieStorage(), [], true, false)
     }
 
     /**
@@ -605,9 +627,10 @@ class AaStorageFactor {
 
     /**
      * Clear all data except some fields from all storages
-     * @param {[string]} [ignores] ignore these fields
+     * @param {string[]} [ignores] ignore these fields
      */
     clearAllExcept(ignores) {
+        panic.arrayErrorType(ignores, 'string', OPTIONAL)
         this.local.clearExcept(ignores)
         this.session.clearExcept(ignores)
         this.cookie.clearExcept(ignores)

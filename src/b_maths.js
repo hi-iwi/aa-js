@@ -1,7 +1,7 @@
 /**
  * Special Mathematics
  * @import atype
- * @typedef  {number|string} ResponsiveSize
+ * @typedef  {string|NumberX} ResponsiveSize
  */
 
 class maths {
@@ -34,7 +34,7 @@ class maths {
 
     /**
      * Get the value of the closest key in a setting
-     * @param settings
+     * @param {struct} settings
      * @param {ComparisonSymbol} symbol
      *      >           the closest and greater value
      *      <           the closest and lesser value
@@ -121,7 +121,7 @@ class maths {
 
     /**
      * 千分位表示法
-     * @param {number|string} num
+     * @param {NumberX} num
      * @param {number} n
      * @param {string} delimiter
      * @returns {string}

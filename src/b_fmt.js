@@ -15,7 +15,7 @@ class fmt {
      * @return {string}
      */
     static sprintf(format, ...args) {
-        let matches = [...format.matchAll(/%s/g)]
+         let matches = [...format.matchAll(/%s/g)]
         if (matches.length !== args.length) {
             log.error(`fmt.sprintf("${format}", ${args})  invalid number of arguments, expected ${matches.length}, but get ${args.length}.`)
         }
@@ -31,21 +31,26 @@ class fmt {
 
     /**
      * Translate formatted string
-     * @param {{[key:string]:string}|null} dictionary
+     * @param {struct|null} dictionary
      * @param args
      * @return {string}
      * @example fmt.translate({'I LOVE %s':'我爱%s'}, "I LOVE %s", "你")    ===>   我爱你
      */
     static translate(dictionary, ...args) {
-        if (args.length < 1) {
+         if (args.length < 1) {
             return ""
         }
         let format = dictionary && dictionary[args[0]] ? dictionary[args[0]] : args[0]
         return fmt.sprintf(format, ...args.slice(1))
     }
 
+    /**
+     *
+     * @param {string} s
+     * @return {string}
+     */
     static toPascalCase(s) {
-        s = fmt.toCamelCase(s)
+         s = fmt.toCamelCase(s)
         return s[0].toUpperCase() + s.substring(1)
     }
 
@@ -54,7 +59,7 @@ class fmt {
      * @param {string } s
      */
     static toCamelCase(s) {
-        return s.toLowerCase().replace(/[^a-z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
+         return s.toLowerCase().replace(/[^a-z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
     }
 
     /**
@@ -62,7 +67,7 @@ class fmt {
      * @param {string} s
      */
     static toSnakeCase(s) {
-        s = s.replace(/-/g, '_')  // kebab-case
+         s = s.replace(/-/g, '_')  // kebab-case
         let isPascal = s && (s[0] >= 'A' && s[0] <= 'Z')
 
         s = s.replace(/_?([A-Z]+)/g, function (x, y) {
@@ -90,7 +95,7 @@ class fmt {
      * Convert to sentence-case
      */
     static toSentenceCase(s, handleCases = false) {
-        if (handleCases) {
+         if (handleCases) {
             s = fmt.toSnakeCase(s).replace(/_/g, ' ')
         }
         return !s ? "" : s[0].toUpperCase() + s.substring(1)
@@ -100,12 +105,12 @@ class fmt {
 
     /**
      * Convert Arabic numerals to Chinese numerals
-     * @param {number|string} num
+     * @param {NumberX} num
      * @param {boolean} [financial] convert to financial numerals (`capital` numerals)
      * @return {string}
      */
     static toChineseNumber(num, financial) {
-        num = float64(num)
+         num = float64(num)
         let hanziNum = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九']
 
         let units = ['个', '万', '亿', '万亿', '兆']

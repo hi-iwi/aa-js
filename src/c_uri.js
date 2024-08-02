@@ -112,11 +112,11 @@ class AaURI {
      */
     /**
      * @param {RequestURL} url
-     * @param {struct} [params]
+     * @param {struct|map} [params]
      * @param {string} [hash]
      */
-    init(url = location.href, params, hash = '') {
-        url = string(url).trim()  // will convert url:_aaURI to url.String()
+    init(url = location.href, params, hash) {
+        url = url.trim()  // will convert url:_aaURI to url.String()
         let method = void ''
         const arr = url.split(' ')
         if (arr.length > 1) {
@@ -135,7 +135,8 @@ class AaURI {
         let baseUrl = b[0]
         let queryStr = b.length > 1 ? b[1] : ''
         // fragment
-        if (typeof hash === "undefined") {
+        if (!hash) {
+            hash = ''
             if (queryStr.indexOf('#') > 0) {
                 b = queryStr.split('#')
                 queryStr = b[0]
@@ -182,7 +183,7 @@ class AaURI {
 
     /**
      * @param {string} url
-     * @param {map|{[key:string]:*}} [params]
+     * @param {struct|map} [params]
      * @param {string} [hash]
      */
     constructor(url = window.location.href, params, hash) {
@@ -222,7 +223,7 @@ class AaURI {
 
     /**
      *
-     * @param {map|{[key:string]:*}} params
+     * @param {map|struct} params
      * @return {AaURI}
      */
     setParams(params) {
@@ -337,13 +338,24 @@ class AaURI {
     }
 
 
-    // 预留
+    /**
+     * Encode an url or an url segment
+     * @param  {string}s
+     * @return {string}
+     */
     static encode(s) {
+        
         return encodeURIComponent(s)
     }
 
     // 多次转码后，解析到底
+    /**
+     * Decode an url or an url segment
+     * @param {string} s
+     * @return {string}
+     */
     static decode(s) {
+        
         let d = ''
         s = string(s)
         while (d !== s) {
@@ -383,8 +395,8 @@ class AaURI {
 
     /**
      * replace parameters in url string
-     * @param {string|*} s
-     * @param {map|{[key:string]:*}}  queries
+     * @param {string|AaURI} s
+     * @param {map|struct}  queries
      * @param {map} [newQueries]
      * @return {[string, map,ok]}
      */

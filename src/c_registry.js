@@ -9,16 +9,20 @@ class AaRegistry {
     constructor() {
     }
 
+    /**
+     * Register a method
+     * @param {string} name
+     * @param method
+     */
     register(name, method) {
-        if (typeof method !== "function") {
-            throw new TypeError(`registry only accept callable method, but ${name} get ${atype.of(method)}`)
-        }
+        panic.errorType(name, 'string')
+        panic.errorType(method, 'function')
         this.#registers[name] = method
     }
 
     /**
      * Activate a registered module
-     * @param name
+     * @param {string} name
      * @param args
      * @return {null|*}
      */
@@ -30,6 +34,10 @@ class AaRegistry {
         return null
     }
 
+    /**
+     * Unregister a method
+     * @param {string} name
+     */
     unregister(name) {
         delete (this.#registers[name])
     }

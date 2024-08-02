@@ -9,6 +9,10 @@ class paths {
     // @property {string} the file name of path, e.g.  "a/b/c.jpg" => c
     filename
 
+
+    /**
+     * @param {string} path
+     */
     init(path) {
         path = paths.clean(path)
         if (!path) {
@@ -25,6 +29,9 @@ class paths {
         this.ext = this.base.replace(this.filename, '')
     }
 
+    /**
+     * @param {string} path
+     */
     constructor(path) {
         this.init(path)
     }
@@ -44,10 +51,11 @@ class paths {
 
     /**
      *
-     * @param paths
+     * @param {string[]} args
      * @example join("a/b","../../../xyz")  ===>  ../xyz
      */
     static join(...args) {
+        panic.arrayErrorType(args, ['string', 'number'], OPTIONAL)
         let path = args.join('/')
         return paths.clean(path)
     }

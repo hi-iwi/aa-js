@@ -14,7 +14,7 @@ class strings {
      * @param {string} s
      */
     static shuffle(s) {
-        return arrays.shuffle(s.split('')).join('')
+         return arrays.shuffle(s.split('')).join('')
     }
 
     /**
@@ -22,10 +22,7 @@ class strings {
      * @param {number} length
      * @param {string} [base]
      */
-    static random(length, base) {
-        if (!base) {
-            base = strings.alphaNumeric
-        }
+    static random(length, base = strings.alphaNumeric) {
         base = strings.shuffle(base)
         let result = ''
         for (let i = 0; i < length; i++) {
@@ -36,9 +33,9 @@ class strings {
 
     /**
      * Replaces the last matched text in a string, using a regular expression or search string.
-     * @param str
-     * @param pattern
-     * @param replacement
+     * @param {string} str
+     * @param {string|RegExp} pattern
+     * @param {string} replacement
      * @return {string|*}
      */
     static replaceLast(str, pattern, replacement) {
@@ -59,7 +56,7 @@ class strings {
      * @return {boolean}
      */
     static isZhCN(s) {
-        return /[^\u4e00-\u9fa5]/.test(s)
+         return /[^\u4e00-\u9fa5]/.test(s)
     }
 
     /**
@@ -105,16 +102,18 @@ class strings {
     }
 
     // 转义 reg exp
-    static escapeReg(exp) {
-        if (typeof exp === "string") {
-            exp = exp.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-        }
-        return exp
+    /**
+     * Escape RegExp source
+     * @param {string} source
+     * @return {string}
+     */
+    static escapeReg(source) {
+        return source.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
     }
 
     /**
      * Get utf8 length of given string
-     * @param {string} s
+     * @param {StringN} s
      * @return {number}
      */
     static utf8Len(s) {
@@ -137,10 +136,11 @@ class strings {
 
     /**
      * Get placeholder length of give string
-     * @param {string} s
+     * @param {StringN} s
      * @return {number}
      */
     static placeLen(s) {
+        
         s = string(s)
         let l = 0;
         for (let i = 0; i < s.length; i++) {
@@ -155,43 +155,43 @@ class strings {
 
     /**
      * Slice string by length in utf-8 format
-     * @param str
-     * @param length
-     * @return {string|string|*}
+     * @param {StringN} s
+     * @param {number} length
+     * @return {string}
      */
-    static cutUtf8(str, length) {
-        str = string(str)
+    static cutUtf8(s, length) {
+        s = string(s)
         // str.length is the shortest length
-        if (str.length < length) {
-            return str
+        if (s.length < length) {
+            return s
         }
-        let s = '', l = 0;
-        for (let i = 0; i < str.length; i++) {
-            l += strings.utf8Len(str[i]);
+        let ss = '', l = 0;
+        for (let i = 0; i < s.length; i++) {
+            l += strings.utf8Len(s[i]);
             if (l >= length) {
                 break;
             }
-            s += str[i];
+            ss += s[i];
         }
-        return s;
+        return ss;
     }
 
     /**
      * Slice string by length in placeholder format
-     * @param s
-     * @param len
-     * @return {string|string|*}
+     * @param {StringN} s
+     * @param {number} length
+     * @return {string}
      */
-    static cutPlace(s, len) {
+    static cutPlace(s, length) {
         s = string(s)
         // 为了setState时候，快速响应
-        if (s.length < len) {
+        if (s.length < length) {
             return s
         }
         let ss = '', l = 0;
         for (let i = 0; i < s.length; i++) {
             l += strings.placeLen(s[i]);
-            if (l >= len) {
+            if (l >= length) {
                 break;
             }
             ss += s[i];
@@ -220,6 +220,12 @@ class strings {
         return null
     }
 
+    /**
+     * Join strings with the separator
+     * @param {string} separator
+     * @param args
+     * @return {string}
+     */
     static joinWith(separator, ...args) {
         let arr = []
         for (let i = 0; i < args.length; i++) {
@@ -230,10 +236,22 @@ class strings {
         return arr.join(separator)
     }
 
+    /**
+     * Join strings with a blank string
+     * @param args
+     * @return {string}
+     */
     static join(...args) {
         return strings.joinWith(' ', ...args)
     }
 
+    /**
+     * Join strings with the separator when the condition is true
+     * @param {string} separator
+     * @param {boolean} condition
+     * @param args
+     * @return {string}
+     */
     static joinByWith(separator, condition, ...args) {
         if (!condition) {
             return string(args, 0)
@@ -241,6 +259,12 @@ class strings {
         return strings.joinWith(' ', ...args)
     }
 
+    /**
+     * Join strings when the condition is true
+     * @param {boolean} condition
+     * @param args
+     * @return {string}
+     */
     static joinBy(condition, ...args) {
         return strings.joinByWith(' ', condition, ...args)
     }

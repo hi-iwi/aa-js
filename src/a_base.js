@@ -1,5 +1,8 @@
 /**
- * @typedef {number|string} numbers
+ * @typedef {string|number} StringN
+ * @typedef {number|string} NumberX
+ * @typedef {number} UnixTime     unix time in seconds
+ * @typedef {number} UnixTimeMillisecond unix time in milliseconds
  * @typedef {object} Class
  * @typedef {{[key:string]:any}|*} struct
  *              为了方便JSDoc，这里struct 用空泛的更方便
@@ -22,6 +25,8 @@ const nif = () => void 0   // 空函数  ==>  Go语言都定义 any = interface{
 const MAX = 'MAX'
 const MIN = 'MIN'
 const BreakSignal = false // a signal from callback function to break forEach((value,key)) iterator
+const OPTIONAL = false
+const REQUIRED = !OPTIONAL
 
 /**
  * Keep-names of URL parameters 路由URL参数名

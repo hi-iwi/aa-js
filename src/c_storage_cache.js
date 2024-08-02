@@ -9,18 +9,24 @@ class AaCache {
      * @param {AaStorageEngine} storageEngine
      */
     constructor(storageEngine) {
+        panic.errorType(storageEngine, AaStorageEngine)
         this.#storageEngine = storageEngine
     }
 
-    formatTableName(table) {
+    /**
+     *
+     * @param {string} table
+     * @return {string}
+     */
+    #formatTableName(table) {
         return ['aa', 'db', table].join(this.#storageEngine.separator)
     }
 
-    formatKeyname(table, key) {
-        return this.formatTableName(table) + this.#storageEngine.subSeparator + key
+    #formatKeyname(table, key) {
+        return this.#formatTableName(table) + this.#storageEngine.subSeparator + key
     }
 
-    unformatKeyname(key) {
+    #unformatKeyname(key) {
         let prefix = ['aa', 'db', ''].join(this.#storageEngine.separator)
         if (key.indexOf(prefix) !== 0) {
             return key
@@ -38,8 +44,8 @@ class AaCache {
     /**
      * Save data into table
      * @param {string} table
-     * @param {map|{[key:string]:any}} data
-     * @param {string|RegExp} pattern
+     * @param {map|struct} data
+     * @param {{is:string|RegExp, not:string|RegExp }} [pattern]
      * @param {struct} [options]
      */
     save(table, data, pattern, options) {
@@ -47,7 +53,7 @@ class AaCache {
         const not = defval(pattern, 'not')
         data = new map(data)
         data.forEach((key, value) => {
-            let keyname = this.formatKeyname(table, key)
+            let keyname = this.#formatKeyname(table, key)
             // 这个要放在最前面，抵消默认忽视下划线结尾的临时变量规则
             if ((typeof is === "string" && key === is) || (is instanceof RegExp && is.test(key))) {
                 this.#storageEngine.setItem(keyname, value, options)
@@ -71,7 +77,7 @@ class AaCache {
      * @param table
      */
     drop(table) {
-        const tableName = this.formatTableName(table)
+        const tableName = this.#formatTableName(table)
         this.#storageEngine.removeItems(new RegExp("^" + strings.escapeReg(tableName)))
     }
 
@@ -85,7 +91,7 @@ class AaCache {
         if (!table) {
             throw new RangeError(`storage cache error: select * from ${table}`)
         }
-        let pattern = this.formatTableName(table) + strings.escapeReg(this.#storageEngine.subSeparator)
+        let pattern = this.#formatTableName(table) + strings.escapeReg(this.#storageEngine.subSeparator)
         if (len(fields) > 0) {
             pattern += '(' + fields.join('|') + ')$'
         }
@@ -95,17 +101,23 @@ class AaCache {
         }
         let items = {}
         for (const [k, v] of Object.entries(data)) {
-            let key = this.unformatKeyname(k)
+            let key = this.#unformatKeyname(k)
             items[key] = v
         }
         return items
     }
 
+    /**
+     * Find from table
+     * @param {string} table
+     * @param {string|RegExp} field
+     * @return {string|*|null}
+     */
     find(table, field) {
         if (!table || !field) {
-            throw new RangeError(`storage cache error: select ${array(field).join(',')} from ${table}`)
+            throw new RangeError(`storage cache error: select ${field} from ${table}`)
         }
-        let key = this.formatKeyname(table, field)
+        let key = this.#formatKeyname(table, field)
         return this.#storageEngine.getItem(key)
     }
 
