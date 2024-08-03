@@ -5,17 +5,13 @@
  * @typedef {number} UnixTimeMillisecond unix time in milliseconds
  * @typedef {number} Timeout
  * @typedef {object} Class
- * @typedef {{[key:string]:any}|*} struct
- *              为了方便JSDoc，这里struct 用空泛的更方便
- * @typedef {string} RequestURL
- *              e.g. 'GET https://luexu.com' or 'https://luexu.com'
+ * @typedef {{[key:string]:any}|*} struct   为了方便JSDoc，这里struct 用空泛的更方便
+ * @typedef {string} RequestURL  e.g. 'GET https://luexu.com' or 'https://luexu.com'
  * @typedef {string} filepath
  * @typedef {string} jsonstr
- * @typedef {string} QueryString
- *              k=v&k=v&k=v
+ * @typedef {string} QueryString  k=v&k=v&k=v
  * @typedef {function(value:any, key:string)} IteratorCallback
- * @typedef {*} vv_vk_defaultV
- *              e.g. (value) (obj, key)  (obj, key, defaultValue)
+ * @typedef {*} vv_vk_defaultV  e.g. (value) (obj, key)  (obj, key, defaultValue)
  * @typedef {string}MAX
  * @typedef {string}MIN
  * @typedef {'<'|'='|'>'|'>='|'<='|'=='} ComparisonSymbol
