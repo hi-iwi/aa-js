@@ -3,6 +3,7 @@
  * @typedef {number|string} NumberX
  * @typedef {number} UnixTime     unix time in seconds
  * @typedef {number} UnixTimeMillisecond unix time in milliseconds
+ * @typedef {number} Timeout
  * @typedef {object} Class
  * @typedef {{[key:string]:any}|*} struct
  *              为了方便JSDoc，这里struct 用空泛的更方便
@@ -118,11 +119,17 @@ var _aaDebug = new (class {
 
 
     store() {
+        if (!localStorage) {
+            return
+        }
         const value = atype.aliasOf(this.value).toUpperCase() + ":" + this.value  // N:1, add N: make this storage persistent
         localStorage.setItem(this.#storageKeyname, value)
     }
 
     loadStorage() {
+        if (!localStorage) {
+            return
+        }
         const sk = localStorage.getItem(this.#storageKeyname)
         const value = sk ? Number(sk.replace('N:', '')) : 0
         const ok = isNaN(value) || ![0, 1, 2].includes(value)

@@ -157,7 +157,7 @@ class AaMultiLevelSelects {
         range(start, end, 1, i => {
             const r = callable(this.#data[i], i)
             if (r === BREAK_SIGNAL) {
-                return result
+                return r
             }
             result.push(r)
         })
@@ -178,10 +178,10 @@ class AaMultiLevelSelects {
             this.forEach((options, i) => {
                 const start = optionsIncr === INCR ? 0 : options.length - 1
                 const end = optionsIncr === INCR ? options.length : -1
-                range(start, end, 1, j => {
+                return range(start, end, 1, j => {
                     const r = callable(options[j], i, j)
                     if (r === BREAK_SIGNAL) {
-                        return BREAK_SIGNAL
+                        return r
                     }
                     result.push(r)
                 })
@@ -202,14 +202,14 @@ class AaMultiLevelSelects {
         return result
     }
 
-    shiftOption(selectIndex) {
+    shiftOptionFrom(selectIndex) {
         if (selectIndex >= this.number) {
             throw RangeError(`unshiftOption selectIndex ${selectIndex} is out of the max index ${this.number - 1}  of all selects`)
         }
         this.#data[selectIndex].shift()
     }
 
-    unshiftOption(selectIndex, option) {
+    unshiftOptionTo(selectIndex, option) {
         if (selectIndex >= this.number) {
             throw RangeError(`unshiftOption selectIndex ${selectIndex} is out of the max index ${this.number - 1}  of all selects`)
         }
@@ -274,6 +274,32 @@ class AaMultiLevelSelects {
         return chain
     }
 
+    // value:text 更符合实际，比如  {86:"中国"}
+    // 将 {value:text, value:text} 或[{value:text},{value:text}] [{value:, text:},{value:, text:}]  转为 [value]
+    static extractChainValues(option) {
+        let a = []
+        let w = void null
+        if (atype.isStruct(option)) {
+            for (let b in option) {
+                if (option.hasOwnProperty(b)) {
+                    a.push(b)
+                }
+            }
+        } else {
+            for (let i = 0; i < option.length; i++) {
+                w = option[i]
+                if (atype.isStruct(w)) {
+                    if (w.hasOwnProperty('value')) {
+                        w = w.value
+                    } else {
+                        w = Object.keys(w)[0]
+                    }
+                }
+                a.push(w)
+            }
+        }
+        return a
+    }
 
     /**
      *

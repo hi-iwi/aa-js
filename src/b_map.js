@@ -226,13 +226,17 @@ class map {
 
     /**
      * Create a struct with one property
-     * @param {StringN} key
-     * @param value
+     * @param pairs
      * @return {struct}
      */
-    static kv(key, value) {
+    static kv(...pairs) {
         let o = {}
-        o[key] = value
+        if (pairs.length % 2 !== 0) {
+            throw new RangeError('map.kv() parameters must be in pairs')
+        }
+        for (let i = 0; i < pairs.length; i + 2) {
+            o[pairs[i]] = o[pairs[i + 1]]
+        }
         return o
     }
 
@@ -292,7 +296,20 @@ class map {
      * @returns {struct|null}
      */
     static clone(obj) {
-        return obj ? JSON.parse(JSON.stringify(obj)) : obj
+        if (!obj) {
+            return null
+        }
+        let simple = true
+        let newObj = {}
+        for (const [key, value] of Object.entries(obj)) {
+            if (typeof value === 'object' && value !== null) {
+                simple = false
+                break
+            }
+            newObj[key] = value
+        }
+
+        return simple ? newObj : JSON.parse(JSON.stringify(obj))
     }
 
     /**l

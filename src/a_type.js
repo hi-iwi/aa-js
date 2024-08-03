@@ -14,11 +14,17 @@ function range(start, end, step, callback) {
     step = Math.abs(step)
     if (start < end) {
         for (let i = start; i < end; i += step) {
-            callback(i)
+            const r =callback(i)
+            if (r === BREAK_SIGNAL) {
+                return BREAK_SIGNAL
+            }
         }
     }
     for (let i = start; i > end; i -= step) {
-        callback(i)
+        const r =callback(i)
+        if (r === BREAK_SIGNAL) {
+            return BREAK_SIGNAL
+        }
     }
 }
 
