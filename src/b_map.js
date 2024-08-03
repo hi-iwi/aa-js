@@ -578,4 +578,73 @@ class map {
         }
         return target === src
     }
+
+    /**
+     * Find the first matched object
+     * @param {struct[]} objects
+     * @param {struct} condition
+     * @return {number|struct|null[]} the index and the matched object
+     */
+    static find(objects, condition) {
+        Loop:
+            for (let i = 0; i < objects.length; i++) {
+                for (const [k, v] of Object.entries(condition)) {
+                    if (objects[i][k] !== v) {
+                        continue Loop
+                    }
+                }
+                return [objects[i], i]
+            }
+        return [null, -1]
+    }
+
+    /**
+     * Abandon matched object
+     * @param {struct[]} objects
+     * @param {struct} condition
+     * @return {struct}
+     */
+    static discard(objects, condition) {
+        const [_, i] = map.find(objects, condition)
+        if (i < 0) {
+            return objects
+        }
+        objects.splice(i, 1)
+        return objects
+    }
+
+    /**
+     * Insert an object into an array or update if the array already exists this object
+     * @param {struct[]} objects
+     * @param {struct} item
+     * @param {struct} condition
+     * @param {boolean} [insertToHead] the direction of the insertion. true to head, false to tail
+     * @return {[]}
+     */
+    static insertOnDuplicateUpdate(objects, item, condition, insertToHead = false) {
+        if (!item) {
+            return objects
+        }
+        if (!objects || objects.length === 0) {
+            return [item]
+        }
+
+        // 为保证 react state 更新正常，这里 item 最好指向新的内存空间
+        let newItem = {}
+        for (const [key, _] of objects[0]) {
+            if (typeof item[key] === 'undefined') {
+                throw new AggregateError(`map.insertOnDuplicateUpdate() the new item miss field ${key}`)
+            }
+            newItem[key] = item[key]
+        }
+
+        const [_, i] = map.find(objects, condition)
+        if (i > 0) {
+            objects[i] = newItem   // on duplicate update
+            return objects
+        }
+        // JS 这种情况不会预先执行函数，而需要等判断结果后，择一执行
+        insertToHead ? objects.push(newItem) : objects.unshift(newItem)
+        return objects
+    }
 }

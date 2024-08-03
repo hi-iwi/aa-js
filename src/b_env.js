@@ -5,7 +5,10 @@
 class AaEnv {
     name = 'aa-environment'
 
-    static debug = _aaDebug
+
+    static isDebug() {
+        return _aaDebug
+    }
 
     static isLocalhost() {
         return _aaDebug.isLocalhost()

@@ -292,7 +292,6 @@ class Decimal {
         return maths.thousands(w, segmentSize, separator)
     }
 
-
     /**
      *
      * @param {number} scale    是否截断小数尾部0

@@ -14,14 +14,14 @@ function range(start, end, step, callback) {
     step = Math.abs(step)
     if (start < end) {
         for (let i = start; i < end; i += step) {
-            const r =callback(i)
+            const r = callback(i)
             if (r === BREAK_SIGNAL) {
                 return BREAK_SIGNAL
             }
         }
     }
     for (let i = start; i > end; i -= step) {
-        const r =callback(i)
+        const r = callback(i)
         if (r === BREAK_SIGNAL) {
             return BREAK_SIGNAL
         }
@@ -383,7 +383,7 @@ class   // Returns function XXX()
 }
 
 
-// len(bool) len(number) 为 0，防止直接用 for( < len(x)) 导致异常
+//  防止直接用 for( < len(x)) 导致异常
 /**
  * Get length of anything
  * @param {vv_vk_defaultV} [args]
@@ -394,8 +394,7 @@ function len(...args) {
     if (typeof v === "undefined" || v === null) {
         return 0
     }
-    // 这个作为基础函数，不要被其他函数调用。特别是 AaLib.Val() / AaType.Of()，否则死循环调用
-    if (typeof v === "number") {
+    if (typeof v === "number" || typeof v === 'string') {
         return String(v).length
     }
     if (Array.isArray(v)) {
@@ -408,7 +407,7 @@ function len(...args) {
             return l
         }
     }
-    return Object.keys(v).length  // 支持string,array, object
+    return Object.keys(v).length  // support string,array, object
 }
 
 /**
