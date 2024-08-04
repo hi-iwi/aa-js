@@ -16,6 +16,10 @@ class panic {
      * @param {(function|RegExpConstructor|atypes)[]|function|RegExpConstructor|atypes} type
      * @param {boolean} [required]
      * @warn 不要滥用这个，会耗费不必要的性能。对于异步获取值的时候，最好使用，比如Promise 或 registry.Register的时候，应该使用！
+     * @example
+     *  panic.errorType(key, 'string')
+     *  panic.errorType(key, ['string','number'])
+     *  panic.errorType(date, ['string', 'number', Date, time], OPTIONAL)
      */
     static errorType(value, type, required = REQUIRED) {
         if (required === OPTIONAL && (typeof value === 'undefined' || value === null)) {
@@ -57,6 +61,10 @@ class panic {
      * @param {(function|RegExpConstructor|atypes)[]|function|RegExpConstructor|atypes} type
      * @param required
      * @warn 不要滥用这个，会耗费不必要的性能。对于异步获取值的时候，最好使用，比如Promise 或 registry.Register的时候，应该使用！
+     * @example
+     *  panic.arrayErrorType(names, 'string')
+     *  panic.arrayErrorType(numbers, ['string', 'number'])
+     *  panic.arrayErrorType(dates, [Date, time, 'string', 'number'])
      */
     static arrayErrorType(arr, type, required = REQUIRED) {
         if (required === OPTIONAL && (typeof arr === 'undefined' || arr === null)) {
@@ -78,6 +86,8 @@ class panic {
      * @param {*[]|string} list
      * @param required
      * @warn 不要滥用这个，会耗费不必要的性能。对于异步获取值的时候，最好使用，比如Promise 或 registry.Register的时候，应该使用！
+     * @example
+     *  panic.enumError(sex, ['male', 'female'])
      */
     static enumError(value, list, required = REQUIRED) {
         if (required === OPTIONAL && (typeof value === 'undefined' || value === null)) {
