@@ -443,13 +443,19 @@ function len(...args) {
     if (Array.isArray(v)) {
         return v.length    // s.match() 必须不可用下面，否则长度会多
     }
-    // 特定 .len(): number
-    if (typeof v.len === "function") {
-        const l = v.len()
-        if (typeof l === "number") {
+
+    /**
+     * Check if .len is a getter insteadof property
+     * @note special method
+     *  get len(){}
+     */
+    if (typeof v === 'object' && !v.hasOwnProperty('len') && Object.getPrototypeOf(v).hasOwnProperty('len')) {
+        const l = v.len
+        if (typeof l === 'number') {
             return l
         }
     }
+
     return Object.keys(v).length  // support string,array, object
 }
 

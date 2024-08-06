@@ -1,6 +1,5 @@
 # Code Style Guide
 
-
 ## 命名规则
 
 * _fields_: []string|{[key:string}:typeFunc}    :  一个类似结构体或object的class，用 _files_ :["key"]   来描述有效字段。主要用于
@@ -14,11 +13,10 @@
 * .init(data)   ===> 重置数据
     * 注意：.init() 不能返回 this，也不能传递本对象来重新赋值。因为内部无法修改 this 指针。
 
-
-
 # JSDoc types
 
 * 使用 `/** @type {xxx} */` ，而不是 `// @type {xxx}`。后者编辑器无法识别
+
 ```js
 /** @type (number|string)[] */
 const numOrStrArray = [1, 2, 3, '4', '5', 6, 7]
@@ -69,16 +67,16 @@ new Map().forEach((value, key, map) => {
 
 ## base class interface
 
-
 * 通用命名规则
     * toJSON()    JSON.stringify() 能识别该方法； aa fetch 也需要识别该方法序列化对象
     * toString()  '' + new Date() 会用该方法返回的string
     * valueOf()  +new Date() 会用该方法返回的number
-    * 
+    *
+
 ```
 // pseudo-code
 interface BaseClass {
-    ?len():number     
+    ?get len:number     
     ?valueOf(): any                // refer to .value, if neccessary. e.g. +new Date()  ==> will call this
     ?toString(): string            // '' + new BaseClass()  ===> will call this
     ?toJSON(): string              // for JSON.stringify
@@ -112,6 +110,8 @@ cookie-name = token
 
 ### class 属性顺序
 
+按字母排序
+
 1. variable keep word `name`, to name this class
 2. static Constants
 3. static variables
@@ -122,17 +122,14 @@ cookie-name = token
 8. getXXX()         get property
 9. set xxx(value)   set property
 10. get xxx()       get property
-11. len()
-12. data()
-13. initXXX()
-14. init()
-15. constructor()
-16. other methods()
-17. valueOf()
-18. toString()
-19. toJSON()
-20. log()
-21. static methods()
+11. data()
+12. initXXX()
+13. init()
+14. constructor()
+15. #private methods
+16. \* [xxx]()   如  *[Symbol.iterator]()
+17. other methods()
+18. static methods()   ---> 禁止存在 静态私有变量
 
 ```js
 class Demo {
@@ -146,7 +143,10 @@ class Demo {
 
     hundsome = true
     #nationality = 'China'
-
+    // len() 函数会识别这个
+    get len() {
+  
+    }
     get nationality() {
         return this.#nationality
     }
@@ -155,9 +155,7 @@ class Demo {
         this.#nationality = nationality
     }
 
-    len() {   // a special method
 
-    }
 
     initAge(age) {
         this.#age = age
