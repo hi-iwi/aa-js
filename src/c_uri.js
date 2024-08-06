@@ -344,8 +344,6 @@ class AaURI {
                 return redirect.href
             }
         }
-
-
         return new AaURI(defaultRedirect ? defaultRedirect : '/', params).href
     }
 
@@ -393,6 +391,13 @@ class AaURI {
         return [s, newQueries, ok]
     }
 
+    static go(url) {
+        if (!sessionStorage || !sessionStorage.getItem(aparam.DebugUrl)) {
+            window.location.href = url
+            return
+        }
+        console.info(`[debug] location.href='${url}'`)
+    }
 
     /**
      * Replace the current history entry

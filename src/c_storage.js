@@ -436,15 +436,17 @@ class AaStorageEngine {
     /**
      * Clear all data except persistent data and ignores data from this storage
      * @param {string[]} [ignores]
+     * @param {boolean} force
      */
-    clearExcept(ignores) {
+    clearExcept(ignores, force = false) {
         panic.arrayErrorType(ignores, 'string', OPTIONAL)
 
-        let keepData = this.getPersistentValues()
-        if (len(ignores) > 0) {
-            keepData = !keepData ? ignores : keepData.concat(ignores)
+        let keepData = ignores ? [...ignores] : []
+        if (!force) {
+            keepData = keepData.concat(this.getPersistentValues())
         }
-        if (!keepData) {
+
+        if (len(keepData) === 0) {
             this.#storage.clear()
             return
         }
@@ -459,9 +461,10 @@ class AaStorageEngine {
 
     /**
      * Clear all data except persistent data from this storage
+     * @param {boolean} force
      */
-    clear() {
-        this.clearExcept()
+    clear(force = false) {
+        this.clearExcept(void [], force)
     }
 
     /**
@@ -624,11 +627,12 @@ class AaStorageFactor {
 
     /**
      * Clear from all storages
+     * @param {boolean} force
      */
-    clearAll() {
-        this.local.clear()
-        this.session.clear()
-        this.cookie.clear()
+    clearAll(force = false) {
+        this.local.clear(force)
+        this.session.clear(force)
+        this.cookie.clear(force)
     }
 
     /**

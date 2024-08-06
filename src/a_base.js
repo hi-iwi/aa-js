@@ -31,8 +31,9 @@ const DECR = false
  * Keep-names of URL parameters 路由URL参数名
  */
 const aparam = {
-    Debug : "_debug", // 0 o debug; 1/true debug via console; 2/alert debug via alert
-    Apollo: "apollo",
+    Debug     : "_debug", // 0 o debug; 1/true debug via console; 2/alert debug via alert
+    DebugUrl: "_debug_url",
+    Apollo    : "apollo",
 
 
     Authorization: "Authorization",  // 由 token_type access_token 组合而成
