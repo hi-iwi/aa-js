@@ -44,16 +44,14 @@ class AaURI {
     #hash  // alias to location.hash
     /** @type string */
     #hostname
-    /** @type string e.g. {scheme:string}, https:, tcp: */
-    #protocol
-
-    /** @type string */
-    #port
-    /** @type string */
-    #pathname
-
     /** @type string */
     #password
+    /** @type string */
+    #pathname
+    /** @type string */
+    #port
+    /** @type string e.g. {scheme:string}, https:, tcp: */
+    #protocol
     /** @type string */
     #username
 
@@ -179,11 +177,16 @@ class AaURI {
     }
 
 
-    sort() {
-        this.searchParams.sort()
+    delete(key) {
+        this.searchParams.delete(key)
         return this
     }
 
+    /**
+     *
+     * @param {(key:StringN,value:any)=>boolean} filter
+     * @return {AaURI}
+     */
     filter(filter) {
         for (const [key, value] of this.searchParams) {
             if (filter(key, value)) {
@@ -199,61 +202,8 @@ class AaURI {
         return this.filter((_, value) => empty.includes(value))
     }
 
-
     has(key) {
         return this.searchParams.has(key)
-    }
-
-    delete(key) {
-        this.searchParams.delete(key)
-        return this
-    }
-
-    /**
-     *
-     * @param {struct|map|URLSearchParams} params
-     * @return {AaURI}
-     */
-    setParams(params) {
-        const iter = typeof params.entries === 'function' ? params.entries() : Object.entries(params)
-        for (const [key, value] of iter) {
-            this.searchParams.set(key, value)
-        }
-        return this
-    }
-
-    set(key, value) {
-        this.searchParams.set(key, value)
-        return this
-    }
-
-
-    query(key, cast = string) {
-        return this.searchParams.get(key, cast)
-    }
-
-    queryBool(key) {
-        return this.query(key, bool)
-    }
-
-    queryBooln(key) {
-        return this.query(key, booln)
-    }
-
-    queryNumber(key) {
-        return this.query(key, number)
-    }
-
-    queryFloat(key) {
-        return this.query(key, float64)
-    }
-
-    queryInt(key) {
-        return this.query(key, int32)
-    }
-
-    queryUint(key) {
-        return this.query(key, uint32)
     }
 
     /**
@@ -310,27 +260,71 @@ class AaURI {
         }
     }
 
+    query(key, cast = string) {
+        return this.searchParams.get(key, cast)
+    }
 
-    toString() {
-        const p = this.parse()
-        return p.url
+    queryBool(key) {
+        return this.query(key, bool)
+    }
+
+    queryBooln(key) {
+        return this.query(key, booln)
+    }
+
+    queryNumber(key) {
+        return this.query(key, number)
+    }
+
+    queryFloat(key) {
+        return this.query(key, float64)
+    }
+
+    queryInt(key) {
+        return this.query(key, int32)
+    }
+
+    queryUint(key) {
+        return this.query(key, uint32)
+    }
+
+    set(key, value) {
+        this.searchParams.set(key, value)
+        return this
+    }
+
+    /**
+     *
+     * @param {struct|map|URLSearchParams} params
+     * @return {AaURI}
+     */
+    setParams(params) {
+        const iter = typeof params.entries === 'function' ? params.entries() : Object.entries(params)
+        for (const [key, value] of iter) {
+            this.searchParams.set(key, value)
+        }
+        return this
+    }
+
+    /**
+     * Sort this map
+     * @param {(a:any,b:any)=>number} [compareFn]
+     * @return {AaURI}
+     */
+    sort(compareFn) {
+        this.searchParams.sort(compareFn)
+        return this
     }
 
     toJSON() {
         return this.toString()
     }
 
-
-    /**
-     * Encode an url or an url segment
-     * @param  {string}s
-     * @return {string}
-     */
-    static encode(s) {
-
-        return encodeURIComponent(s)
+    toString() {
+        const p = this.parse()
+        return p.url
     }
-
+    
     // 多次转码后，解析到底
     /**
      * Decode an url or an url segment
@@ -349,32 +343,37 @@ class AaURI {
     }
 
     /**
-     * Split host to hostname and port
-     * @param {string} host
-     * @return {[string,string ]}
+     *
+     * @param {string} defaultRedirect
+     * @param {struct} params
+     * @return {string}
      */
-    // e.g. luexu.com:8080, {hostname}:{port:uint},    {aab}.com:{port:uint}
-    static splitHost(host) {
-        const matches = [...host.matchAll(/{[\w:]+}/g)]
-        if (matches.length === 0) {
-            return host.split(':')
+    static defaultRedirectURL(defaultRedirect = '/', params) {
+        const url = new AaURI(location.href)
+        let redirect = url.query("redirect")
+        console.log(url)
+        if (redirect) {
+            redirect = new AaURI(redirect, UrlRemoveRedirect).toString()
+        }
+        url.setParams(UrlRemoveRedirect)
+        if (redirect.toString() !== url.toString()) {
+            if (params) {
+                redirect.setParams(params)
+            }
+            return redirect.toString()
         }
 
-        for (let i = 0; i < matches.length; i++) {
-            host = host.replace(matches[i][0], "#" + i)  // # is not allowed in host
-        }
-        let [hostname, port] = host.split(':')
-        if (!port) {
-            return [hostname, port]
-        }
-
-        for (let i = 0; i < matches.length; i++) {
-            hostname = hostname.replace('#' + i, matches[i][0])
-            port = port.replace('#' + i, matches[i][0])
-        }
-        return [hostname, port]
+        return new AaURI(defaultRedirect ? defaultRedirect : '/', params).toString()
     }
 
+    /**
+     * Encode an url or an url segment
+     * @param  {string}s
+     * @return {string}
+     */
+    static encode(s) {
+        return encodeURIComponent(s)
+    }
 
     /**
      * replace parameters in url string
@@ -411,27 +410,31 @@ class AaURI {
         return [s, newQueries, ok]
     }
 
+
     /**
-     *
-     * @param {string} defaultRedirect
-     * @param {struct} params
-     * @return {string}
+     * Split host to hostname and port
+     * @param {string} host
+     * @return {[string,string ]}
      */
-    static defaultRedirectURL(defaultRedirect = '/', params) {
-        const url = new AaURI(location.href)
-        let redirect = url.query("redirect")
-        console.log(url)
-        if (redirect) {
-            redirect = new AaURI(redirect, UrlRemoveRedirect).toString()
-        }
-        url.setParams(UrlRemoveRedirect)
-        if (redirect.toString() !== url.toString()) {
-            if (params) {
-                redirect.setParams(params)
-            }
-            return redirect.toString()
+    // e.g. luexu.com:8080, {hostname}:{port:uint},    {aab}.com:{port:uint}
+    static splitHost(host) {
+        const matches = [...host.matchAll(/{[\w:]+}/g)]
+        if (matches.length === 0) {
+            return host.split(':')
         }
 
-        return new AaURI(defaultRedirect ? defaultRedirect : '/', params).toString()
+        for (let i = 0; i < matches.length; i++) {
+            host = host.replace(matches[i][0], "#" + i)  // # is not allowed in host
+        }
+        let [hostname, port] = host.split(':')
+        if (!port) {
+            return [hostname, port]
+        }
+
+        for (let i = 0; i < matches.length; i++) {
+            hostname = hostname.replace('#' + i, matches[i][0])
+            port = port.replace('#' + i, matches[i][0])
+        }
+        return [hostname, port]
     }
 }

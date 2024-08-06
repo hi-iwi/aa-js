@@ -39,6 +39,7 @@ class map {
             yield [key, value]
         }
     }
+
     clear() {
         this.props = {}
     }
@@ -47,6 +48,7 @@ class map {
         let obj = deep ? map.clone(this.props) : {...this.props}
         return new map(obj)
     }
+
     /**
      * Delete a key in this map
      * @param {StringN} key
@@ -54,9 +56,11 @@ class map {
     delete(key) {
         delete this.props[key]
     }
+
     entries() {
         return Object.entries(this.props)
     }
+
     /**
      * Extend items from an object
      * @param {map|struct} obj
@@ -111,6 +115,7 @@ class map {
         }
         return this.get(key)
     }
+
     /**
      * Check map has property key, and its value is not undefined
      * @param {StringN} key
@@ -136,10 +141,11 @@ class map {
 
     /**
      * Sort this map
+     * @param {(a:any,b:any)=>number} [compareFn]
      * @return {map}
      */
-    sort() {
-        let ks = this.keys().sort();
+    sort(compareFn) {
+        let ks = this.keys().sort(compareFn);
         let sortedObj = {};
         for (let i = 0; i < ks.length; i++) {
             sortedObj[ks[i]] = this.props[ks[i]];
@@ -175,9 +181,11 @@ class map {
         }, sort)
         return params.join('&')
     }
+
     toString() {
         return JSON.stringify(this.props)
     }
+
     values() {
         return Object.values(this.props)
     }
@@ -203,6 +211,7 @@ class map {
         }
         return target
     }
+
     /**
      * Clone an object 深度复制一个对象；浅复制，就自行  newObj  = {...obj}
      * @param {struct|map} obj
@@ -224,6 +233,7 @@ class map {
 
         return simple ? newObj : JSON.parse(JSON.stringify(obj))
     }
+
     /**
      * Compare two object
      * @param {*} target
@@ -323,6 +333,7 @@ class map {
         objects.splice(i, 1)
         return objects
     }
+
     /**
      * Fill up the non-existent properties of the first object with the second object's
      * @description 将两个对象的差集填充进target对象。通常用于填充默认配置。
@@ -346,6 +357,7 @@ class map {
         }
         return target
     }
+
     /**
      * Find the first matched object
      * @param {struct[]} objects
@@ -364,6 +376,7 @@ class map {
             }
         return [null, -1]
     }
+
     /**
      *
      * @param {array|struct|map|URLSearchParams|*} o
@@ -401,6 +414,7 @@ class map {
     static get(obj, key) {
         return !obj ? void 0 : obj[key]
     }
+
     /**l
      *
      * @param  {Class|struct} target
@@ -430,6 +444,7 @@ class map {
         }
         return key
     }
+
     /**
      * Insert an object into an array or update if the array already exists this object
      * @param {struct[]} objects
@@ -464,6 +479,7 @@ class map {
         insertToHead ? objects.push(newItem) : objects.unshift(newItem)
         return objects
     }
+
     /**
      * Create a struct with one property
      * @param pairs
@@ -535,6 +551,7 @@ class map {
         }
         return target
     }
+
     /**
      * 解析json或{} 为 {}
      * @param {struct|FormData|jsonstr} obj
