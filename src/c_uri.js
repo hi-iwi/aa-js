@@ -331,21 +331,19 @@ class AaURI {
      * @return {string}
      */
     static defaultRedirectURL(defaultRedirect = '/', params) {
-        const url = new AaURI(location.href)
-        let redirect = url.query("redirect")
-        console.log(url)
+        const loc = new AaURI(location.href)
+        let redirect = loc.query("redirect")
         if (redirect) {
-            redirect = new AaURI(redirect, UrlRemoveRedirect).toString()
+            redirect = new AaURI(redirect, UrlRemoveRedirect)
         }
-        url.setParams(UrlRemoveRedirect)
-        if (redirect.toString() !== url.toString()) {
+        loc.setParams(UrlRemoveRedirect)
+        if (redirect.href !== loc.href) {
             if (params) {
                 redirect.setParams(params)
             }
-            return redirect.toString()
+            return redirect.href
         }
-
-        return new AaURI(defaultRedirect ? defaultRedirect : '/', params).toString()
+        return new AaURI(defaultRedirect ? defaultRedirect : '/', params).href
     }
 
     /**
