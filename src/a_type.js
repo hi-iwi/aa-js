@@ -134,6 +134,49 @@ class atype {
         regexp   : "r",
     }
 
+    /**
+     * Check if any of these arguments is undefined
+     * @param args
+     * @return {boolean}
+     */
+    static anyUndefined(...args) {
+        for (let i = 0; i < args.length; i++) {
+            if (typeof args[i] === 'undefined') {
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * Check if any of these arguments is not the type
+     * @param type
+     * @param args
+     * @return {boolean}
+     */
+    static anyNot(type, ...args) {
+        for (let i = 0; i < args.length; i++) {
+            if (typeof args[i] !== type && atype.of(args[i]) !== type) {
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * Check if any of these arguments is zero-value
+     * @param args
+     * @return {boolean}
+     */
+    static anyZero(...args) {
+        for (let i = 0; i < args.length; i++) {
+            if (!args[i]) {
+                return true
+            }
+        }
+        return false
+    }
+
     static toStringCallable(v) {
         if (v && typeof v.toString === 'function') {
             return v.toString().indexOf('[object ') !== 0
