@@ -7,7 +7,7 @@ class AaValidator {
      */
     static isPhoneNumber(countryCode, s) {
         s = string(s)
-        return /1\d{10}/.test(s)
+        return /^1\d{10}$/.test(s)
     }
 
 }

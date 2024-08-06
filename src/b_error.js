@@ -10,7 +10,7 @@ let _aerrorDictionaries_ = {
     'en'   : null,  // will init later   必须要增加一个en模式的，这样直接匹配到可以直接输出
     'zh-CN': {
         "Please input: %s"     : "请输入：%s",
-        "Bad parameter: %s"    : "% 输入错误",
+        "Bad parameter: %s"    : "%s 输入错误",
         "Invalid parameter: %s": "%s 输入不符合规则",
 
 

@@ -71,10 +71,14 @@ class AaApollo {
         })
     }
 
-    check(done = apollo => void 0) {
+    /**
+     *
+     * @param {(apollo:string)=>void} [done]
+     */
+    check(done) {
         let apollo = this.get()
         if (apollo) {
-            done(apollo)
+            run(done, apollo)
             return
         }
 
@@ -87,7 +91,7 @@ class AaApollo {
             }
             apollo = AaApollo.Encode(info)
             this.set(apollo)
-            done(apollo)
+            run(done, apollo)
         })
     }
 
@@ -142,14 +146,14 @@ class AaApollo {
         }
         qs = qs.substring(1)
         let qq = qs.split('')
-        let mid = Math.ceil(qq.length / 2)
+        let mid = Math.floor(qq.length / 2)
         for (let i = 1; i < mid; i += swapRange) {
             [qq[i], qq[mid + i]] = [qq[mid + i], qq[i]]
         }
         qs = qq.join('')
         // 系统base64编码
         let b = window.btoa(qs).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/, "").split('')
-        mid = Math.ceil(b.length / 2)
+        mid = Math.floor(b.length / 2)
 
         for (let i = 0; i < mid; i += swapRange) {
             [b[i], b[mid + i]] = [b[mid + i], b[i]]
@@ -157,23 +161,23 @@ class AaApollo {
         return cipher + b.join('')
     }
 
-    // static Decode(s) {
-    //     if (s.length === 0) {
-    //         return null
-    //     }
-    //     let cipher = s[0]
-    //     let swapRange = (cipher.charCodeAt(0) & 1) + 1
-    //     let b = s.substring(1).split('')
-    //     let mid = Math.ceil(b.length / 2)
-    //     for (let i = 0; i < mid; i += swapRange) {
-    //         [b[i], b[mid + i]] = [b[mid + i], b[i]]
-    //     }
-    //     let qq = window.atob(b.join('').replace(/-/g, "+").replace(/_/g, "/")).split('')
-    //     mid = Math.ceil(qq.length / 2)
-    //     for (let i = 1; i < mid; i += swapRange) {
-    //         [qq[i], qq[mid + i]] = [qq[mid + i], qq[i]]
-    //     }
-    //     let q = new URLSearchParams(qq.join(''))
-    //     return Object.fromEntries(q)
-    // }
+    static decode(s) {
+        if (s.length === 0) {
+            return null
+        }
+        let cipher = s[0]
+        let swapRange = (cipher.charCodeAt(0) & 1) + 1
+        let b = s.substring(1).split('')
+        let mid = Math.floor(b.length / 2)
+        for (let i = 0; i < mid; i += swapRange) {
+            [b[i], b[mid + i]] = [b[mid + i], b[i]]
+        }
+        let qq = window.atob(b.join('').replace(/-/g, "+").replace(/_/g, "/")).split('')
+        mid = Math.floor(qq.length / 2)
+        for (let i = 1; i < mid; i += swapRange) {
+            [qq[i], qq[mid + i]] = [qq[mid + i], qq[i]]
+        }
+        let q = new URLSearchParams(qq.join(''))
+        return Object.fromEntries(q)
+    }
 }

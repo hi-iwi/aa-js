@@ -16,7 +16,8 @@ class AaRawFetch {
     #cleanTimer
     #headers = {
         'Content-Type': "application/json",
-        'Accept'      : "application/json"
+        'Accept'      : "application/json",
+        'X-Apollo'    : () => aa.storage.getEntire(aparam.Apollo),
     }
 
     #defaultSettings = {
@@ -68,6 +69,7 @@ class AaRawFetch {
 
     addGlobalHeaders(headers) {
         this.#headers = {...this.#headers, ...headers}
+        loge(this.#headers)
     }
 
 
@@ -192,10 +194,13 @@ class AaRawFetch {
             }
         })
         map.fillUp(headers, this.#headers, (k, v, target) => {
-            if (!target.hasOwnProperty(k)) {
+            if (typeof v === 'function') {
+                v = v()
+            }
+            if (typeof target[k] === 'undefined' && typeof v !== 'undefined' && v !== null && v !== '') {
                 target[k] = v
             } else {
-                if (typeof target[k] === "undefined" || target[k] === null) {
+                if (typeof target[k] === "undefined" || target[k] === null || target[k] === '') {
                     delete target[k]
                 }
             }
@@ -278,6 +283,9 @@ class AaRawFetch {
      * @return {[string, any ]|Promise}
      */
     middleware(url, settings) {
+        if (!url) {
+            throw new RangeError('url is required')
+        }
         settings = struct(settings)
         const parts = url.trim().split(' ')
         if (parts.length > 1) {
