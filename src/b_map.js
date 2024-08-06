@@ -164,20 +164,20 @@ class map {
         let params = [];
         this.forEach((key, value) => {
             if (typeof value === "function") {
-                value = string(value)
+                value = value()
             }
-            if (value === "" || typeof key === "undefined" || key === null) {
+            if (value === "" || typeof value === "undefined" || value === null) {
                 return
             }
             if (assert && assert(key, value)) {
                 return
             }
 
-            if (Array.isArray(key)) {
-                key = key.join(",")  // url param，数组用逗号隔开模式
+            if (Array.isArray(value)) {
+                value = value.join(",")  // url param，数组用逗号隔开模式
             }
-            key = encodeURIComponent(string(key))
-            params.push(value + '=' + key)
+            value = encodeURIComponent(string(value))
+            params.push(key + '=' + value)
         }, sort)
         return params.join('&')
     }
