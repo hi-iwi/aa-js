@@ -54,7 +54,6 @@ class map {
     }
 
     toQueryString(assert, sort = true) {
-
         let params = [];
         this.forEach((key, value) => {
             if (typeof value === "function") {
@@ -76,38 +75,25 @@ class map {
         return params.join('&')
     }
 
+    entries() {
+        return Object.entries(this.props)
+    }
 
     /**
      *
      * @param {IteratorCallback} callback
-     * @param sort
+     * @param {((a:any, b:any)=>number)|boolean} [sort]
      * @return {*[]}
      */
     forEach(callback, sort = false) {
-        // 这种方式forEach 中进行删除未遍历到的值是安全的
-        let result = []   // React 会需要通过这个渲染array/struct
-        if (!sort) {
-            for (let [key, value] of Object.entries(this.props)) {
-                const r = callback(key, value)
-                if (r === BREAK_SIGNAL) {
-                    return result
-                }
-                result.push(r)
-            }
-            return result
-        }
-        let keys = this.keys().sort()
-        for (let i = 0; i < keys.length; i++) {
-            let key = keys[i]
-            const r = callback(key, this.get(key))
-            if (r === BREAK_SIGNAL) {
-                return result
-            }
-            result.push(r)
-        }
-        return result
+        return map.forEach(this.props, callback, sort)
     }
 
+    * [Symbol.iterator]() {
+        for (let [key, value] of this.entries()) {
+            yield [key, value]
+        }
+    }
 
     /**
      * Check map has property key, and its value is not undefined
@@ -204,24 +190,30 @@ class map {
 
     /**
      *
-     * @param {array|struct} o
+     * @param {array|struct|map|URLSearchParams|*} o
      * @param {(key:StringN, value:any)=>*} callable
-     * @param [sort]
+     * @param {((a:any, b:any)=>number)|boolean} [sort]
      * @return {*[]}
      */
     static forEach(o, callable, sort = false) {
-        if (o instanceof map) {
-            return o.forEach(callable, sort)
+        let keys = typeof o.keys === 'function' ? o.keys() : Object.keys(o)
+        if (sort) {
+            typeof sort === 'function' ? keys.sort(sort) : keys.sort()
         }
+        let resultOK = false
         let result = [] // React 会需要通过这个渲染array/struct
-        for (const [key, value] of Object.entries(o)) {
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i]
+            const value = typeof o.get === 'function' ? o.get(key) : o[key]
             const r = callable(key, value)
             if (r === BREAK_SIGNAL) {
-                return result
+                break
+            } else if (!resultOK && typeof r !== 'undefined') {
+                resultOK = true
             }
             result.push(r)
         }
-        return result
+        return resultOK ? result : void []
     }
 
     /**

@@ -35,38 +35,35 @@ const UrlRemoveRedirect = {redirect: null}
 class AaURI {
     name = 'aa-uri'
 
-    method
+    /** @type string */
+    method = ''
+    /** @type {map} */
+    searchParams
 
-    /** @type boolean */
-    #isTemplate = false   // is using template
-    /** @type string e.g. {scheme:string}, https:, tcp: */
-    #protocol
+    /** @type string */
+    #hash  // alias to location.hash
     /** @type string */
     #hostname
+    /** @type string e.g. {scheme:string}, https:, tcp: */
+    #protocol
+
     /** @type string */
     #port
     /** @type string */
     #pathname
-    /** @type {map} */
-    queries
 
     /** @type string */
-    #hash  // alias to location.hash
+    #password
+    /** @type string */
+    #username
 
 
-    get protocol() {
-        const [protocol, ,] = AaURI.lookup(this.#protocol, this.queries)
-        return protocol.toLowerCase()
-    }
+    /** @type boolean */
+    #isTemplate = false   // is using template
 
-    get hostname() {
-        const [hostname, ,] = AaURI.lookup(this.#hostname, this.queries)
-        return hostname
-    }
-
-    get port() {
-        const [port, ,] = AaURI.lookup(this.#port, this.queries)
-        return port
+    get hash() {
+        const [hash, ,] = AaURI.lookup(this.#hash, this.searchParams)
+        return hash
     }
 
     // 非80/443端口，则带上端口 如 luexu.com:8080"
@@ -80,21 +77,39 @@ class AaURI {
         return hostname + ":" + port
     }
 
+    get hostname() {
+        const [hostname, ,] = AaURI.lookup(this.#hostname, this.searchParams)
+        return hostname
+    }
+
+    get href() {
+        return this.toString()
+    }
+
     // e.g. http://luexu.com
     get origin() {
         return this.protocol + "//" + this.host
     }
 
+    get password() {
+        const [password, ,] = AaURI.lookup(this.#password, this.searchParams)
+        return password
+    }
+
     get pathname() {
-        const [pathname, ,] = AaURI.lookup(this.#pathname, this.queries)
+        const [pathname, ,] = AaURI.lookup(this.#pathname, this.searchParams)
         return pathname
     }
 
-    get hash() {
-        const [hash, ,] = AaURI.lookup(this.#hash, this.queries)
-        return hash
+    get port() {
+        const [port, ,] = AaURI.lookup(this.#port, this.searchParams)
+        return port
     }
 
+    get protocol() {
+        const [protocol, ,] = AaURI.lookup(this.#protocol, this.searchParams)
+        return protocol.toLowerCase()
+    }
 
     get search() {
         return this.parse().search
@@ -112,17 +127,19 @@ class AaURI {
      */
     /**
      * @param {RequestURL} url
-     * @param {struct|map} [params]
+     * @param {struct} [params]
      * @param {string} [hash]
      */
     init(url = location.href, params, hash) {
         url = url.trim()  // will convert url:_aaURI to url.String()
-        let method = void ''
+        let method = ''
         const arr = url.split(' ')
         if (arr.length > 1) {
             method = arr[1]
             url = arr.slice(1).join(' ')
         }
+
+        loge(url)
         if (url.substring(0, 1) === '/') {
             if (url.substring(1, 2) === '/') {
                 url = window.location.protocol + url
@@ -130,51 +147,22 @@ class AaURI {
                 url = window.location.origin + url
             }
         }
-
-        let b = url.split('?')
-        let baseUrl = b[0]
-        let queryStr = b.length > 1 ? b[1] : ''
-        // fragment
-        if (!hash) {
-            hash = ''
-            if (queryStr.indexOf('#') > 0) {
-                b = queryStr.split('#')
-                queryStr = b[0]
-                hash = b[1]
-            }
-        }
-        // query string
-        let queries = new map();
-        if (queryStr.length > 1) {
-            let q = queryStr.split('&');
-            for (let i = 0; i < q.length; i++) {
-                if (q[i] === '') {
-                    continue;
-                }
-                let p = q[i].split('=');
-                queries.set(p[0], p.length > 1 ? AaURI.decode(p[1]) : '')
-            }
-        }
-
-        // must greater than 0,  a://xxxx
-        if (baseUrl.indexOf('://') > 0) {
-            b = baseUrl.split('://')
-            let protocol = b[0]    //  e.g. {scheme:string}, https:, tcp:,  or empty
-            let hierPart = b[1]
-            const x = hierPart.indexOf('/')
-            const host = hierPart.substring(0, x)
-            const pathname = hierPart.substring(x)
-            const [hostname, port] = AaURI.splitHost(host)
-            this.#protocol = protocol  //  e.g. {scheme:string}: http/tcp  or empty
-            this.#hostname = hostname
-            this.#port = port
-            this.#pathname = pathname
-        }
-
+        loge(url)
+        const u = new URL(url)
         this.method = method
-        this.queries = queries
+        this.#hash = hash ? hash : u.hash
+        this.#hostname = u.hostname
+        this.#pathname = u.pathname
+        this.#port = u.port
+        this.#protocol = u.protocol
+        this.searchParams = new map()
+        this.#password = u.password
+        this.#username = u.username
 
-        this.#hash = string(hash)
+        for (const [key, value] of u.searchParams) {
+            this.searchParams.set(key, value)
+        }
+
         // 一定要在 queries 实例化后
         if (len(params) > 0) {
             this.setParams(params)
@@ -192,17 +180,17 @@ class AaURI {
 
 
     sort() {
-        this.queries.sort()
+        this.searchParams.sort()
         return this
     }
 
     filter(filter) {
-        this.queries.forEach((key, value) => {
+        for (const [key, value] of this.searchParams) {
             if (filter(key, value)) {
                 // 这种方式forEach 中进行删除未遍历到的值是安全的
-                this.queries.delete(key)
+                this.searchParams.delete(key)
             }
-        })
+        }
         return this
     }
 
@@ -213,40 +201,35 @@ class AaURI {
 
 
     has(key) {
-        return this.queries.has(key)
+        return this.searchParams.has(key)
     }
 
     delete(key) {
-        this.queries.delete(key)
+        this.searchParams.delete(key)
         return this
     }
 
     /**
      *
-     * @param {map|struct} params
+     * @param {struct|map|URLSearchParams} params
      * @return {AaURI}
      */
     setParams(params) {
-        this.queries.extend(params)
+        const iter = typeof params.entries === 'function' ? params.entries() : Object.entries(params)
+        for (const [key, value] of iter) {
+            this.searchParams.set(key, value)
+        }
         return this
     }
 
     set(key, value) {
-        this.queries.set(key, value)
+        this.searchParams.set(key, value)
         return this
     }
 
 
-    queryString(assert) {
-        if (typeof assert === "string") {
-            return this.query(assert, string)
-        }
-        return this.queries.toQueryString(assert)
-    }
-
-
     query(key, cast = string) {
-        return this.queries.get(key, cast)
+        return this.searchParams.get(key, cast)
     }
 
     queryBool(key) {
@@ -278,24 +261,24 @@ class AaURI {
      * @return {{baseUrl: string, search: string, ok: ok, queries: map, url: string, hash: string}}
      */
     parse() {
-        if (!this.#protocol || !this.#hostname || !this.#port || !this.#pathname || !this.queries) {
+        if (!this.#protocol || !this.#hostname || !this.#port || !this.#pathname || !this.searchParams) {
             return {
                 ok     : false,
                 url    : '',
                 baseUrl: '',
-                queries: this.queries,
+                queries: this.searchParams,
                 search : '',
                 hash   : '',
             }
         }
-        let newQueries = this.queries.clone(false)
+        let newQueries = this.searchParams.clone(false)
 
         let port = this.#port ? ':' + this.#port : ''
         let s = this.#protocol + '://' + this.#hostname + port + this.#pathname
         let baseUrl, hash, ok, ok2;
-        [baseUrl, newQueries, ok] = AaURI.lookup(s, this.queries, newQueries)
+        [baseUrl, newQueries, ok] = AaURI.lookup(s, this.searchParams, newQueries)
         if (this.#hash) {
-            [hash, newQueries, ok2] = AaURI.lookup(this.#hash, this.queries, newQueries)
+            [hash, newQueries, ok2] = AaURI.lookup(this.#hash, this.searchParams, newQueries)
             if (!ok2) {
                 hash = ''
             }
@@ -344,7 +327,7 @@ class AaURI {
      * @return {string}
      */
     static encode(s) {
-        
+
         return encodeURIComponent(s)
     }
 
@@ -355,7 +338,7 @@ class AaURI {
      * @return {string}
      */
     static decode(s) {
-        
+
         let d = ''
         s = string(s)
         while (d !== s) {
@@ -437,6 +420,7 @@ class AaURI {
     static defaultRedirectURL(defaultRedirect = '/', params) {
         const url = new AaURI(location.href)
         let redirect = url.query("redirect")
+        console.log(url)
         if (redirect) {
             redirect = new AaURI(redirect, UrlRemoveRedirect).toString()
         }

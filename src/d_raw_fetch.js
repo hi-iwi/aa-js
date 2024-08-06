@@ -267,7 +267,7 @@ class AaRawFetch {
         const interval = 400 * time.Millisecond
         const now = new Date().valueOf()  // in milliseconds
         const prev = this.#requests.get(checksum)
-        if (!prev || prev + interval > now) {
+        if (!prev || prev + interval < now) {
             this.#requests.set(checksum, now)
             return true
         }
