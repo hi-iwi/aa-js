@@ -223,22 +223,16 @@ class AaURI {
 
         let port = this.#port ? ':' + this.#port : ''
         let s = this.#protocol + '//' + this.#hostname + port + this.#pathname
-        let baseUrl, hash, ok, ok2;
+        let baseUrl, hash, ok;
         [baseUrl, newQueries, ok] = AaURI.lookup(s, this.searchParams, newQueries)
         if (this.#hash) {
-            [hash, newQueries, ok2] = AaURI.lookup(this.#hash, this.searchParams, newQueries)
-            if (!ok2) {
-                hash = ''
-            }
+            [hash, newQueries,] = AaURI.lookup(this.#hash, this.searchParams, newQueries)
         }
         let search = newQueries.toQueryString()
         if (search) {
             search = '?' + search
         }
-        let href = baseUrl + search
-        if (hash) {
-            href += '#' + hash
-        }
+        let href = baseUrl + search + hash
         return {
             ok     : ok,
             href   : href,
@@ -376,7 +370,7 @@ class AaURI {
         }
         s = string(s)
         if (!s) {
-            return [s, queries, false]
+            return ['', queries, false]
         }
         const ps = s.match(/{[\w:-]+}/ig)
         if (!ps) {
