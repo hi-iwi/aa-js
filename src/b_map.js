@@ -234,7 +234,6 @@ class map {
         if (pairs.length % 2 !== 0) {
             throw new RangeError('map.kv() parameters must be in pairs')
         }
-        loge(pairs, pairs.length)
         for (let i = 0; i < pairs.length; i += 2) {
             o[pairs[i]] = o[pairs[i + 1]]
         }
