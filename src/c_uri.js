@@ -167,7 +167,7 @@ class AaURI {
 
     /**
      * @param {string} url
-     * @param {struct|map} [params]
+     * @param {struct|map|URLSearchParams|*} [params]
      * @param {string} [hash]
      */
     constructor(url = window.location.href, params, hash) {
@@ -398,6 +398,39 @@ class AaURI {
         return [s, newQueries, ok]
     }
 
+
+    /**
+     * Replace the current history entry
+     * @param {struct|null} state
+     * @param {string} [title]
+     * @param {string} url
+     * @doc https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState
+     */
+    static historyReplace(state, title, url) {
+        window.history.replaceState(state, title, url)
+    }
+
+    /**
+     * Add an entry to history stack
+     * @param state
+     * @param title
+     * @param url
+     */
+    static historyAdd(state, title, url) {
+        window.history.pushState(state, title, url)
+    }
+
+    static historyGo(step) {
+        window.history.go(step)
+    }
+
+    static historyBack() {
+        window.history.back()
+    }
+
+    static historyForward() {
+        window.history.forward()
+    }
 
     /**
      * Split host to hostname and port

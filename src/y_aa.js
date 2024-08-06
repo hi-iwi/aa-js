@@ -72,7 +72,15 @@ class Aa {
     mselects(opts, cast, inherit = false){
         return new AaMultiLevelSelects(...arguments)
     }
-    url(url = window.location.href, params = {}) {
+
+    /**
+     *
+     * @param {string} url
+     * @param {struct|map|URLSearchParams|*} [params]
+     * @param {string} [hash]
+     * @return {AaURI}
+     */
+    url(url = window.location.href, params, hash) {
         return new AaURI(url, params)
     }
 
