@@ -223,10 +223,11 @@ class AaURI {
 
         let port = this.#port ? ':' + this.#port : ''
         let s = this.#protocol + '//' + this.#hostname + port + this.#pathname
-        let baseUrl, hash, ok;
+        let baseUrl, ok
+        let hash = this.#hash;
         [baseUrl, newQueries, ok] = AaURI.lookup(s, this.searchParams, newQueries)
-        if (this.#hash) {
-            [hash, newQueries,] = AaURI.lookup(this.#hash, this.searchParams, newQueries)
+        if (hash) {
+            [hash, newQueries,] = AaURI.lookup(hash, this.searchParams, newQueries)
         }
         let search = newQueries.toQueryString()
         if (search) {
@@ -333,16 +334,18 @@ class AaURI {
     static defaultRedirectURL(defaultRedirect = '/', params) {
         const loc = new AaURI(location.href)
         let redirect = loc.query("redirect")
+        loc.setParams(UrlRemoveRedirect)
         if (redirect) {
             redirect = new AaURI(redirect, UrlRemoveRedirect)
-        }
-        loc.setParams(UrlRemoveRedirect)
-        if (redirect.href !== loc.href) {
-            if (params) {
-                redirect.setParams(params)
+            if (redirect.href !== loc.href) {
+                if (params) {
+                    redirect.setParams(params)
+                }
+                return redirect.href
             }
-            return redirect.href
         }
+
+
         return new AaURI(defaultRedirect ? defaultRedirect : '/', params).href
     }
 
