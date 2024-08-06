@@ -156,7 +156,7 @@ class map {
 
     /**
      *
-     * @param assert
+     * @param {(key:StringN, value:any)=>boolean} [assert]
      * @param {((a:any, b:any)=>number)|boolean} [sort]
      * @return {string}
      */

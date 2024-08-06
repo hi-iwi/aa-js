@@ -94,7 +94,7 @@ class AaRawFetch {
             if (!p.ok) {
                 throw new SyntaxError(`miss parameter(s) in url: ${method} ${url} ${JSON.stringify(data)}`)
             }
-            return [p.url, null]
+            return [p.href, null]
         }
 
         let queries, ok;

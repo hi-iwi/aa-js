@@ -137,7 +137,6 @@ class AaURI {
             url = arr.slice(1).join(' ')
         }
 
-        loge(url)
         if (url.substring(0, 1) === '/') {
             if (url.substring(1, 2) === '/') {
                 url = window.location.protocol + url
@@ -145,7 +144,6 @@ class AaURI {
                 url = window.location.origin + url
             }
         }
-        loge(url)
         const u = new URL(url)
         this.method = method
         this.#hash = hash ? hash : u.hash
@@ -208,7 +206,7 @@ class AaURI {
 
     /**
      * Parse lookup
-     * @return {{baseUrl: string, search: string, ok: ok, queries: map, url: string, hash: string}}
+     * @return {{baseUrl: string, search: string, ok: ok, queries: map, href: string, hash: string}}
      */
     parse() {
         if (!this.#protocol || !this.#hostname || !this.#port || !this.#pathname || !this.searchParams) {
@@ -224,7 +222,7 @@ class AaURI {
         let newQueries = this.searchParams.clone(false)
 
         let port = this.#port ? ':' + this.#port : ''
-        let s = this.#protocol + '://' + this.#hostname + port + this.#pathname
+        let s = this.#protocol + '//' + this.#hostname + port + this.#pathname
         let baseUrl, hash, ok, ok2;
         [baseUrl, newQueries, ok] = AaURI.lookup(s, this.searchParams, newQueries)
         if (this.#hash) {
@@ -233,26 +231,17 @@ class AaURI {
                 hash = ''
             }
         }
-
-        if (baseUrl.indexOf('http:') === 0 && baseUrl.indexOf(':80/')) {
-            baseUrl = baseUrl.replace(':80/', '/')
-        }
-        if (baseUrl.indexOf('https:') === 0 && baseUrl.indexOf(':443/')) {
-            baseUrl = baseUrl.replace(':443/', '/')
-        }
         let search = newQueries.toQueryString()
-
-
         if (search) {
             search = '?' + search
         }
-        let url = baseUrl + search
+        let href = baseUrl + search
         if (hash) {
-            url += '#' + hash
+            href += '#' + hash
         }
         return {
             ok     : ok,
-            url    : url,
+            href   : href,
             baseUrl: baseUrl,
             queries: newQueries,
             search : search,
@@ -321,10 +310,9 @@ class AaURI {
     }
 
     toString() {
-        const p = this.parse()
-        return p.url
+        return this.parse().href
     }
-    
+
     // 多次转码后，解析到底
     /**
      * Decode an url or an url segment
