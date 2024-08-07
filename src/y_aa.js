@@ -78,9 +78,25 @@ class Aa {
             case 'number':
                 return string(a) === string(b)
             case 'object':
+
                 if (typeof a.toJSON === 'function') {
                     return typeof b.toJSON === 'function' ? a.toJSON() === b.toJSON() : false
                 }
+
+                /**
+                 * `jsonkey` is a reserved json field to indicate the value of the key name of this struct.
+                 *  1. `jsonkey` field must be a string. It can be an empty string.
+                 *  2. if `jsonkey` is not an empty string, its value is the key name of the value of this struct
+                 *  3. if `jsonkey` is an empty string, try the `value` or `id` or `path` properties
+                 */
+                if (typeof a.jsonkey === "string") {
+                    let key = a.jsonkey ? a.jsonkey : (a.hasOwnProperty('value') ? 'value' : (a.hasOwnProperty('id') ? 'id' : 'path'))
+                    if (a.hasOwnProperty(key)) {
+                        return b.hasOwnProperty(key) ? a[key] === b[key] : false
+                    }
+                }
+
+
                 if (typeof a.toString === "function" && a.toString().indexOf('[object ') !== 0) {
                     return typeof b.toString === 'function' ? a.toString() === b.toString() : false
                 }
