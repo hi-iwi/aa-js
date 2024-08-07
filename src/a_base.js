@@ -24,8 +24,8 @@ const MIN = 'MIN'
 const BREAK_SIGNAL = '-.../.-././.-/-.-/..--.-/.../../--./-./.-/.-..' // a signal from callback function to break forEach((value,key)) iterator
 const OPTIONAL = false
 const REQUIRED = !OPTIONAL
-const INCR = true
-const DECR = false
+const INCR = 'INCR'
+const DECR = 'DECR'
 
 /**
  * Keep-names of URL parameters 路由URL参数名

@@ -34,6 +34,10 @@ class map {
         this.init(props)
     }
 
+    /**
+     *
+     * @return {Generator<StringN|any[], void, *>}
+     */
     * [Symbol.iterator]() {
         for (let [key, value] of this.entries()) {
             yield [key, value]

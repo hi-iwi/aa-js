@@ -1,12 +1,13 @@
 /**
  * Multi-level dropdowns(selects) data 多级联动数据
  * 多个 <select></select><select></select> 组合
+ * @typedef {{value:any, text:string, key?:number, pid?:number, prefix?:any, suffix?:any, inherit?:boolean, comment?:any, virtual?:boolean}} MselectOption
  */
 class AaMultiLevelSelects {
 
 
     /**
-     *  @property {{value:any, text:string, key?:number, pid?:number, prefix?:any, suffix?:any, inherit?:boolean, comment?:any, virtual?:boolean}}[][]} #data
+     *  @property {MselectOption[][]} #data
      *      value: 选项的值
      *      text: 文本
      *      key: 0,
@@ -157,11 +158,19 @@ class AaMultiLevelSelects {
         this.#data = opts
     }
 
+    /**
+     * @return {IterableIterator<MselectOption[]>}
+     */
+    [Symbol.iterator]() {
+        return this.#data ? this.#data.values() : [].values()
+    }
+
 
     clone() {
         let newData = this.#data ? strings.unjson(JSON.stringify(this.#data)) : null
         return new AaMultiLevelSelects(newData)
     }
+
 
     // 通过value，找到系列{}。由于可能出现某个子元素，前置（如深圳、广州前置到省），而同时子选项又包括。从子项选中后，展示前置项
     findChainOptions(value) {
@@ -171,7 +180,7 @@ class AaMultiLevelSelects {
         let pid = void ""
         let chain = []
 
-        this.forEach((opts, i) => {
+        this.map((opts, i) => {
             if (!pid) {
                 for (let j = 0; j < opts.length; j++) {
                     // 空value，就选择第一个
@@ -207,7 +216,7 @@ class AaMultiLevelSelects {
         }
 
         for (let i = chain.length; i < this.len; i++) {
-            this.forEachOption((option, selectIndex, optionIndex) => {
+            this.mapOptions((option, selectIndex, optionIndex) => {
                 // 默认选符合条件的子选项第一个
                 if (option.pid === chain[i - 1].value) {
                     chain.push(option)
@@ -291,8 +300,14 @@ class AaMultiLevelSelects {
         }
     }
 
-
-    forEach(callable, incr = INCR) {
+    /**
+     *
+     * @param callable
+     * @param incr
+     * @return {*[]}
+     * @note for(const options of mselects){callable(options)}      is alias to   .map(callable)
+     */
+    map(callable, incr = INCR) {
         let result = []
         if (this.len === 0) {
             return result
@@ -313,14 +328,15 @@ class AaMultiLevelSelects {
      *
      * @param {function} callable
      * @param {number} [selectIndex]
-     * @param {boolean} [selectsIncr]
-     * @param {boolean} [optionsIncr]
+     * @param {'INCR'|'DECR'} [selectsIncr]
+     * @param {'INCR'|'DECR'} [optionsIncr]
      * @return {*[]}
+     * @note `options` is array, you can use `for(const option of options){callable(option)}`
      */
-    forEachOption(callable, selectIndex, selectsIncr = INCR, optionsIncr = INCR) {
+    mapOptions(callable, selectIndex, selectsIncr = INCR, optionsIncr = INCR) {
         let result = []
         if (typeof selectIndex === 'undefined' || selectIndex === null) {
-            this.forEach((options, i) => {
+            this.map((options, i) => {
                 const start = optionsIncr === INCR ? 0 : options.length - 1
                 const end = optionsIncr === INCR ? options.length : -1
                 return range(start, end, 1, j => {
@@ -346,7 +362,6 @@ class AaMultiLevelSelects {
         }
         return result
     }
-
 
     nth(i) {
         return this.#data[i]

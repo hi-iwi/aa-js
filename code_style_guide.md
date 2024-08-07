@@ -127,7 +127,8 @@ cookie-name = token
 13. init()
 14. constructor()
 15. #private methods
-16. \* [xxx]()   如  *[Symbol.iterator]()
+16. \* [xxx]()   如  *[Symbol.iterator](){yield xxx}
+17. [xxx]()    如  [Symbol.iterator](){return [].values()}
 17. other methods()
 18. static methods()   ---> 禁止存在 静态私有变量
 
@@ -143,10 +144,12 @@ class Demo {
 
     hundsome = true
     #nationality = 'China'
+
     // len() 函数会识别这个
     get len() {
-  
+
     }
+
     get nationality() {
         return this.#nationality
     }
@@ -154,7 +157,6 @@ class Demo {
     set nationality(nationality) {
         this.#nationality = nationality
     }
-
 
 
     initAge(age) {
