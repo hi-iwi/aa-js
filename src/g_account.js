@@ -148,7 +148,7 @@ class AaAccount {
                     return vuser
                 }
             }
-            throw new RangeError(`not found vuser with vtype: ${vtype}`)
+            throw new TypeError(`not found vuser with vtype: ${vtype}`)
         })
     }
 
@@ -174,7 +174,7 @@ class AaAccount {
                     return vuser
                 }
             }
-            throw new RangeError(`not found vuser ${vuid}`)
+            throw new TypeError(`not found vuser ${vuid}`)
         })
     }
 

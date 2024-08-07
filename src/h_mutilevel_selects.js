@@ -27,9 +27,19 @@ class AaMultiLevelSelects {
         return this.#data ? this.#data : [[]]
     }
 
-    get number() {
+    get first() {
+        return this.#data[0]
+    }
+
+
+    get last() {
+        return this.len > 0 ? this.#data[this.len - 1] : null
+    }
+
+    get len() {
         return this.#data ? this.#data.length : 0
     }
+
 
     // 格式化，并按 key 排序数组（如果设置了key）
     // 将 {$value:$text,$value:$text} 或 [{$value:$text},{$value:$text}] 或 [text, text]
@@ -147,78 +157,15 @@ class AaMultiLevelSelects {
         this.#data = opts
     }
 
-    forEach(callable, incr = INCR) {
-        let result = []
-        if (!this.#data) {
-            return result
-        }
-        const start = incr === INCR ? 0 : this.number - 1
-        const end = incr === INCR ? this.number : -1
-        range(start, end, 1, i => {
-            const r = callable(this.#data[i], i)
-            if (r === BREAK_SIGNAL) {
-                return r
-            }
-            result.push(r)
-        })
-        return result
-    }
 
-    /**
-     *
-     * @param {function} callable
-     * @param {number} [selectIndex]
-     * @param {boolean} [selectsIncr]
-     * @param {boolean} [optionsIncr]
-     * @return {*[]}
-     */
-    forEachOption(callable, selectIndex, selectsIncr = INCR, optionsIncr = INCR) {
-        let result = []
-        if (typeof selectIndex === 'undefined' || selectIndex === null) {
-            this.forEach((options, i) => {
-                const start = optionsIncr === INCR ? 0 : options.length - 1
-                const end = optionsIncr === INCR ? options.length : -1
-                return range(start, end, 1, j => {
-                    const r = callable(options[j], i, j)
-                    if (r === BREAK_SIGNAL) {
-                        return r
-                    }
-                    result.push(r)
-                })
-            }, selectsIncr)
-        }
-        if (selectIndex >= this.number) {
-            throw RangeError(`unshiftOption selectIndex ${selectIndex} is out of the max index ${this.number - 1}  of all selects`)
-        }
-        const options = this.#data[selectIndex]
-        for (let j = 0; j < options.length; j++) {
-            const r = callable(options[j], selectIndex, j)
-            if (r === BREAK_SIGNAL) {
-                break
-            }
-            result.push(r)
-        }
-
-        return result
-    }
-
-    shiftOptionFrom(selectIndex) {
-        if (selectIndex >= this.number) {
-            throw RangeError(`unshiftOption selectIndex ${selectIndex} is out of the max index ${this.number - 1}  of all selects`)
-        }
-        this.#data[selectIndex].shift()
-    }
-
-    unshiftOptionTo(selectIndex, option) {
-        if (selectIndex >= this.number) {
-            throw RangeError(`unshiftOption selectIndex ${selectIndex} is out of the max index ${this.number - 1}  of all selects`)
-        }
-        this.#data[selectIndex].unshift(option)
+    clone() {
+        let newData = this.#data ? strings.unjson(JSON.stringify(this.#data)) : null
+        return new AaMultiLevelSelects(newData)
     }
 
     // 通过value，找到系列{}。由于可能出现某个子元素，前置（如深圳、广州前置到省），而同时子选项又包括。从子项选中后，展示前置项
     findChainOptions(value) {
-        if (this.number === 0) {
+        if (this.len === 0) {
             return []
         }
         let pid = void ""
@@ -259,46 +206,22 @@ class AaMultiLevelSelects {
             // 该value没有找到，就默认选
         }
 
-        this.forEachOption((option, selectIndex, optionIndex) => {
-            // 默认选符合条件的子选项第一个
-            if (option.pid === chain[selectIndex - 1].value) {
-                chain.push(option)
-                return
-            }
-            // 如果多项选择，但是某个元素没有子选项，那么就增加虚拟子选项
-            let g = {...chain[chain.length - 1]}
-            g.pid = g.value
-            chain.push(g)
-        })
+        for (let i = chain.length; i < this.len; i++) {
+            this.forEachOption((option, selectIndex, optionIndex) => {
+                // 默认选符合条件的子选项第一个
+                if (option.pid === chain[i - 1].value) {
+                    chain.push(option)
+                    return
+                }
+                // 如果多项选择，但是某个元素没有子选项，那么就增加虚拟子选项
+                let g = {...chain[chain.length - 1]}
+                g.pid = g.value
+                chain.push(g)
+            }, i)
+        }
+
 
         return chain
-    }
-
-    // value:text 更符合实际，比如  {86:"中国"}
-    // 将 {value:text, value:text} 或[{value:text},{value:text}] [{value:, text:},{value:, text:}]  转为 [value]
-    static extractChainValues(option) {
-        let a = []
-        let w = void null
-        if (atype.isStruct(option)) {
-            for (let b in option) {
-                if (option.hasOwnProperty(b)) {
-                    a.push(b)
-                }
-            }
-        } else {
-            for (let i = 0; i < option.length; i++) {
-                w = option[i]
-                if (atype.isStruct(w)) {
-                    if (w.hasOwnProperty('value')) {
-                        w = w.value
-                    } else {
-                        w = Object.keys(w)[0]
-                    }
-                }
-                a.push(w)
-            }
-        }
-        return a
     }
 
     /**
@@ -368,8 +291,107 @@ class AaMultiLevelSelects {
         }
     }
 
-    clone() {
-        let newData = this.#data ? strings.unjson(JSON.stringify(this.#data)) : null
-        return new AaMultiLevelSelects(newData)
+
+    forEach(callable, incr = INCR) {
+        let result = []
+        if (this.len === 0) {
+            return result
+        }
+        const start = incr === INCR ? 0 : this.len - 1
+        const end = incr === INCR ? this.len : -1
+        range(start, end, 1, i => {
+            const r = callable(this.nth(i), i)
+            if (r === BREAK_SIGNAL) {
+                return r
+            }
+            result.push(r)
+        })
+        return result
     }
+
+    /**
+     *
+     * @param {function} callable
+     * @param {number} [selectIndex]
+     * @param {boolean} [selectsIncr]
+     * @param {boolean} [optionsIncr]
+     * @return {*[]}
+     */
+    forEachOption(callable, selectIndex, selectsIncr = INCR, optionsIncr = INCR) {
+        let result = []
+        if (typeof selectIndex === 'undefined' || selectIndex === null) {
+            this.forEach((options, i) => {
+                const start = optionsIncr === INCR ? 0 : options.length - 1
+                const end = optionsIncr === INCR ? options.length : -1
+                return range(start, end, 1, j => {
+                    const r = callable(options[j], i, j)
+                    if (r === BREAK_SIGNAL) {
+                        return r
+                    }
+                    result.push(r)
+                })
+            }, selectsIncr)
+            return result
+        }
+        if (selectIndex >= this.len) {
+            throw RangeError(`unshiftOption selectIndex ${selectIndex} is out of the max index ${this.len - 1}  of all selects`)
+        }
+        const options = this.nth(selectIndex)
+        for (let j = 0; j < options.length; j++) {
+            const r = callable(options[j], selectIndex, j)
+            if (r === BREAK_SIGNAL) {
+                break
+            }
+            result.push(r)
+        }
+        return result
+    }
+
+
+    nth(i) {
+        return this.#data[i]
+    }
+
+    shiftOptionFrom(selectIndex) {
+        if (selectIndex >= this.len) {
+            throw RangeError(`unshiftOption selectIndex ${selectIndex} is out of the max index ${this.len - 1}  of all selects`)
+        }
+        this.#data[selectIndex].shift()
+    }
+
+    unshiftOptionTo(selectIndex, option) {
+        if (selectIndex >= this.len) {
+            throw RangeError(`unshiftOption selectIndex ${selectIndex} is out of the max index ${this.len - 1}  of all selects`)
+        }
+        this.#data[selectIndex].unshift(option)
+    }
+
+
+    // value:text 更符合实际，比如  {86:"中国"}
+    // 将 {value:text, value:text} 或[{value:text},{value:text}] [{value:, text:},{value:, text:}]  转为 [value]
+    static extractChainValues(option) {
+        let a = []
+        let w = void null
+        if (atype.isStruct(option)) {
+            for (let b in option) {
+                if (option.hasOwnProperty(b)) {
+                    a.push(b)
+                }
+            }
+        } else {
+            for (let i = 0; i < option.length; i++) {
+                w = option[i]
+                if (atype.isStruct(w)) {
+                    if (w.hasOwnProperty('value')) {
+                        w = w.value
+                    } else {
+                        w = Object.keys(w)[0]
+                    }
+                }
+                a.push(w)
+            }
+        }
+        return a
+    }
+
 }

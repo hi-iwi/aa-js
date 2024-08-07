@@ -284,7 +284,7 @@ class AaRawFetch {
      */
     middleware(url, settings) {
         if (!url) {
-            throw new RangeError('url is required')
+            throw new TypeError('url is required')
         }
         settings = struct(settings)
         const parts = url.trim().split(' ')

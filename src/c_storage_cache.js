@@ -89,7 +89,7 @@ class AaCache {
      */
     selectAll(table, fields) {
         if (!table) {
-            throw new RangeError(`storage cache error: select * from ${table}`)
+            throw new TypeError(`storage cache error: select * from ${table}`)
         }
         let pattern = this.#formatTableName(table) + strings.escapeReg(this.#storageEngine.subSeparator)
         if (len(fields) > 0) {
@@ -115,7 +115,7 @@ class AaCache {
      */
     find(table, field) {
         if (!table || !field) {
-            throw new RangeError(`storage cache error: select ${field} from ${table}`)
+            throw new TypeError(`storage cache error: select ${field} from ${table}`)
         }
         let key = this.#formatKeyname(table, field)
         return this.#storageEngine.getItem(key)
