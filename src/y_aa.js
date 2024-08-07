@@ -69,7 +69,32 @@ class Aa {
         this.editor = editor
     }
 
-    mselects(opts, cast, inherit = false){
+    compare(a, b) {
+        if (!(a && b)) {
+            return false
+        }
+        switch (typeof a) {
+            case 'string':
+            case 'number':
+                return string(a) === string(b)
+            case 'object':
+                if (typeof a.toJSON === 'function') {
+                    return typeof b.toJSON === 'function' ? a.toJSON() === b.toJSON() : false
+                }
+                if (typeof a.toString === "function" && a.toString().indexOf('[object ') !== 0) {
+                    return typeof b.toString === 'function' ? a.toString() === b.toString() : false
+                }
+                // time, Date
+                if (typeof a.valueOf === "function") {
+                    return typeof b.valueOf === 'function' ? a.valueOf() === b.valueOf() : false
+                }
+        }
+
+
+        return a === b
+    }
+
+    mselects(opts, cast, inherit = false) {
         return new AaMultiLevelSelects(...arguments)
     }
 
