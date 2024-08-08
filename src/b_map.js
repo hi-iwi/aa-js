@@ -232,6 +232,11 @@ class map {
             return newData
         } catch (err) {
         }
+
+        try {
+            return JSON.parse(JSON.stringify(data))
+        } catch (err) {
+        }
         return data
     }
 
