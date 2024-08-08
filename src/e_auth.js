@@ -17,7 +17,7 @@ class AaAuth {
     /** @type {function}  外部可以使用、修改 */
     #unauthorizedHandler
 
-    /** @type {TokenData} */
+    /** @type {TokenData|null} */
     #token
     #tokenAuthAt = 0
     #validateTried = false

@@ -376,7 +376,10 @@ class AError extends Error {
 
 
     toString() {
-        return `${this.code}: ` + this.getMsg()
+        if (this.code === AErrorEnum.BadRequest){
+            return this.getMsg()
+        }
+        return this.getMsg() + ` (${this.code})`
     }
 
     log(pattern) {

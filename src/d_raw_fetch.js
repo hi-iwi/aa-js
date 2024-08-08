@@ -51,7 +51,8 @@ class AaRawFetch {
         redirect      : "error", // follow 自动跳转；manual 手动跳转；error 报错
         referrer      : "",  //A string whose value is a same-origin URL, "about:client", or the empty string, to set request's referrer.
         referrerPolicy: "no-referrer",
-        signal        : null, // window        : null,
+        signal        : null,
+        // window        : null,
     }
 
     initGlobalHeaders(headers) {
