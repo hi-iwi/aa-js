@@ -314,7 +314,7 @@ class AaMultiLevelSelects {
         }
         const start = incr === INCR ? 0 : this.len - 1
         const end = incr === INCR ? this.len : -1
-        range(start, end, 1, i => {
+        arrays.range(start, end, 1, i => {
             const r = callable(this.nth(i), i)
             if (r === BREAK_SIGNAL) {
                 return r
@@ -339,7 +339,7 @@ class AaMultiLevelSelects {
             this.map((options, i) => {
                 const start = optionsIncr === INCR ? 0 : options.length - 1
                 const end = optionsIncr === INCR ? options.length : -1
-                return range(start, end, 1, j => {
+                return arrays.range(start, end, 1, j => {
                     const r = callable(options[j], i, j)
                     if (r === BREAK_SIGNAL) {
                         return r

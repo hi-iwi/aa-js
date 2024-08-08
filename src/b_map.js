@@ -48,9 +48,8 @@ class map {
         this.props = {}
     }
 
-    clone(deep = true) {
-        let obj = deep ? map.clone(this.props) : {...this.props}
-        return new map(obj)
+    clone() {
+        return new map(map.clone(this.props))
     }
 
     /**
@@ -204,38 +203,44 @@ class map {
     static assign(target, source, keynameConvertor) {
         target = struct(target)
         source = struct(source)
-        if (keynameConvertor) {
-            return Object.assign(target, source)
-        }
         for (let [k, v] of Object.entries(source)) {
             if (typeof keynameConvertor === 'function') {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
-            target[k] = v
+            target[k] = map.clone(v)
         }
         return target
     }
 
     /**
-     * Clone an object 深度复制一个对象；浅复制，就自行  newObj  = {...obj}
-     * @param {struct|map} obj
+     * Deep clone any data except functions and classes
+     *  深度复制一个对象；浅复制，就自行  newObj  = {...obj}
+     * @param {object|array|struct|map|string|number|boolean|*} data
      * @returns {struct|null}
      */
-    static clone(obj) {
-        if (!obj) {
-            return null
+    static clone(data) {
+        if (typeof data !== 'object' || data === null) {
+            return data
         }
-        let simple = true
-        let newObj = {}
-        for (const [key, value] of Object.entries(obj)) {
-            if (typeof value === 'object' && value !== null) {
-                simple = false
-                break
-            }
-            newObj[key] = value
+        if (typeof data.clone === 'function') {
+            return data.clone()
         }
-
-        return simple ? newObj : JSON.parse(JSON.stringify(obj))
+        if (Array.isArray(data)) {
+            let newData = []
+            data.map((value, i) => {
+                newData[i] = map.clone(value)
+            })
+            return newData
+        }
+        try {
+            let newData = {}
+            map.forEach(data, (key, value) => {
+                newData[key] = map.clone(value)
+            })
+            return newData
+        } catch (err) {
+        }
+        return data
     }
 
     /**
@@ -383,30 +388,72 @@ class map {
 
     /**
      *
-     * @param {array|struct|map|URLSearchParams|*} o
-     * @param {(key:StringN, value:any)=>*} callable
+     * @param {array|struct|map|URLSearchParams|*} iterable
+     * @param {(key:StringN, value:any)=>*} callback
      * @param {((a:any, b:any)=>number)|boolean} [sort]
-     * @return {*[]}
+     * @return {*[]|void}
      */
-    static forEach(o, callable, sort = false) {
-        let keys = typeof o.keys === 'function' ? o.keys() : Object.keys(o)
-        if (sort) {
-            typeof sort === 'function' ? keys.sort(sort) : keys.sort()
+    static forEach(iterable, callback, sort = false) {
+        panic.errorType(iterable, 'object')
+        if (!iterable) {
+            return
         }
-        let resultOK = false
-        let result = [] // React 会需要通过这个渲染array/struct
+        if (!sort) {
+            if (typeof iterable.forEach === 'function') {
+                return iterable.forEach(callback)
+            }
+
+            function foreach(iterator) {
+                let resultsOK = false
+                let results = []
+                for (const [key, value] of iterator) {
+                    const result = callback(key, value)
+                    if (result === BREAK_SIGNAL) {
+                        break
+                    }
+                    if (!resultsOK && typeof result !== 'undefined') {
+                        resultsOK = true
+                    }
+                    results.push(result)
+                }
+                return resultsOK ? results : void []
+            }
+
+            if (typeof iterable[Symbol.iterator] === 'function') {
+                return foreach(iterable)
+            }
+
+            if (typeof iterable.entries === 'object' && typeof iterable.entries[Symbol.iterator] === 'function') {
+                return foreach(iterable.entries)
+            }
+
+            if (typeof iterable.entries === 'function') {
+                const entries = iterable.entries()
+                if (typeof entries[Symbol.iterator] === 'function') {
+                    return foreach(entries)
+                }
+            }
+            return foreach(Object.entries(iterable))
+        }
+
+        let keys = typeof iterable.keys === 'function' ? iterable.keys() : Object.keys(iterable)
+        keys.sort(typeof sort === 'function' ? sort : void nif)
+
+        let resultsOK = false
+        let results = [] // React 会需要通过这个渲染array/struct
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i]
-            const value = typeof o.get === 'function' ? o.get(key) : o[key]
-            const r = callable(key, value)
-            if (r === BREAK_SIGNAL) {
+            const value = typeof iterable.get === 'function' ? iterable.get(key) : iterable[key]
+            const result = callback(key, value)
+            if (result === BREAK_SIGNAL) {
                 break
-            } else if (!resultOK && typeof r !== 'undefined') {
-                resultOK = true
             }
-            result.push(r)
+            if (!resultsOK && typeof result !== 'undefined') {
+                resultsOK = true
+            }
+            results.push(result)
         }
-        return resultOK ? result : void []
+        return resultsOK ? results : void []
     }
 
     /**

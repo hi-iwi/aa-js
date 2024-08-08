@@ -96,7 +96,6 @@ class Aa {
                     }
                 }
 
-
                 if (typeof a.toString === "function" && a.toString().indexOf('[object ') !== 0) {
                     return typeof b.toString === 'function' ? a.toString() === b.toString() : false
                 }
@@ -105,8 +104,6 @@ class Aa {
                     return typeof b.valueOf === 'function' ? a.valueOf() === b.valueOf() : false
                 }
         }
-
-
         return a === b
     }
 

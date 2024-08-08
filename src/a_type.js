@@ -10,23 +10,8 @@ function run(method, ...args) {
     }
 }
 
-function range(start, end, step, callback) {
-    step = Math.abs(step)
-    if (start < end) {
-        for (let i = start; i < end; i += step) {
-            const r = callback(i)
-            if (r === BREAK_SIGNAL) {
-                return BREAK_SIGNAL
-            }
-        }
-    }
-    for (let i = start; i > end; i -= step) {
-        const r = callback(i)
-        if (r === BREAK_SIGNAL) {
-            return BREAK_SIGNAL
-        }
-    }
-}
+
+
 
 /**
  * Return defined value

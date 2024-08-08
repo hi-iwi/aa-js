@@ -13,7 +13,7 @@ class panic {
     /**
      * Throw Error when the value type is not matched
      * @param value
-     * @param {(function|RegExpConstructor|atypes)[]|function|RegExpConstructor|atypes} type
+     * @param {(function|RegExpConstructor|atypes)[]|function|RegExpConstructor|atypes|object} type
      * @param {boolean} [required]
      * @warn 不要滥用这个，会耗费不必要的性能。对于异步获取值的时候，最好使用，比如Promise 或 registry.Register的时候，应该使用！
      * @example
@@ -25,18 +25,25 @@ class panic {
         if (required === OPTIONAL && (typeof value === 'undefined' || value === null)) {
             return
         }
+
         const ty = atype.of(value)
-        if (typeof type === 'string' && ty !== type) {
-            throw new TypeError(`${ty}:${value} is not a ${type}`)
+        if (typeof type === 'string') {
+            if (ty !== type && typeof value !== type) {
+                throw new TypeError(`${ty}:${value} is not a ${type}`)
+            }
+            return
         }
 
         /**
          * typeof not callable class/function is 'function. e.g. typeof Aa ==> 'function'
          *      instance of RightHand Right-hand side of 'instanceof' is not callable
          */
-        if (typeof type === 'function' && !(value instanceof type)) {
-            const v = string(value, 'name', value)
-            throw new TypeError(`${ty}:${v} is not an instance of ${type.name}`)
+        if (typeof type === 'function') {
+            if (!(value instanceof type)) {
+                const v = string(value, 'name', value)
+                throw new TypeError(`${ty}:${v} is not an instance of ${type.name}`)
+            }
+            return
         }
 
         if (Array.isArray(type)) {

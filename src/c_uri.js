@@ -219,7 +219,7 @@ class AaURI {
                 hash   : '',
             }
         }
-        let newQueries = this.searchParams.clone(false)
+        let newQueries = this.searchParams.clone()
 
         let port = this.#port ? ':' + this.#port : ''
         let s = this.#protocol + '//' + this.#hostname + port + this.#pathname
@@ -377,7 +377,7 @@ class AaURI {
         }
         if (!newQueries) {
             //  对data进行了局部删除，一定要拷贝一下，避免一些不必要的麻烦
-            newQueries = queries.clone(false)
+            newQueries = queries.clone()
         }
         for (let i = 0; i < ps.length; i++) {
             let m = ps[i]

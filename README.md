@@ -70,7 +70,6 @@ A Javascript SDK of AaGo
 | len()          | number          | length of anything                    |
 | loge()         |                 | alias to new log().println()          |
 | not()          | boolean         | same to !something                    |
-| range          |                 | range from start to end               |
 | Round()        |                 |                                       |
 | RoundTrim()    |                 | Trim the tail                         |
 | RoundAway()    |                 | Round away from the origin point      |

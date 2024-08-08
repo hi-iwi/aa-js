@@ -19,4 +19,31 @@ class arrays {
 
         return arr;
     }
+
+    /**
+     * Range from start to end
+     * @param {number} start
+     * @param {number} end
+     * @param {number} step
+     * @param {(i:number)=>*} callback
+     * @return {string}
+     */
+    static range(start, end, step, callback) {
+        step = Math.abs(step)
+        if (start < end) {
+            for (let i = start; i < end; i += step) {
+                const r = callback(i)
+                if (r === BREAK_SIGNAL) {
+                    return BREAK_SIGNAL
+                }
+            }
+        }
+        for (let i = start; i > end; i -= step) {
+            const r = callback(i)
+            if (r === BREAK_SIGNAL) {
+                return BREAK_SIGNAL
+            }
+        }
+    }
+
 }
