@@ -171,6 +171,23 @@ class AaDateString {
      */
     init(s, zone = AaDateString.localTimezoneOffsetString) {
         this.raw = s
+
+        if (["", "null", "invalid date", "invalid time value"].includes(s.toLowerCase())) {
+            return
+        }
+
+        if (/[^\d:\-+.T\s]/.test(s)) {
+            // local time sting
+            try {
+                const date = new Date(s)
+                this.timezoneOffset = AaDateString.parseTimezoneOffsetString(date.getTimezoneOffset())
+                this.#value = new time(date).format('YYYY-MM-DD HH:II:SS')
+                return
+            } catch (err) {
+                throw new TypeError(`invalid time string ${s}`)
+            }
+        }
+
         s = s.replace(' ', 'T')
         let reg = /[-+][01]\d:[0-5]\d$/
         let zm = s.match(reg)
@@ -188,8 +205,6 @@ class AaDateString {
             s += 'T00:00:00.000' + zone
         } else if (AaDateString.yearPattern.test(s)) {
             s += '-01-01T00:00:00.000' + zone
-        } else if (!["", "null", "invalid date", "invalid time value"].includes(s.toLowerCase())) {
-            s += zone
         }
         this.timezoneOffset = zone
         this.#value = s
@@ -455,7 +470,6 @@ class AaDateValidator {
         } catch (e) {
             this.#type = AaDateValidator.InvalidDate
         }
-        return
     }
 
     /**
@@ -518,7 +532,10 @@ class time {
     pattern = 'YYYY-MM-DD HH:II:SS'
     timezoneOffset = AaDateString.localTimezoneOffsetString
 
-
+    /**
+     *
+     * @return {AaDateValidator}
+     */
     get validator() {
         return this.#validator
     }
@@ -545,7 +562,7 @@ class time {
             return [new Date(), offset]
         }
         if (args[0] instanceof time || args[0] instanceof Date) {
-            return args[0]
+            return [args[0], offset]
         }
         if (typeof args[0] === "undefined" || args[0] === null) {
             args[0] = new Date()
@@ -905,8 +922,6 @@ class time {
     }
 
     static dateString(vv, vk, defaultV) {
-        
-
         vv = defval(...arguments)
         if (vv) {
             try {
@@ -921,7 +936,7 @@ class time {
     }
 
     static datetimeString(vv, vk, defaultV) {
-        
+
         vv = defval(...arguments)
         if (vv) {
             try {
@@ -1060,7 +1075,7 @@ class TimeDiff {
      * @return number
      */
     inYears(round = Math.round) {
-        
+
         if (round.name === 'floor') {
             return this.yearsPart
         } else if (round.name === 'ceil') {
@@ -1076,7 +1091,7 @@ class TimeDiff {
      * @return number
      */
     inMonths(round = Math.round) {
-        
+
         let months = this.yearsPart * 12 + this.monthsPart
         if (round.name === 'floor') {
             return months
@@ -1093,7 +1108,7 @@ class TimeDiff {
      * @return number
      */
     inDays(round = Math.round) {
-        
+
         return round(this.diff / time.Day)
     }
 
@@ -1103,7 +1118,7 @@ class TimeDiff {
      * @return number
      */
     inHours(round = Math.round) {
-        
+
         return round(this.diff / time.Hour)
     }
 
@@ -1113,7 +1128,7 @@ class TimeDiff {
      * @return number
      */
     inMinutes(round = Math.round) {
-        
+
         return round(this.diff / time.Minute)
     }
 
@@ -1123,7 +1138,7 @@ class TimeDiff {
      * @return number
      */
     inSeconds(round = Math.round) {
-        
+
         return round(this.diff / time.Second)
     }
 
