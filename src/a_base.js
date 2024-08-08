@@ -18,7 +18,7 @@
  *
  */
 
-const nif = () => void 0   // 空函数  ==>  Go语言都定义 any = interface{}，这里定义要给 nif 是有必要的
+const nif = () => void 0   // a nil function  ==>  Go语言都定义 any = interface{}，这里定义要给 nif 是有必要的
 const MAX = 'MAX'
 const MIN = 'MIN'
 const BREAK_SIGNAL = '-.../.-././.-/-.-/..--.-/.../../--./-./.-/.-..' // a signal from callback function to break forEach((value,key)) iterator
@@ -28,7 +28,7 @@ const INCR = 'INCR'
 const DECR = 'DECR'
 
 /**
- * Keep-names of URL parameters 路由URL参数名
+ * Keep-names of URL parameters
  */
 const aparam = {
     Debug     : "_debug", // 0 o debug; 1/true debug via console; 2/alert debug via alert
