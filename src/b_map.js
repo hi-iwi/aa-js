@@ -1,5 +1,6 @@
 /**
  * @import atype
+ * @typedef {struct|map|Map|URLSearchParams|*} Iterator
  */
 
 // 自定义map类型  参考 Map
@@ -69,18 +70,9 @@ class map {
      * @param {map|struct} obj
      */
     extend(obj) {
-        if (obj instanceof map) {
-            obj.forEach((key, value) => {
-                this.set(key, value)
-            })
-            return this
-        }
-        if (!obj || typeof obj !== "object") {
-            return this
-        }
-        for (let [key, value] of Object.entries(obj)) {
+        map.forEach(obj, (key, value) => {
             this.set(key, value)
-        }
+        })
         return this
     }
 
@@ -203,12 +195,12 @@ class map {
     static assign(target, source, keynameConvertor) {
         target = struct(target)
         source = struct(source)
-        for (let [k, v] of Object.entries(source)) {
+        map.forEach(source, (k, v) => {
             if (typeof keynameConvertor === 'function') {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
             target[k] = map.clone(v)
-        }
+        })
         return target
     }
 
@@ -283,11 +275,15 @@ class map {
         }
 
         if (typeof t === "object") {
-            for (const [k, v] of Object.entries(target)) {
+            let result = true
+            map.forEach(target, (k, v) => {
                 if (!map.compare(v, src[k])) {
-                    return false
+                    result = false
+                    return BREAK_SIGNAL
                 }
-            }
+            })
+            return result
+
         }
         return target === src
     }
@@ -361,9 +357,9 @@ class map {
                 }
             }
         }
-        for (let [k, v] of Object.entries(defaults)) {
+        map.forEach(defaults, (k, v) => {
             handler(k, v, target, defaults)
-        }
+        })
         return target
     }
 
@@ -487,12 +483,13 @@ class map {
         //     return privKeyname
         // }
 
-        for (let [k2, _] of Object.entries(target)) {
+        map.forEach(target, k2 => {
             // "base_url" ===> baseUrl  or  baseURL
             if (k2.toLowerCase() === key.toLowerCase()) {
-                return k2
+                key = k2
+                return BREAK_SIGNAL
             }
-        }
+        })
         return key
     }
 
@@ -556,7 +553,7 @@ class map {
      * @return {Class|struct}   A = A  ∪ (A ∩ B)
      */
     static merge(target, source, keynameConvertor) {
-        for (let [k, v] of Object.entries(struct(source))) {
+        map.forEach(source, (k, v) => {
             if (keynameConvertor) {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
@@ -564,7 +561,7 @@ class map {
             if (typeof v !== "undefined" && target.hasOwnProperty(k)) {
                 target[k] = v
             }
-        }
+        })
         return target
     }
 
@@ -582,16 +579,16 @@ class map {
             return target
         }
         let fields = target.hasOwnProperty('_fields_') && target._fields_ ? target._fields_ : target.constructor['_fields_'] ? target.constructor['_fields_'] : null
-        for (let [k, v] of Object.entries(source)) {
+        map.forEach(source, (k, v) => {
             if (keynameConvertor) {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
             if (k === '_fields_' || !target.hasOwnProperty(k)) {
-                continue
+                return
             }
             // filter by target._fields_
             if (fields && !fields.includes(k) && !fields.includes(k)) {
-                continue
+                return
             }
 
             if (typeof v === "undefined") {
@@ -599,7 +596,7 @@ class map {
             } else {
                 target[k] = typeof target[k] === "number" ? number(v) : v
             }
-        }
+        })
         return target
     }
 
@@ -660,12 +657,12 @@ class map {
         }
         let obj = Object.assign({}, target)
 
-        for (let [k, v] of Object.entries(source)) {
+        map.forEach(source, (k, v) => {
             if (keynameConvertor) {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
             obj[k] = v
-        }
+        })
         return obj
     }
 
@@ -679,19 +676,19 @@ class map {
      * @return  {Class|struct}     A = A ∪ (|A| ∩ |B|)
      */
     static strictMerge(target, source, keynameConvertor) {
-        for (let [k, v] of Object.entries(struct(source))) {
+        map.forEach(source, (k, v) => {
             if (keynameConvertor) {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
             if (typeof v === "undefined" || !target.hasOwnProperty(k)) {
-                continue
+                return
             }
             let t = target[k]
             // type consistency, except undefined/null (unknown type)
             if (typeof t === "undefined" || t === null || v === null || typeof v === typeof t) {
                 target[k] = v
             }
-        }
+        })
         return target
     }
 

@@ -283,10 +283,9 @@ class AaURI {
      * @return {AaURI}
      */
     setParams(params) {
-        const iter = typeof params.entries === 'function' ? params.entries() : Object.entries(params)
-        for (const [key, value] of iter) {
+        map.forEach(params,(key,value)=>{
             this.searchParams.set(key, value)
-        }
+        })
         return this
     }
 

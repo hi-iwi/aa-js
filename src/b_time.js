@@ -854,7 +854,7 @@ class time {
             "Q+": [1, this.quarter()], //季度
             "s+": [-9, this.millisecond()],//毫秒   每一个表示一位精度，
             "Z" : [0, this.timezoneOffset],
-        };
+        }
 
         for (let [k, u] of Object.entries(o)) {
             const padZero = u[0]
