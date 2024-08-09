@@ -171,8 +171,12 @@ function loge(...args) {
             log.error(err.toString())
             return
         }
-
         return log.print(...args)
     }
-    return log.println(...args)
+    for (let i = 0; i < args.length; i++) {
+        if (typeof args[i] === 'object' || typeof args[i] === 'function') {
+            return log.println(...args)
+        }
+    }
+    return log.print(...args)
 }

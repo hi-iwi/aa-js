@@ -232,7 +232,6 @@ class AError extends Error {
         if (this.#dict) {
             dict = Object.assign(dict, this.#dict)
         }
-        loge(this.#dict, dict)
         let heading = fmt.translate(dict, this.#heading)
         let msg = AErrorEnum.translate(this.#code, this.message)
         let ending = fmt.translate(dict, this.#ending)
