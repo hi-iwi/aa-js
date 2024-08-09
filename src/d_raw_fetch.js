@@ -31,8 +31,8 @@ class AaRawFetch {
          * debounce 防抖：延时间隔内，触发相同事件，则忽略之前未执行的事件，重新计算间隔
          * throttle 节流：每个延时间隔内，相同事件无论触发多少次，都仅执行一次
          */
-        debounce  : true,
-        dictionary: null,  // 扩展了一个字典
+        debounce: true,
+        dict    : null,  // 扩展了一个字典
         //preventTokenRefresh: false,
 
         // RequestInit:
@@ -284,9 +284,7 @@ class AaRawFetch {
      * @return {[string, any ]|Promise}
      */
     middleware(url, settings) {
-        if (!url) {
-            throw new TypeError('url is required')
-        }
+        panic.emptyString(url, 'url')
         settings = struct(settings)
         const parts = url.trim().split(' ')
         if (parts.length > 1) {
@@ -302,7 +300,7 @@ class AaRawFetch {
             if (!this.debounce(settings.method, url, settings.body)) {
                 return new Promise((resolve, reject) => {
                     log.debug(`${settings.method} ${url} is blocked by debounce`)
-                    reject(new AError(AErrorEnum.TooManyRequests, settings.dictionary))
+                    reject(new AError(AErrorEnum.TooManyRequests, settings.dict))
                 })
             }
         }
@@ -321,7 +319,7 @@ class AaRawFetch {
         // 如果使用 response = await fetch();  json= await response.json() 必须要await，阻塞等待response返回
         // 这里就不用await最好，外面使用的时候，再自行 await
         return fetch(url, settings).then(resp => {
-            let err = new AError(resp.status)
+            let err = new AError(resp.status, void '', settings.dict)
             if (!err.isOK()) {
                 throw err
             }
@@ -329,23 +327,23 @@ class AaRawFetch {
             if (method === 'HEAD') {
                 return {
                     code: AErrorEnum.OK,
-                    msg : AErrorEnum.code2Msg(AErrorEnum.OK),
+                    msg : AErrorEnum.code2Msg(AErrorEnum.OK, settings.dict),
                 }
             }
             try {
                 return resp.json()
             } catch (error) {
-                throw new AError(AErrorEnum.ClientThrow, `response '${resp.text()}' is not valid JSON`)
+                throw new AError(AErrorEnum.ClientThrow, `response '${resp.text()}' is not valid JSON`, settings.dict)
             }
         }).then(resp => {
             // 捕获返回数据，修改为 resp.data
-            const err = new AError(resp['code'], resp['msg'])
+            const err = new AError(resp['code'], resp['msg'], settings.dict)
             if (!err.isOK()) {
                 throw err
             }
             return resp['data']
         }).catch(err => {
-            throw err instanceof AError ? err : new AError(AErrorEnum.ClientThrow, err.toString())
+            throw err instanceof AError ? err : new AError(AErrorEnum.ClientThrow, err.toString(), settings.dict)
         })
     }
 

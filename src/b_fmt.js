@@ -31,16 +31,16 @@ class fmt {
 
     /**
      * Translate formatted string
-     * @param {struct|null} dictionary
+     * @param {struct|null} dict
      * @param args
      * @return {string}
      * @example fmt.translate({'I LOVE %s':'我爱%s'}, "I LOVE %s", "你")    ===>   我爱你
      */
-    static translate(dictionary, ...args) {
+    static translate(dict, ...args) {
          if (args.length < 1) {
             return ""
         }
-        let format = dictionary && dictionary[args[0]] ? dictionary[args[0]] : args[0]
+        let format = dict && dict[args[0]] ? dict[args[0]] : args[0]
         return fmt.sprintf(format, ...args.slice(1))
     }
 

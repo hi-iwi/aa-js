@@ -6,7 +6,7 @@
 let _aerrorCode2MsgMap_ = null
 
 /** @type  {{[key:string]:(null|{[key:string]:string})}} */
-let _aerrorDictionaries_ = {
+let _aerrorDict_ = {
     'en'   : null,  // will init later   必须要增加一个en模式的，这样直接匹配到可以直接输出
     'zh-CN': {
         "Please input: %s"     : "请输入：%s",
@@ -93,8 +93,7 @@ const AErrorEnum = {
             if (typeof key !== "string" || !/^[A-Z][a-zA-Z]*$/.test(key)) {
                 continue
             }
-            let k = fmt.toSentenceCase(key, true)
-            _aerrorCode2MsgMap_[value] = k
+            _aerrorCode2MsgMap_[value] = fmt.toSentenceCase(key, true)
         }
         return _aerrorCode2MsgMap_
     },
@@ -108,41 +107,35 @@ const AErrorEnum = {
         code = number(code)
         let m = AErrorEnum.getCode2MsgMap()
         let s = m[code] ? m[code] : "Status exception"
-        dict = AErrorEnum.getDictionary(dict)
+        dict = AErrorEnum.getDict(dict)
         return dict[s] ? dict[s] : s
     },
+
     /**
      *
-     * @return  {{[key:string]:(null|{[key:string]:string})}}
-     */
-    getDictionaries: function () {
-        if (_aerrorDictionaries_['en']) {
-            return _aerrorDictionaries_
-        }
-        _aerrorDictionaries_['en'] = {}
-        for (const [key, value] of Object.entries(AErrorEnum)) {
-            // starts with BigCase
-            if (typeof key !== "string" || !/^[A-Z][a-zA-Z]*$/.test(key)) {
-                continue
-            }
-            let k = fmt.toSentenceCase(key, true)
-            _aerrorDictionaries_['en'][k] = k  // 'Bad gateway': 'Bad gateway'  就是 k:k方式，不同于上面 code2msg map
-        }
-        return _aerrorDictionaries_
-    },
-    /**
-     *
-     * @param  {string|{[key:string]:string}} [dict]
+     * @param  {string|struct} [dict]
      * @return {{[key:string]:string}}
      */
-    getDictionary: function (dict = 'zh-CN') {
-        let dictionary = AErrorEnum.getDictionaries()
-        if (len(dict) === 0 || typeof dict === "string") {
-            dict = dict && len(_aerrorDictionaries_[dict]) > 0 ? _aerrorDictionaries_[dict] : _aerrorDictionaries_['en']
-        } else {
-            dict = {...dictionary['en'], ...dict}
+    getDict: function (dict = 'zh-CN') {
+        if (!_aerrorDict_['en']) {
+            _aerrorDict_['en'] = {}
+            for (const [key, value] of Object.entries(AErrorEnum)) {
+                // starts with BigCase
+                if (typeof key !== "string" || !/^[A-Z][a-zA-Z]*$/.test(key)) {
+                    continue
+                }
+                let k = fmt.toSentenceCase(key, true)
+                _aerrorDict_['en'][k] = k  // 'Bad gateway': 'Bad gateway'  就是 k:k方式，不同于上面 code2msg map
+            }
         }
-        return dict
+        let baseDict = {..._aerrorDict_}
+        if (!dict) {
+            dict = 'zh-CN'
+        }
+        if (typeof dict === 'string') {
+            return len(baseDict[dict]) > 0 ? baseDict[dict] : baseDict['zh-CN']
+        }
+        return Object.assign(baseDict, dict)
     },
     /**
      *
@@ -156,7 +149,7 @@ const AErrorEnum = {
             return AErrorEnum.code2Msg(code, dict)
         }
         msg = string(msg)
-        dict = AErrorEnum.getDictionary(dict)
+        dict = AErrorEnum.getDict(dict)
         if (dict[msg]) {
             return dict[msg]
         }
@@ -234,16 +227,12 @@ class AError extends Error {
     }
 
 
-    getMsg(dict = 'zh-CN') {
-        if (len(this.#dict) > 0) {
-            if (!dict || typeof dict === "string") {
-                dict = this.#dict
-            } else {
-                dict = {...this.#dict, ...dict}
-            }
+    getMsg(lang = 'zh-CN') {
+        let dict = AErrorEnum.getDict(lang)
+        if (this.#dict) {
+            dict = Object.assign(dict, this.#dict)
         }
-
-        dict = AErrorEnum.getDictionary(dict)
+        loge(this.#dict, dict)
         let heading = fmt.translate(dict, this.#heading)
         let msg = AErrorEnum.translate(this.#code, this.message)
         let ending = fmt.translate(dict, this.#ending)
@@ -376,7 +365,7 @@ class AError extends Error {
 
 
     toString() {
-        if (this.code === AErrorEnum.BadRequest){
+        if (this.code === AErrorEnum.BadRequest) {
             return this.getMsg()
         }
         return this.getMsg() + ` (${this.code})`

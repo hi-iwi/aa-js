@@ -15,17 +15,20 @@ class panic {
      * @param value
      * @param {(function|RegExpConstructor|atypes)[]|function|RegExpConstructor|atypes|object} type
      * @param {boolean} [required]
+     * @param {boolean} [allowEmpty]
      * @warn 不要滥用这个，会耗费不必要的性能。对于异步获取值的时候，最好使用，比如Promise 或 registry.Register的时候，应该使用！
      * @example
      *  panic.errorType(key, 'string')
      *  panic.errorType(key, ['string','number'])
      *  panic.errorType(date, ['string', 'number', Date, time], OPTIONAL)
      */
-    static errorType(value, type, required = REQUIRED) {
+    static errorType(value, type, required = REQUIRED, allowEmpty = true) {
         if (required === OPTIONAL && (typeof value === 'undefined' || value === null)) {
             return
         }
-
+        if (!allowEmpty && !value) {
+            throw new TypeError('empty value')
+        }
         const ty = atype.of(value)
         if (typeof type === 'string') {
             if (ty !== type && typeof value !== type) {
@@ -60,6 +63,27 @@ class panic {
                 throw new TypeError(`${ty}:${value} is not in types of (${type.join('|')})`)
             }
         }
+    }
+
+    /**
+     *
+     * @param {string} type
+     * @param {any} value
+     * @param {string} key
+     */
+    static isEmpty(type, value, key) {
+        if (!value) {
+            throw new TypeError(`'${key}' can't be empty`)
+        }
+        panic.errorType(value, type)
+    }
+
+    static emptyString(value, key) {
+        panic.isEmpty('string', value, key)
+    }
+
+    static emptyNumber(value, key) {
+        panic.isEmpty('number', value, key)
     }
 
     /**

@@ -1,7 +1,7 @@
 // @import AaStorageFactor, AaURI, AaRawFetch, AaAuth
 /**
  * Ajax 包括：XMLHttpRequest 、fetch 等
- * @typedef {{mustAuth?:boolean, onAuthError?:function, preventTokenRefresh?:boolean, mode?: string, redirect?: string, debounce?: boolean, referrer?: string, dictionary?: struct, data?: struct, method?: string, referrerPolicy?: string, credentials?: string, keepalive?: boolean, body?: any, signal?: any, window:? any}} FetchSettings
+ * @typedef {{mustAuth?:boolean, onAuthError?:function, preventTokenRefresh?:boolean, mode?: string, redirect?: string, debounce?: boolean, referrer?: string, dict?: struct, data?: struct, method?: string, referrerPolicy?: string, credentials?: string, keepalive?: boolean, body?: any, signal?: any, window:? any}} FetchSettings
  */
 class AaFetch {
     name = 'aa-fetch'
@@ -53,7 +53,7 @@ class AaFetch {
             if (authorization) {
                 settings.headers[aparam.Authorization] = authorization
             } else if (settings.mustAuth) {
-                throw new AError(AErrorEnum.Unauthorized, settings.dictionary)
+                throw new AError(AErrorEnum.Unauthorized, settings.dict)
             }
         })
     }
@@ -158,9 +158,9 @@ class AaFetch {
     // /**
     //  * 同步获取data
     //  */
-    // async getData(url, params, dictionary) {
+    // async getData(url, params, dict) {
     //     try {
-    //         const data = await this.get(url, params, dictionary)
+    //         const data = await this.get(url, params, dict)
     //     }
     // }
 
@@ -168,13 +168,13 @@ class AaFetch {
      * HTTP GET
      * @param {RequestURL|RequestInfo} url
      * @param {struct|map|URLSearchParams} [params]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    get(url, params, dictionary) {
+    get(url, params, dict) {
         const settings = {
             method    : "GET",
-            dictionary: dictionary,
+            dict: dict,
         }
         const uri = new AaURI(url, params)
         return this.fetch(uri.toString(), settings)
@@ -184,27 +184,27 @@ class AaFetch {
      * HTTP GET without AError/Error thrown
      * @param {RequestURL|RequestInfo} url
      * @param {struct|map|URLSearchParams} [params]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    getN(url, params, dictionary) {
-        return this.get(url, params, dictionary).catch(AError.alert)
+    getN(url, params, dict) {
+        return this.get(url, params, dict).catch(AError.alert)
     }
 
     /**
      * HTTP HEAD
      * @param {RequestURL|RequestInfo} url
      * @param {struct|map|URLSearchParams} [params]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      * @warn Warning: A response to a HEAD method should not have a body. If it has one anyway, that body must be ignored
      *  HEAD只返回 resp['code'] 或 HTTP状态码，忽略 resp['data'] 数据
      */
-    head(url, params, dictionary) {
+    head(url, params, dict) {
         const settings = {
             method    : 'HEAD',
-            data      : data,
-            dictionary: dictionary,
+            data      : params,
+            dict: dict,
         }
         return this.status(url, settings)     // 不用 catch error
     }
@@ -213,27 +213,27 @@ class AaFetch {
      * HTTP HEAD without AError/Error thrown
      * @param {RequestURL|RequestInfo} url
      * @param {struct|map|URLSearchParams} [params]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      * @warn Warning: A response to a HEAD method should not have a body. If it has one anyway, that body must be ignored
      *  HEAD只返回 resp['code'] 或 HTTP状态码，忽略 resp['data'] 数据
      */
-    headN(url, params, dictionary) {
-        return this.head(url, params, dictionary).catch(AError.alert)
+    headN(url, params, dict) {
+        return this.head(url, params, dict).catch(AError.alert)
     }
 
     /**
      * HTTP DELETE
      * @param {RequestURL|RequestInfo} url
      * @param {struct|map|URLSearchParams} [params]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    delete(url, params, dictionary) {
+    delete(url, params, dict) {
         let settings = {
             method    : 'DELETE',
             data      : params,
-            dictionary: dictionary,
+            dict: dict,
             mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
 
@@ -250,25 +250,25 @@ class AaFetch {
      * HTTP DELETE without AError/Error thrown
      * @param {RequestURL|RequestInfo} url
      * @param {struct|map|URLSearchParams} [params]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    deleteN(url, params, dictionary) {
-        return this.delete(url, params, dictionary).catch(AError.alert)
+    deleteN(url, params, dict) {
+        return this.delete(url, params, dict).catch(AError.alert)
     }
 
     /**
      * HTTP DELETE without authorization
      * @param {RequestURL|RequestInfo} url
      * @param {struct|map|URLSearchParams} [params]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    deleteA(url, params, dictionary) {
+    deleteA(url, params, dict) {
         const settings = {
             method    : 'DELETE',
             data      : params,
-            dictionary: dictionary,
+            dict: dict,
             mustAuth  : false,
         }
         return this.fetchA(url, settings)
@@ -278,25 +278,25 @@ class AaFetch {
      * HTTP DELETE without authorization and without AError/Error thrown
      * @param {RequestURL|RequestInfo} url
      * @param {struct|map|URLSearchParams} [params]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    deleteNA(url, params, dictionary) {
-        return this.deleteA(url, params, dictionary).catch(AError.alert)
+    deleteNA(url, params, dict) {
+        return this.deleteA(url, params, dict).catch(AError.alert)
     }
 
     /**
      * HTTP POST
      * @param {RequestURL|RequestInfo} url
      * @param {RequestData} [data]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    post(url, data, dictionary) {
+    post(url, data, dict) {
         const settings = {
             method    : 'POST',
             data      : data,
-            dictionary: dictionary,
+            dict: dict,
             mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
         return this.fetch(url, settings)
@@ -306,14 +306,14 @@ class AaFetch {
      * HTTP POST without authorization
      * @param {RequestURL|RequestInfo} url
      * @param {RequestData} [data]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    postA(url, data, dictionary) {
+    postA(url, data, dict) {
         const settings = {
             method    : 'POST',
             data      : data,
-            dictionary: dictionary,
+            dict: dict,
             mustAuth  : false,
         }
         return this.fetchA(url, settings)
@@ -323,36 +323,36 @@ class AaFetch {
      * HTTP POST without AError/Error thrown
      * @param {RequestURL|RequestInfo} url
      * @param {RequestData} [data]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    postN(url, data, dictionary) {
-        return this.post(url, data, dictionary).catch(AError.alert)
+    postN(url, data, dict) {
+        return this.post(url, data, dict).catch(AError.alert)
     }
 
     /**
      * HTTP POST without authorization and without AError/Error thrown
      * @param {RequestURL|RequestInfo} url
      * @param {RequestData} [data]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    postNA(url, data, dictionary) {
-        return this.postA(url, data, dictionary).catch(AError.alert)
+    postNA(url, data, dict) {
+        return this.postA(url, data, dict).catch(AError.alert)
     }
 
     /**
      * HTTP PUT
      * @param {RequestURL|RequestInfo} url
      * @param {RequestData} [data]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    put(url, data, dictionary) {
+    put(url, data, dict) {
         const settings = {
             method    : 'PUT',
             data      : data,
-            dictionary: dictionary,
+            dict: dict,
             mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
         return this.fetch(url, settings)
@@ -362,14 +362,14 @@ class AaFetch {
      * HTTP PUT without authorization
      * @param {RequestURL|RequestInfo} url
      * @param {RequestData} [data]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    putA(url, data, dictionary) {
+    putA(url, data, dict) {
         const settings = {
             method    : 'PUT',
             data      : data,
-            dictionary: dictionary,
+            dict: dict,
             mustAuth  : false,
         }
         return this.fetchA(url, settings)
@@ -379,36 +379,36 @@ class AaFetch {
      * HTTP PUT without AError/Error thrown
      * @param {RequestURL|RequestInfo} url
      * @param {RequestData} [data]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    putN(url, data, dictionary) {
-        return this.put(url, data, dictionary).catch(AError.alert)
+    putN(url, data, dict) {
+        return this.put(url, data, dict).catch(AError.alert)
     }
 
     /**
      * HTTP PUT without authorization and without AError/Error thrown
      * @param {RequestURL|RequestInfo} url
      * @param {RequestData} [data]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    putNA(url, data, dictionary) {
-        return this.putA(url, data, dictionary).catch(AError.alert)
+    putNA(url, data, dict) {
+        return this.putA(url, data, dict).catch(AError.alert)
     }
 
     /**
      * HTTP PATCH
      * @param {RequestURL|RequestInfo} url
      * @param {RequestData} [data]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    patch(url, data, dictionary) {
+    patch(url, data, dict) {
         const settings = {
             method    : 'PATCH',
             data      : data,
-            dictionary: dictionary,
+            dict: dict,
             mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
         return this.fetch(url, settings)
@@ -418,14 +418,14 @@ class AaFetch {
      * HTTP PATCH without authorization
      * @param {RequestURL|RequestInfo} url
      * @param {RequestData} [data]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    patchA(url, data, dictionary) {
+    patchA(url, data, dict) {
         const settings = {
             method    : 'PATCH',
             data      : data,
-            dictionary: dictionary,
+            dict: dict,
             mustAuth  : false,
         }
         return this.fetchA(url, settings)
@@ -435,21 +435,21 @@ class AaFetch {
      * HTTP PATCH without AError/Error thrown
      * @param {RequestURL|RequestInfo} url
      * @param {RequestData} [data]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    patchN(url, data, dictionary) {
-        return this.patch(url, data, dictionary).catch(AError.alert)
+    patchN(url, data, dict) {
+        return this.patch(url, data, dict).catch(AError.alert)
     }
 
     /**
      * HTTP PATCH without authorization and without AError/Error thrown
      * @param {RequestURL|RequestInfo} url
      * @param {RequestData} [data]
-     * @param {struct} [dictionary]
+     * @param {struct} [dict]
      * @return {Promise<*>}
      */
-    patchNA(url, data, dictionary) {
-        return this.patchA(url, data, dictionary).catch(AError.alert)
+    patchNA(url, data, dict) {
+        return this.patchA(url, data, dict).catch(AError.alert)
     }
 }
