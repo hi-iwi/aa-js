@@ -219,7 +219,13 @@ class AaStorageEngine {
 
     get instanceName() {
         const s = this.#storage
-        return s.name ? s.name : s instanceof localStorage ? 'window.localStorage' : (s instanceof sessionStorage ? 'window.sessionStorage' : '')
+        if (s === localStorage) {
+            return 'window.localStorage'
+        }
+        if (s === sessionStorage) {
+            return 'window.sessionStorage'
+        }
+        return s.name
     }
 
     // cookie 不能使用 : 等分隔符作为key，因此不同Engine里面自己指定分隔符
