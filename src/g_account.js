@@ -8,6 +8,7 @@ class AaAccount {
     name = 'aa-account'
 
     static TableName = 'auth_account'
+    static MainVtype = 0
     #profile
     #selectedVuid
 
@@ -68,6 +69,10 @@ class AaAccount {
         this.#db.drop(AaAccount.TableName)
     }
 
+    /**
+     *
+     * @return {Profile|null}
+     */
     getCachedProfile() {
         let profile = this.#profile
         if (len(profile) > 0) {
@@ -77,6 +82,23 @@ class AaAccount {
         if (len(profile) === 0 || len(profile['vuser']) === 0) {
             this.#profile = null
             return null
+        }
+        profile = this.formatProfile(profile)
+        this.#profile = profile
+        return profile
+    }
+
+    formatProfile(profile) {
+        if (!profile) {
+            return null
+        }
+        profile['vuser']['vuid'] = string(profile['vuser']['vuid'])
+        profile['vuser']['vtype'] = number(profile['vuser']['vtype'])
+        if (profile['doppes']) {
+            for (let i = 0; i < profile['doppes'].length; i++) {
+                profile['doppes'][i]['vuid'] = string(profile['doppes'][i]['vuid'])
+                profile['doppes'][i]['vtype'] = number(profile['doppes'][i]['vtype'])
+            }
         }
         return profile
     }
@@ -111,6 +133,7 @@ class AaAccount {
         return fetch.fetch(url, {
             mustAuth: true,
         }).then(profile => {
+            profile = this.formatProfile(profile)
             this.saveProfile(profile)
             return profile
         }).catch(err => {
@@ -141,10 +164,10 @@ class AaAccount {
      */
     searchVuser(vtype) {
         return this.getVusers().then(vusers => {
-            vtype = string(vtype)
+            vtype = number(vtype)
             for (let i = 0; i < vusers.length; i++) {
                 let vuser = vusers[i]
-                if (string(vuser['vtype']) === vtype) {
+                if (vuser['vtype'] === vtype) {
                     return vuser
                 }
             }
@@ -157,20 +180,20 @@ class AaAccount {
      * @return {Promise<Vuser>}
      */
     mainVuser() {
-        return this.searchVuser(0)
+        return this.searchVuser(AaAccount.MainVtype)
     }
 
 
     /**
      * Get vuser
-     * @param vuid
+     * @param {string} vuid
      * @return {Promise<Vuser>}
      */
     getVuser(vuid) {
         return this.getVusers().then(vusers => {
             for (let i = 0; i < vusers.length; i++) {
                 let vuser = vusers[i]
-                if (string(vuser['vuid']) === string(vuid)) {
+                if (vuser['vuid'] === string(vuid)) {
                     return vuser
                 }
             }
@@ -201,5 +224,32 @@ class AaAccount {
             return this.mainVuser()
         }
         return this.getVuser(vuid)
+    }
+
+    /**
+     *
+     * @param {Vuser} vuser
+     * @return {Profile|null} profile
+     */
+    modifyVuser(vuser) {
+        let profile = this.getCachedProfile()
+        if (!profile) {
+            return profile
+        }
+        const vuid = vuser['vuid']
+        if (profile['vuser']['vuid'] === vuid) {
+            profile['vuser'] = vuser
+        } else if (profile['doppes']) {
+            for (let i = 0; i < profile['doppes'].length; i++) {
+                if (profile['doppes'][i]['vuid'] === vuid) {
+                    profile['doppes'][i] = vuser
+                }
+            }
+        } else {
+            throw new RangeError(`not found vuid ${vuid}`)
+        }
+
+        this.saveProfile(profile)
+        return profile
     }
 }

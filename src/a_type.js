@@ -5,7 +5,7 @@
 //  react state  数字 001231 === 1231 == 001231.000  这些数值都没有变化，state就不会触发
 
 /**
- * abandon tail undefined parameters
+ * exclude undefined parameters at the tail
  * @param args
  * @note some functions like new Date().setFullYear(2025, void 0)  will return invalid date!
  * @return {*[]}
