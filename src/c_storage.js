@@ -218,7 +218,8 @@ class AaStorageEngine {
     }
 
     get instanceName() {
-        return this.#storage.name
+        const s = this.#storage
+        return s.name ? s.name : s instanceof localStorage ? 'window.localStorage' : (s instanceof sessionStorage ? 'window.sessionStorage' : '')
     }
 
     // cookie 不能使用 : 等分隔符作为key，因此不同Engine里面自己指定分隔符
@@ -440,11 +441,10 @@ class AaStorageEngine {
      */
     clearExcept(ignores, force = false) {
         panic.arrayErrorType(ignores, 'string', OPTIONAL)
-
         let keepData = ignores ? [...ignores] : []
         if (!force) {
             const pers = this.getPersistentValues()
-            keepData = pers ? keepData.concat(pers) : keepData
+            keepData = pers ? keepData.concat(Object.keys(pers)) : keepData
         }
 
         if (len(keepData) === 0) {
@@ -453,8 +453,8 @@ class AaStorageEngine {
         }
 
         this.forEach((key, _) => {
-            if (typeof keepData[key] === "undefined") {
-                log.print("DELETE", key)
+            if (!keepData.includes(key)) {
+                log.print(this.instanceName, "DELETE", key, keepData[key])
                 this.#storage.removeItem(key)
             }
         })
