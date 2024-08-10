@@ -530,6 +530,7 @@ class time {
     #validator = new AaDateValidator("Invalid Date")
 
     pattern = 'YYYY-MM-DD HH:II:SS'
+    raw
     timezoneOffset = AaDateString.localTimezoneOffsetString
 
     /**
@@ -594,6 +595,7 @@ class time {
             offset = this.timezoneOffset
         }
 
+        this.raw = args.length === 1 ? args[0] : [...args]
         if (value instanceof time) {
             this.setPattern(value.pattern)
             this.validator.init(value.validator)
@@ -626,7 +628,6 @@ class time {
         value = new Date("Invalid Date")
         this.#date = value
         this.validator.setInvalid()
-
     }
 
     /**
@@ -794,9 +795,10 @@ class time {
      * @param {number} sec
      * @param {number} [ms]
      * @return {number}
+     * @warn new Date().setSeconds(2, void 0)  will return invalid date!
      */
     setSeconds(sec, ms) {
-        return this.#date.setSeconds(sec, ms)
+        return this.#date.setSeconds(...arguments)
     }
 
     /**
@@ -805,9 +807,10 @@ class time {
      * @param {number} [sec]
      * @param {number} [ms]
      * @return {number}
+     * @warn new Date().setMinutes(2, void 0)  will return invalid date!
      */
     setMinutes(min, sec, ms) {
-        return this.#date.setMinutes(min, sec, ms)
+        return this.#date.setMinutes(...arguments)
     }
 
     /**
@@ -816,10 +819,11 @@ class time {
      * @param {number} [min]
      * @param {number} [sec]
      * @param {number} [ms]
-     * @returnn {number}
+     * @return {number}
+     * @warn new Date().setHours(2, void 0)  will return invalid date!
      */
     setHours(hours, min, sec, ms) {
-        return this.#date.setHours(hours, min, sec, ms)
+        return this.#date.setHours(...arguments)
     }
 
     /**
@@ -836,20 +840,22 @@ class time {
      * @param {number} month
      * @param {number} [day]
      * @return {number}
+     * @warn new Date().setMonth(2, void 0)  will return invalid date!
      */
     setMonth(month, day) {
-        return this.#date.setMonth(month, day)
+        return this.#date.setMonth(...arguments)
     }
 
     /**
      * Set the year of the Date object using local time.
-     * @param year
+     * @param {number} year
      * @param {number} [month]
      * @param {number} [day]
      * @return {number}
+     * @warn new Date().setFullYear(2025, void 0)  will return invalid date!
      */
     setFullYear(year, month, day) {
-        return this.#date.setFullYear(year, month, day)
+        return this.#date.setFullYear(...arguments)
     }
 
     // YYYY-MM-DD HH:II:SS   YYYY-MM-DD HH:II:SS.sss

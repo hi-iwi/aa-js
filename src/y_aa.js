@@ -119,7 +119,7 @@ class Aa {
      * @return {AaURI}
      */
     url(url = window.location.href, params, hash) {
-        return new AaURI(url, params)
+        return new AaURI(...arguments)
     }
 
     /**
@@ -149,15 +149,6 @@ class Aa {
     apollo(url, fingerprintGenerator, loginDataHandler, storage = this.storage.cookie) {
         return new AaApollo(this.fetch, url, fingerprintGenerator, loginDataHandler, storage)
     }
-
-    /**
-     * @param {TimeParam} [timeA] default to now()
-     * @param {TimeParam} [timeB] default to now()
-     */
-    timeDiff(timeA, timeB) {
-        new Date()
-    }
-
 }
 
 

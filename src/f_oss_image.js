@@ -35,12 +35,12 @@ class AaImgSrc {
         this.#thumbnail = thumbnail
     }
 
-    getThumbnail(width, height) {
+    getThumbnail(width, height, real = false) {
         if (this.#thumbnail) {
             return this.#thumbnail
         }
-        if (!this.valid()) {
-            return ""
+        if (real || !this.valid()) {
+            return void ""
         }
         return this.crop(width, height).url
     }
