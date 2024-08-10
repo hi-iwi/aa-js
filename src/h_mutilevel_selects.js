@@ -179,24 +179,22 @@ class AaMultiLevelSelects {
         }
         let pid = void ""
         let chain = []
-
-        this.map((opts, i) => {
-            if (!pid) {
-                for (let j = 0; j < opts.length; j++) {
+        for (let i = this.len - 1; i > -1; i--) {
+            let opts = this.nth(i)
+            for (let j = 0; j < opts.length; j++) {
+                const sj = opts[j]
+                if (!pid || pid === '0') {
                     // 空value，就选择第一个
-                    if (!value || string(value) === string(opts[j].value)) {
-                        pid = opts[j].pid
-                        chain.unshift(opts[j])
+                    if (!value || value === '0' || string(value) === string(sj.value)) {
+                        pid = sj.pid
+                        chain.unshift(sj)
                         break
                     }
-                }
-            } else {
-                for (let j = 0; j < opts.length; j++) {
-                    const sj = opts[j]
+                } else {
                     // 判定是否前置
-                    if (string(value) === string(opts[j].value)) {
+                    if (string(value) === string(sj.value)) {
                         pid = sj.pid
-                        chain = [sj]  // 重置 family
+                        chain = [sj]  // 重置 chain
                         break
                     }
                     if (string(sj.value) === string(pid)) {
@@ -206,29 +204,30 @@ class AaMultiLevelSelects {
                     }
                 }
             }
-        }, DECR)
+        }
 
 
         // 如果不是从最后一个选择，那么后面的默认选第一个
-        if (chain.length === 0 && len(this.#data) > 0 && len(this.#data[0]) > 0) {
-            chain.push(this.#data[0][0])
+        if (chain.length === 0 && len(this.first) > 0) {
+            chain.push(this.first[0])
             // 该value没有找到，就默认选
         }
-
-        for (let i = chain.length; i < this.len; i++) {
-            this.mapOptions((option, selectIndex, optionIndex) => {
-                // 默认选符合条件的子选项第一个
-                if (option.pid === chain[i - 1].value) {
-                    chain.push(option)
-                    return
+        loop:
+            for (let i = chain.length; i < this.len; i++) {
+                const options = this.nth(i)
+                for (let j = 0; j < options.length; j++) {
+                    const option = options[j]
+                    // 默认选符合条件的子选项第一个
+                    if (option.pid === chain[i - 1].value) {
+                        chain.push(option)
+                        continue loop
+                    }
                 }
                 // 如果多项选择，但是某个元素没有子选项，那么就增加虚拟子选项
                 let g = {...chain[chain.length - 1]}
                 g.pid = g.value
                 chain.push(g)
-            }, i)
-        }
-
+            }
 
         return chain
     }
