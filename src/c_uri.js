@@ -229,7 +229,15 @@ class AaURI {
         if (hash) {
             [hash, newQueries,] = AaURI.lookup(hash, this.searchParams, newQueries)
         }
-        let search = newQueries.toQueryString()
+        let search = newQueries.toQueryString((key, value) => {
+            if (key !== aparam.Redirect) {
+                return false
+            }
+            value = AaURI.decode(value)
+            loge(key, value, baseUrl, baseUrl.slice(-len(value)))
+
+            return baseUrl.slice(-len(value)) === value
+        })
         if (search) {
             search = '?' + search
         }
@@ -283,7 +291,7 @@ class AaURI {
      * @return {AaURI}
      */
     setParams(params) {
-        map.forEach(params,(key,value)=>{
+        map.forEach(params, (key, value) => {
             this.searchParams.set(key, value)
         })
         return this
@@ -314,12 +322,10 @@ class AaURI {
      * @return {string}
      */
     static decode(s) {
-
-        let d = ''
-        s = string(s)
+        let d = decodeURIComponent(s)
         while (d !== s) {
-            decodeURIComponent(s)
-            s = d
+            d = s
+            s = decodeURIComponent(s)
         }
         return s
     }
@@ -352,7 +358,7 @@ class AaURI {
      * @return {string}
      */
     static encode(s) {
-        return encodeURIComponent(s)
+        return encodeURIComponent(AaURI.decode(s))
     }
 
     /**

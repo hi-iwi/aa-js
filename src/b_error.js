@@ -23,9 +23,10 @@ let _aerrorDict_ = {
         "Forbidden"       : "您没有权限使用",
         "Not found"       : "糟糕，数据找不到啦~",
 
-        "Timeout" : "请求超时，请稍后再试",
-        "Conflict": "异常冲突",
-        "Gone"    : "数据已被删除",
+        "Timeout"           : "请求超时，请稍后再试",
+        "Conflict"          : "异常冲突",
+        "Gone"              : "数据已被删除",
+        "PreconditionFailed": "前置条件未满足",
 
         "Unsupported media type": "文件格式不正确",
 
@@ -58,6 +59,7 @@ const AErrorEnum = {
     Timeout             : 408, // 被限流也是返回这个
     Conflict            : 409,
     Gone                : 410,              // 以前存在过，以后都不会再存在了，表示数据已经删除、过期、失效
+    PreconditionFailed  : 412,
     UnsupportedMediaType: 415, // 上传的数据格式非法
     // code:444, data:null   表示空数组返回这个错误，表示不可以再进行下一页查询了
     // code:200/204, data:[]  空数组，表示查询到了数据，但是数据过滤完了，可以尝试下一页查询
@@ -300,6 +302,10 @@ class AError extends Error {
 
     isGone() {
         return this.is(AErrorEnum.Gone)
+    }
+
+    isPreconditionFailed() {
+        return this.is(AErrorEnum.PreconditionFailed)
     }
 
     isUnsupportedMediaType() {

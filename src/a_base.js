@@ -46,6 +46,7 @@ const aparam = {
     Scope               : "scope",
     ScopeAdmin          : "admin",
 
+    Redirect       : 'redirect',
     LocalAuthAt    : "_localAuthAt",
     Logout         : "logout",
     PersistentNames: ["_debug", "apollo", "logout"],

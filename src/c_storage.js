@@ -291,7 +291,7 @@ class AaStorageEngine {
                 items[key] = value
                 return
             }
-            if (!value) {
+            if (typeof value === 'undefined') {
                 return
             }
             const [_, persistent, expired] = this.decodeValue(key, value)
@@ -443,7 +443,8 @@ class AaStorageEngine {
 
         let keepData = ignores ? [...ignores] : []
         if (!force) {
-            keepData = keepData.concat(this.getPersistentValues())
+            const pers = this.getPersistentValues()
+            keepData = pers ? keepData.concat(pers) : keepData
         }
 
         if (len(keepData) === 0) {
