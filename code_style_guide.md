@@ -115,9 +115,9 @@ cookie-name = token
 1. variable keep word `name`, to name this class
 2. static Constants
 3. static variables
-4. private static #variables ---> 尽量不要使用私有变量!!!
+4. private static #variables ---> 注意：若使用私有不当，在异步函数里，可能会报错 attempted to get private field on non-instance
 5. variables
-6. private #variables        ---> 尽量不要使用私有变量!!!
+6. private #variables        ---> 注意：若使用私有不当，在异步函数里，可能会报错 attempted to get private field on non-instance
 7. setXXX()         set property
 8. getXXX()         get property
 9. set xxx(value)   set property

@@ -15,20 +15,25 @@ class AaLock {
     constructor() {
     }
 
-    // 如果单纯依赖setTimeOut清理，则可能因为故障而导致无法清理，因此采用这种双重保障方案
+    /**
+     * Check current lock is locked
+     * @return {boolean}
+     * @note 如果单纯依赖setTimeOut清理，则可能因为故障而导致无法清理，因此采用这种双重保障方案
+     */
     isLocked() {
         return this.#lockAt > 0 && (this.#lockAt + this.#timeout > Date.now())
     }
 
-    isFree() {
-        return !this.isLocked()
-    }
-
     /**
-     * Start transaction
+     * Lock
      * @param {number} [timeout] in millisecond
+     * @return {boolean} the result of locking
      */
     lock(timeout) {
+        if (this.isLocked()) {
+            return false
+        }
+
         this.log('Lock')
         this.#lockAt = Date.now()  // BEGIN 事务开启
         timeout = number(timeout)
@@ -42,6 +47,16 @@ class AaLock {
             this.log(`Lock timeout (${timeout}ms)`)
             this.#lockAt = 0
         }, timeout)
+        return true
+    }
+
+    /**
+     * Lock and return the opposite result to this.lock()
+     * @param {number} [timeout] in millisecond
+     * @return {boolean} the opposite result of locking
+     */
+    xlock(timeout) {
+        return !this.lock(timeout)
     }
 
     unlock() {

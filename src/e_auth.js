@@ -7,6 +7,8 @@
 class AaAuth {
     name = 'aa-auth'
 
+    static NoTokenError = new AError(AErrorEnum.Unauthorized, 'no token')
+
     lock = new AaLock()
     /** @type {AaStorageFactor}   不要设为私有，要不外面使用会 attempted to get private field on non-instance */
     #storage
@@ -97,7 +99,7 @@ class AaAuth {
     getToken(noRefresh = false) {
         let token = this.#getCachedToken()
         if (!token || (!token.isValid() && (noRefresh || !token['refresh_token']))) {
-            return APromiseReject('no token found')
+            return APromiseReject(AaAuth.NoTokenError)
         }
         return token.isValid() ? APromiseResolve(token) : this.refresh()
     }
@@ -149,12 +151,11 @@ class AaAuth {
         if (token.isValid()) {
             return APromiseResolve(token)
         }
-        if (this.lock.isLocked()) {
+        if (!this.lock.lock()) {
             return asleep(300 * time.Millisecond).then(() => {
                 return this.refresh()
             })
         }
-        this.lock.lock()
         const refreshToken = token['refresh_token']
         const url = token['refresh_api']
         return this.#rawFetch.fetch(url, {
@@ -267,14 +268,12 @@ class AaAuth {
             const url = token['validate_api']
             let authorization = this.#formatAuthorization(token)
 
-            if (this.lock.isLocked()) {
+            if (!this.lock.lock()) {
                 setTimeout(() => {
                     this.validate()
                 }, 300 * time.Millisecond)
                 return
             }
-            this.lock.lock()
-
             this.#rawFetch.fetch(url, {
                 headers: {
                     'Authorization': authorization,
