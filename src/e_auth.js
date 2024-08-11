@@ -9,7 +9,7 @@ class AaAuth {
 
     #lock = new AaLock()
     /** @type {AaStorageFactor}   不要设为私有，要不外面使用会 attempted to get private field on non-instance */
-    storage
+    #storage
 
     /** @type {AaRawFetch} */
     #rawFetch
@@ -37,7 +37,7 @@ class AaAuth {
      * @param {AaRawFetch} rawFetch
      */
     constructor(storage, rawFetch) {
-        this.storage = storage
+        this.#storage = storage
         this.#rawFetch = rawFetch
         setTimeout(() => {
             this.validate()
@@ -71,7 +71,7 @@ class AaAuth {
     }
 
     readStorage(key) {
-        let value = this.storage.cookie.getItem(key)
+        let value = this.#storage.cookie.getItem(key)
         if (value) {
             return value
         }
@@ -84,23 +84,23 @@ class AaAuth {
     }
 
     #localSetItem(key, value) {
-        return AaAuth.#saveItem(this.storage.local, key, value)
+        return AaAuth.#saveItem(this.#storage.local, key, value)
     }
 
     #localGetItem(key) {
-        return AaAuth.#readItem(this.storage.local, key)
+        return AaAuth.#readItem(this.#storage.local, key)
     }
 
     #localRemoveItem(key) {
-        return AaAuth.#removeItem(this.storage.local, key)
+        return AaAuth.#removeItem(this.#storage.local, key)
     }
 
     #sessionSetItem(key, value) {
-        return AaAuth.#saveItem(this.storage.session, key, value)
+        return AaAuth.#saveItem(this.#storage.session, key, value)
     }
 
     #sessionGetItem(key) {
-        return AaAuth.#readItem(this.storage.session, key)
+        return AaAuth.#readItem(this.#storage.session, key)
     }
 
     #cookieOptions(expires) {
@@ -123,12 +123,12 @@ class AaAuth {
             this.#localSetItem(key, value)
             return
         }
-        this.storage.cookie.setItem(key, value, this.#cookieOptions(expires))
+        this.#storage.cookie.setItem(key, value, this.#cookieOptions(expires))
     }
 
     #tryDeleteCookie(key) {
         this.#localRemoveItem(key)
-        this.storage.cookie.removeItem(key, this.#cookieOptions(-time.Day))
+        this.#storage.cookie.removeItem(key, this.#cookieOptions(-time.Day))
     }
 
 
@@ -283,7 +283,7 @@ class AaAuth {
         this.#tokenAuthAt = Math.floor(new Date().valueOf() / time.Second)
 
         // 清空其他缓存
-        this.storage.clearAll()
+        this.#storage.clearAll()
 
         const expiresIn = this.#token['expires_in']
         this.#tryStoreCookie("access_token", this.#token['access_token'], expiresIn * time.Second)
@@ -417,7 +417,7 @@ class AaAuth {
      * @note 非手动退出，就不要清空所有数据，避免用户缓存的文章丢失
      */
     clear() {
-        this.storage.removeEntire(/^aa:auth:/)
+        this.#storage.removeEntire(/^aa:auth:/)
         this.#tryDeleteCookie('access_token')
         this.#tryDeleteCookie('token_type')
         this.#token = null // clear program cache
@@ -431,7 +431,7 @@ class AaAuth {
      */
     logout(callback) {
         // 手动退出，才会清空所有数据
-        this.storage.clearAll()
+        this.#storage.clearAll()
         this.#token = null // clear program cache
         this.#tryStoreCookie(aparam.Logout, 1, 5 * time.Minute)
         callback && callback()

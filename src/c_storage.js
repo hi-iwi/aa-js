@@ -206,7 +206,7 @@ class AaStorageEngine {
     static DefaultSubSeparator = '.'
 
     // 这个不要设为私有，否则外面使用会 attempted to get private field on non-instance
-    storage
+    #storage
     #persistentNames = []
     #withOptions = false
 
@@ -215,11 +215,11 @@ class AaStorageEngine {
 
 
     get length() {
-        return this.storage.length
+        return this.#storage.length
     }
 
     get instanceName() {
-        const s = this.storage
+        const s = this.#storage
         if (s === localStorage) {
             return 'window.localStorage'
         }
@@ -232,11 +232,11 @@ class AaStorageEngine {
     // cookie 不能使用 : 等分隔符作为key，因此不同Engine里面自己指定分隔符
     // 冒号 : 是特殊分隔符，默认都是 : 隔开
     get separator() {
-        return string(this.storage, 'separator', AaStorageEngine.DefaultSeparator)
+        return string(this.#storage, 'separator', AaStorageEngine.DefaultSeparator)
     }
 
     get subSeparator() {
-        return string(this.storage, 'subSeparator', AaStorageEngine.DefaultSubSeparator)
+        return string(this.#storage, 'subSeparator', AaStorageEngine.DefaultSubSeparator)
     }
 
     // 不用报错，正常人也不会这么操作
@@ -253,7 +253,7 @@ class AaStorageEngine {
     init(storage, persistentNames, withOptions, encapsulate) {
         panic.arrayErrorType(persistentNames, 'string', OPTIONAL)
 
-        this.storage = storage
+        this.#storage = storage
 
         if (typeof persistentNames !== "undefined") {
             this.setPersistentNames(persistentNames)
@@ -318,18 +318,18 @@ class AaStorageEngine {
      * @param {boolean} [raw]
      */
     forEach(callback, raw = false) {
-        if (typeof this.storage.forEach === "function") {
-            return this.storage.forEach(callback)
+        if (typeof this.#storage.forEach === "function") {
+            return this.#storage.forEach(callback)
         }
         let result = []
-        const keys = Object.keys(this.storage)
+        const keys = Object.keys(this.#storage)
         if (!keys) {
             return result
         }
         // 要保持外面forEach 进行删除操作时安全，就必须要遍历一个独立的数组，而不是直接遍历并操作原数组（破坏序列）
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i]
-            let value = raw ? this.storage.getItem(key) : this.getItem(key)
+            let value = raw ? this.#storage.getItem(key) : this.getItem(key)
             const r = callback(key, value)
             if (r === BREAK_SIGNAL) {
                 break
@@ -343,8 +343,8 @@ class AaStorageEngine {
         if (this.length === 0) {
             return null
         }
-        if (typeof this.storage.getAll === "function") {
-            return this.storage.getAll()
+        if (typeof this.#storage.getAll === "function") {
+            return this.#storage.getAll()
         }
         let data = {}
         this.forEach((key, value) => {
@@ -354,7 +354,7 @@ class AaStorageEngine {
     }
 
     key(index) {
-        return this.storage.key(index)
+        return this.#storage.key(index)
     }
 
     /**
@@ -368,7 +368,7 @@ class AaStorageEngine {
             value = AaStorageEngine.encodeValue(value, options)
         }
         const args = this.#withOptions && options ? [key, value, options] : [key, value]
-        this.storage.setItem(...args)
+        this.#storage.setItem(...args)
     }
 
     /**
@@ -388,7 +388,7 @@ class AaStorageEngine {
      * @return {null|string|string|*}
      */
     getItem(key) {
-        let raw = this.storage.getItem(key)
+        let raw = this.#storage.getItem(key)
         const [value, ,] = this.decodeValue(key, raw)
         return value
     }
@@ -414,7 +414,7 @@ class AaStorageEngine {
      */
     removeItem(key, options) {
         const args = this.#withOptions && options ? [key, options] : [key]
-        this.storage.removeItem(...args)
+        this.#storage.removeItem(...args)
 
     }
 
@@ -436,7 +436,7 @@ class AaStorageEngine {
         this.forEach((k,) => {
             if (key.test(k) || (wild && wild.test(k))) {
                 const args = this.#withOptions && options ? [k, options] : [k]
-                this.storage.removeItem(...args)
+                this.#storage.removeItem(...args)
             }
         })
     }
@@ -455,14 +455,14 @@ class AaStorageEngine {
         }
 
         if (len(keepData) === 0) {
-            this.storage.clear()
+            this.#storage.clear()
             return
         }
 
         this.forEach((key, _) => {
             if (!keepData.includes(key)) {
                 log.print(this.instanceName, "DELETE", key, keepData[key])
-                this.storage.removeItem(key)
+                this.#storage.removeItem(key)
             }
         })
     }
