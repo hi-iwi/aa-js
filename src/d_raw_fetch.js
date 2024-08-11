@@ -300,7 +300,8 @@ class AaRawFetch {
             if (!this.debounce(settings.method, url, settings.body)) {
                 return new Promise((resolve, reject) => {
                     log.debug(`${settings.method} ${url} is blocked by debounce`)
-                    reject(new AError(AErrorEnum.TooManyRequests, settings.dict))
+                    // 这种维持空 Promise 最好，避免业务端处理，比如清空缓存等
+                    //reject(new AError(AErrorEnum.TooManyRequests, settings.dict))
                 })
             }
         }
@@ -358,14 +359,19 @@ class AaRawFetch {
      */
     fetch(url, settings, hook) {
         // 这里 settings.headers 会被转为 new Headers(settings.headers)
-        const mw = this.middleware(url, settings);
-        [url, settings] = [mw[0], mw[1]]
+        const mw = this.middleware(url, settings)
+        if (mw instanceof Promise) {
+            return mw
+        }
+        [url, settings] = mw
+
 
         if (hook) {
             return hook(settings).then(() => {
                 return this.rawFetch(url, settings)
             })
         }
+
         return this.rawFetch(url, settings)
     }
 
@@ -387,8 +393,11 @@ class AaRawFetch {
      * @return {Promise<*>}
      */
     status(url, settings, hook) {
-        const mw = this.middleware(url, settings);
-        [url, settings] = [mw[0], mw[1]]
+        const mw = this.middleware(url, settings)
+        if (mw instanceof Promise) {
+            return mw
+        }
+        [url, settings] = mw
         if (hook) {
             return hook(settings).then(() => {
                 return this.rawStatus(url, settings)

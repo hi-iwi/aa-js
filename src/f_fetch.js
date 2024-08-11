@@ -50,10 +50,13 @@ class AaFetch {
     fetchHook(settings) {
         // API不判断cookie，就不用考虑CSRF攻击
         return this.#auth.getAuthorization().then(authorization => {
-            if (authorization) {
-                settings.headers[aparam.Authorization] = authorization
-            } else if (settings.mustAuth) {
-                throw new AError(AErrorEnum.Unauthorized, settings.dict)
+            if (!authorization) {
+                throw new AError(AErrorEnum.Unauthorized, '', settings.dict)
+            }
+            settings.headers[aparam.Authorization] = authorization
+        }).catch(err => {
+            if (settings.mustAuth) {
+                throw err instanceof AError ? err : new AError(AErrorEnum.Unauthorized, err.toString(), settings.dict)
             }
         })
     }
@@ -80,7 +83,9 @@ class AaFetch {
     fetch(url, settings) {
         settings = map.fillUp(settings, this.#defaultSettingsExt)
         const response = this.#rawFetch.fetch(url, settings, this.fetchHook.bind(this))
+
         return response.then(data => data).catch(err => {
+            err = aerror(err)
             if (this.enableRedirect && err.isRetryWith()) {
                 window.location.href = err.message // 特殊跳转
                 return
@@ -173,8 +178,8 @@ class AaFetch {
      */
     get(url, params, dict) {
         const settings = {
-            method    : "GET",
-            dict: dict,
+            method: "GET",
+            dict  : dict,
         }
         const uri = new AaURI(url, params)
         return this.fetch(uri.toString(), settings)
@@ -202,9 +207,9 @@ class AaFetch {
      */
     head(url, params, dict) {
         const settings = {
-            method    : 'HEAD',
-            data      : params,
-            dict: dict,
+            method: 'HEAD',
+            data  : params,
+            dict  : dict,
         }
         return this.status(url, settings)     // 不用 catch error
     }
@@ -231,10 +236,10 @@ class AaFetch {
      */
     delete(url, params, dict) {
         let settings = {
-            method    : 'DELETE',
-            data      : params,
-            dict: dict,
-            mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
+            method  : 'DELETE',
+            data    : params,
+            dict    : dict,
+            mustAuth: true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
 
         if (!this.deleteHasBody) {
@@ -266,10 +271,10 @@ class AaFetch {
      */
     deleteA(url, params, dict) {
         const settings = {
-            method    : 'DELETE',
-            data      : params,
-            dict: dict,
-            mustAuth  : false,
+            method  : 'DELETE',
+            data    : params,
+            dict    : dict,
+            mustAuth: false,
         }
         return this.fetchA(url, settings)
     }
@@ -294,10 +299,10 @@ class AaFetch {
      */
     post(url, data, dict) {
         const settings = {
-            method    : 'POST',
-            data      : data,
-            dict: dict,
-            mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
+            method  : 'POST',
+            data    : data,
+            dict    : dict,
+            mustAuth: true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
         return this.fetch(url, settings)
     }
@@ -311,10 +316,10 @@ class AaFetch {
      */
     postA(url, data, dict) {
         const settings = {
-            method    : 'POST',
-            data      : data,
-            dict: dict,
-            mustAuth  : false,
+            method  : 'POST',
+            data    : data,
+            dict    : dict,
+            mustAuth: false,
         }
         return this.fetchA(url, settings)
     }
@@ -350,10 +355,10 @@ class AaFetch {
      */
     put(url, data, dict) {
         const settings = {
-            method    : 'PUT',
-            data      : data,
-            dict: dict,
-            mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
+            method  : 'PUT',
+            data    : data,
+            dict    : dict,
+            mustAuth: true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
         return this.fetch(url, settings)
     }
@@ -367,10 +372,10 @@ class AaFetch {
      */
     putA(url, data, dict) {
         const settings = {
-            method    : 'PUT',
-            data      : data,
-            dict: dict,
-            mustAuth  : false,
+            method  : 'PUT',
+            data    : data,
+            dict    : dict,
+            mustAuth: false,
         }
         return this.fetchA(url, settings)
     }
@@ -406,10 +411,10 @@ class AaFetch {
      */
     patch(url, data, dict) {
         const settings = {
-            method    : 'PATCH',
-            data      : data,
-            dict: dict,
-            mustAuth  : true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
+            method  : 'PATCH',
+            data    : data,
+            dict    : dict,
+            mustAuth: true,   // GET/HEAD/OPTION 默认false; POST/PUT/PATCH/DELETE 默认 true
         }
         return this.fetch(url, settings)
     }
@@ -423,10 +428,10 @@ class AaFetch {
      */
     patchA(url, data, dict) {
         const settings = {
-            method    : 'PATCH',
-            data      : data,
-            dict: dict,
-            mustAuth  : false,
+            method  : 'PATCH',
+            data    : data,
+            dict    : dict,
+            mustAuth: false,
         }
         return this.fetchA(url, settings)
     }

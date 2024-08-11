@@ -12,9 +12,10 @@ class AaAccount {
     #profile
     #selectedVuid
 
-    #lock = new AaLock()
+    lock = new AaLock()
     /** @type {AaCache} */
     #db
+    /** @type {AaAuth} */
     #auth
     #fetch
     #fetchUrl
@@ -30,12 +31,9 @@ class AaAccount {
 
     initFetchUrl(url) {
         this.#fetchUrl = url
-        const authed = this.#auth.authed(token => {
+        this.#auth.getToken().then(() => {
             this.#initProfile()
-        })
-        if (authed) {
-            this.#initProfile()
-        }
+        }, nif)
     }
 
     /**
@@ -108,39 +106,37 @@ class AaAccount {
      * @return {Promise<Profile>|*}
      */
     getProfile(refresh = false) {
-        if (!this.#auth.authed()) {
-            return nip
-        }
-
-        if (!refresh) {
-            let profile = this.getCachedProfile()
-            if (len(profile) > 0) {
-                return APromiseResolve(profile)
+        return this.#auth.getToken().then(() => {
+            if (!refresh) {
+                let profile = this.getCachedProfile()
+                if (len(profile) > 0) {
+                    return APromiseResolve(profile)
+                }
             }
-        }
-        const fetch = this.#fetch
-        const url = this.#fetchUrl
-        if (!url || !fetch) {
-            return APromiseReject("invalid profile fetch " + url)
-        }
+            const fetch = this.#fetch
+            const url = this.#fetchUrl
+            if (!url || !fetch) {
+                return APromiseReject("invalid profile fetch " + url)
+            }
 
-        if (this.#lock.isLocked()) {
-            return asleep(200 * time.Millisecond).then(() => {
-                return this.getProfile(refresh)
+            if (this.lock.isLocked()) {
+                return asleep(200 * time.Millisecond).then(() => {
+                    return this.getProfile(refresh)
+                })
+            }
+            this.lock.lock()
+            return fetch.fetch(url, {
+                mustAuth: true,
+            }).then(profile => {
+                profile = this.formatProfile(profile)
+                this.saveProfile(profile)
+                return profile
+            }).catch(err => {
+                this.#auth.validate()
+                throw err
+            }).finally(() => {
+                this.lock.unlock()
             })
-        }
-        this.#lock.lock()
-        return fetch.fetch(url, {
-            mustAuth: true,
-        }).then(profile => {
-            profile = this.formatProfile(profile)
-            this.saveProfile(profile)
-            return profile
-        }).catch(err => {
-            this.#auth.validate()
-            throw err
-        }).finally(() => {
-            this.#lock.unlock()
         })
     }
 

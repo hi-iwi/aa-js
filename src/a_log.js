@@ -110,9 +110,9 @@ class log {
 
         let fn = console.log
         if (typeof args[0] === "string") {
+            // 保留这个标签，方便知道报错由哪里发出
             const match = args[0].match(/^\[([a-zA-Z]+)]/)
             if (match && typeof console[match[1]] === "function") {
-                args[0] = args[0].replace(match[0], '')
                 fn = console[match[1]]
             }
         }
@@ -174,7 +174,7 @@ function loge(...args) {
         return log.print(...args)
     }
     for (let i = 0; i < args.length; i++) {
-        if (typeof args[i] === 'object' || typeof args[i] === 'function') {
+        if ((typeof args[i] === 'object' && args[i] !== null) || typeof args[i] === 'function') {
             return log.println(...args)
         }
     }
