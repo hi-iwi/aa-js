@@ -123,7 +123,6 @@ A Javascript SDK of AaGo
 | [AaVideoSrc]      |           | use `aa.videoSrc` instead             |
 | ---------------   | --------- | ------------------------------------- |
 | [AaAccount]       |           | use `aa.account` instead              |
-| [AaApollo]        |           | use `aa.apollo()` instead             |
 | [AaEditor]        |           | use `aa.editor` instead               |
 | [Aa]              |           | use `aa` instead                      |
 
