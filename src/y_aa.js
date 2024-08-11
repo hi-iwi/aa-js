@@ -137,18 +137,6 @@ class Aa {
         }
         return new AaImgSrc(...arguments)
     }
-
-    /**
-     * Apollo
-     * @param {string} url
-     * @param {(fp:string)=>void} fingerprintGenerator 设备唯一码生成器
-     * @param {(data:{[key:string]:*})=>void} loginDataHandler 登录处理
-     * @param {AaStorageEngine} [storage]
-     * @return {AaApollo}
-     */
-    apollo(url, fingerprintGenerator, loginDataHandler, storage = this.storage.cookie) {
-        return new AaApollo(this.fetch, url, fingerprintGenerator, loginDataHandler, storage)
-    }
 }
 
 

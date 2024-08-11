@@ -19,7 +19,8 @@ function xargs(...args) {
     return []
 }
 
-function run(method, ...args) {
+
+function xrun(method, ...args) {
     if (typeof method !== 'function') {
         return null
     }
