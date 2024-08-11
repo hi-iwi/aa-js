@@ -30,7 +30,7 @@ class AaAccount {
 
     initFetchUrl(url) {
         this.#fetchUrl = url
-        const authed = aa.auth.authed(token => {
+        const authed = this.#auth.authed(token => {
             this.#initProfile()
         })
         if (authed) {
@@ -41,7 +41,7 @@ class AaAccount {
     /**
      *
      * @param {AaCache} db
-     * @param auth
+     * @param {AaAuth} auth
      * @param {AaFetch} fetch
      */
     constructor(db, auth, fetch) {

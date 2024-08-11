@@ -115,9 +115,9 @@ cookie-name = token
 1. variable keep word `name`, to name this class
 2. static Constants
 3. static variables
-4. private static #variables ---> 尽量不要使用私有静态变量!!!
+4. private static #variables ---> 尽量不要使用私有变量!!!
 5. variables
-6. private #variables
+6. private #variables        ---> 尽量不要使用私有变量!!!
 7. setXXX()         set property
 8. getXXX()         get property
 9. set xxx(value)   set property
@@ -126,7 +126,7 @@ cookie-name = token
 12. initXXX()
 13. init()
 14. constructor()
-15. #private methods
+15. #private methods            ---> 尽量不要使用私有变量!!!
 16. \* [xxx]()   如  *[Symbol.iterator](){yield xxx}
 17. [xxx]()    如  [Symbol.iterator](){return [].values()}
 17. other methods()

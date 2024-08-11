@@ -6,8 +6,8 @@
 class AaRawFetch {
     name = 'aa-raw-fetch'
 
-    /** @type {AaStorageFactor} */
-    #storage
+    /** @type {AaStorageFactor} 这个不要设为私有，否则外面使用会 attempted to get private field on non-instance */
+    storage
 
 
     /** @type {map} */
@@ -63,7 +63,7 @@ class AaRawFetch {
      * @param {AaStorageFactor} storage
      */
     constructor(storage) {
-        this.#storage = storage
+        this.storage = storage
         this.#requests = new map()
     }
 
@@ -189,7 +189,7 @@ class AaRawFetch {
     #fillUpHeaders(headers) {
         headers = struct(headers)
         // 填充以  X- 开头的自定义header
-        this.#storage.forEachEntire((key, value) => {
+        this.storage.forEachEntire((key, value) => {
             if (key.indexOf('X-') === 0) {
                 headers[key] = value
             }

@@ -51,7 +51,7 @@ class paths {
 
     /**
      *
-     * @param {string[]} args
+     * @param {StringN} args
      * @example join("a/b","../../../xyz")  ===>  ../xyz
      */
     static join(...args) {
