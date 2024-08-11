@@ -39,7 +39,8 @@ class AaURI {
     method = ''
     /** @type {map} */
     searchParams
-
+    /** @type {string[]} */
+    pathParams = []
     /** @type string */
     #hash  // alias to location.hash
     /** @type string */
@@ -144,16 +145,26 @@ class AaURI {
                 url = window.location.origin + url
             }
         }
+
+        const pathParamsMatches = url.matchAll(/{[\w:-]+}/ig)
+        for (const pathParamsMatch of pathParamsMatches) {
+            const up = pathParamsMatch[0]
+            const i = this.pathParams.length
+            url = url.replace(up, `%00!${i}!%00`)
+            this.pathParams.push(up)
+        }
+
+        // new URL 性能更好，但是会自动encode {xxxx}
         const u = new URL(url)
         this.method = method
-        this.#hash = hash ? hash : u.hash
-        this.#hostname = u.hostname
-        this.#pathname = u.pathname
-        this.#port = u.port
-        this.#protocol = u.protocol
+        this.#hash = hash ? hash : this.#replaceBackPathParams(u.hash)
+        this.#hostname = this.#replaceBackPathParams(u.hostname)
+        this.#pathname = this.#replaceBackPathParams(u.pathname)
+        this.#port = this.#replaceBackPathParams(u.port)
+        this.#protocol = this.#replaceBackPathParams(u.protocol)
         this.searchParams = new map()
-        this.#password = u.password
-        this.#username = u.username
+        this.#password = this.#replaceBackPathParams(u.password)
+        this.#username = this.#replaceBackPathParams(u.username)
 
         for (const [key, value] of u.searchParams) {
             this.searchParams.set(key, value)
@@ -174,6 +185,15 @@ class AaURI {
         this.init(url, params, hash)
     }
 
+    #replaceBackPathParams(s) {
+        if (!s || this.pathParams.length === 0) {
+            return s
+        }
+        this.pathParams.map((p, i) => {
+            s = s.replace(`%00!${i}!%00`, p)
+        })
+        return s
+    }
 
     delete(key) {
         this.searchParams.delete(key)
@@ -234,8 +254,6 @@ class AaURI {
                 return false
             }
             value = AaURI.decode(value)
-            loge(key, value, baseUrl, baseUrl.slice(-len(value)))
-
             return baseUrl.slice(-len(value)) === value
         })
         if (search) {
@@ -388,6 +406,9 @@ class AaURI {
             let m = ps[i]
             let k = m.replace(/^{([\w-]+)[:}].*$/ig, '$1')
             let v = newQueries.get(k, string)  // 支持array, AaImgSrc, Decimal, time 等所有格式数据
+            if (typeof v === 'undefined' || v === '' || v === null) {
+                throw new TypeError(`url path param ${m} is not defined`)
+            }
             s = s.replace(new RegExp(m, 'g'), v)
             newQueries.delete(k)
 

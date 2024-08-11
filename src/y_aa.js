@@ -10,6 +10,7 @@ class Aa {
     /** @type {AaStorageFactor} */
     storage
     cache
+    /** @type {AaCache} */
     db
 
 
