@@ -545,12 +545,14 @@ function not(...args) {
 function string(...args) {
     let v = defval(...args)
     if (v === null) {
-        return ""
+        return ''
     }
-
+    if (typeof v === 'string') {
+        return v
+    }
     // toJSON 一定是最终数据
     if (typeof v.toJSON === "function") {
-        return string(v.toJSON())
+        return '' + v.toJSON()
     }
 
 
@@ -562,11 +564,11 @@ function string(...args) {
     }
     // time, Date
     if (typeof v.valueOf === "function") {
-        return string(v.valueOf())
+        return '' + v.valueOf()
     }
 
 
-    return v + ''
+    return '' + v
 }
 
 /**

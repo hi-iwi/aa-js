@@ -1,5 +1,22 @@
 # Code Style Guide
 
+> 要注意异步函数内，this.state, this.data 需要重新指定的情况。以及异步函数内，私有方法或属性的作用域问题。
+
+```js
+let data = {A:1}
+
+function test(){
+    const d = data
+    setTimeout(()=>{
+      console.log(d.A)
+    },200 )
+    
+}
+test()
+data = {A:200}
+
+
+```
 ## 命名规则
 
 * _fields_: []string|{[key:string}:typeFunc}    :  一个类似结构体或object的class，用 _files_ :["key"]   来描述有效字段。主要用于
