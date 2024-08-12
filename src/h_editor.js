@@ -41,6 +41,7 @@ class AaEditor {
     whiteList = [".hidden-url"]
 
     #oss
+
     /**
      * @param {AaOSS} oss
      * @param ossDataMakers
@@ -192,7 +193,7 @@ class AaEditor {
      * @return {string}
      * @TODO 扩展 imgSrc/videoSrc/audioSrc/fileSrc
      */
-      decodeHTML(s) {
+    decodeHTML(s) {
         if (!s) {
             return ""
         }
@@ -209,6 +210,7 @@ class AaEditor {
         });
         return s
     }
+
     // content 一般由编辑器编辑，这里无法实时获取，因此传参更适合
     /**
      *
@@ -238,7 +240,7 @@ class AaEditor {
         return content
     }
 
-      decodeText(s) {
+    decodeText(s) {
         s = string(s).replace(new RegExp('<br>', 'g'), '\r\n')
         return this.decodeHTML(s)
     }
@@ -248,7 +250,7 @@ class AaEditor {
      * @param {StringN} s
      * @return {string|string|*|string}
      */
-      encodeHTML(s) {
+    encodeHTML(s) {
         if (!s) {
             return ""
         }
@@ -260,7 +262,7 @@ class AaEditor {
     }
 
     // 无标签的text，替换 换行符、空格
-      encodeText(s) {
+    encodeText(s) {
         if (!s) {
             return ""
         }
@@ -275,8 +277,9 @@ class AaEditor {
         s = s.replace(/[\r\n]/g, '<br>')  // Unix: \n;  Mac: \r
         return s
     }
+
     // 对文章中敏感词进行马赛克化
-      fuzzy(s, tag = AaEditor.fuzzyTag) {
+    fuzzy(s, tag = AaEditor.fuzzyTag) {
         if (!s || !tag) {
             return s
         }
@@ -284,13 +287,14 @@ class AaEditor {
         s = s.replace(/<s>\s*\d+\s*:\s*(\d+)\s*<\/s>/ig, (m, l) => tag.repeat(l))
         return s
     }
+
     /**
      * @protected
      * @param maker
      * @param defaultMaker
      * @return {*}
      */
-      maker(maker, defaultMaker) {
+    maker(maker, defaultMaker) {
         if (typeof maker !== "function") {
             maker = defaultMaker
         }
@@ -301,7 +305,7 @@ class AaEditor {
     }
 
 
-    static #encodeTextNode(s) {
+    #encodeTextNode(s) {
         for (const [k, v] of Object.entries(AaEditor.encodeTemplate)) {
             if (s.indexOf(k) > -1) {
                 s = s.replace(new RegExp(k, 'g'), v)
@@ -310,7 +314,7 @@ class AaEditor {
         return s
     }
 
-    static #encodeVirtualDom(dom) {
+    #encodeVirtualDom(dom) {
         if (!dom) {
             return
         }
@@ -318,13 +322,13 @@ class AaEditor {
             // text nodes' type is 3, test nodes are not inside an element
             // e.g.  `Hello, I'm <b>Aario</b>! What is <i>your name</i>?` => text, b, text, i, text
             if (node.nodeType === Node.TEXT_NODE && node.nodeValue !== '') {
-                const v = AaEditor.#encodeTextNode(node.nodeValue)
+                const v = this.#encodeTextNode(node.nodeValue)
                 if (v !== node.nodeValue) {
                     node.nodeValue = v
                 }
                 return
             }
-            AaEditor.#encodeVirtualDom(node)
+            this.#encodeVirtualDom(node)
         })
     }
 }
