@@ -299,7 +299,7 @@ class AaRawFetch {
         if (settings.debounce) {
             if (!this.debounce(settings.method, url, settings.body)) {
                 return new Promise((resolve, reject) => {
-                    log.debug(`${settings.method} ${url} is blocked by debounce`)
+                    log.warn(`${settings.method} ${url} is blocked by debounce`)
                     // 这种维持空 Promise 最好，避免业务端处理，比如清空缓存等
                     //reject(new AError(AErrorEnum.TooManyRequests, settings.dict))
                 })

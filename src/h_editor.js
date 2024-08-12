@@ -57,14 +57,18 @@ class AaEditor {
         if (typeof dom === "string") {
             dom = document.querySelector(dom)
         }
-        dom.querySelectorAll('a').forEach(a => {
+        const links = dom.querySelectorAll('a')
+        const abbrs = dom.querySelectorAll("abbr[data-privacy-key]")
+        const imgs = dom.querySelectorAll("img")
+
+        links && links.forEach(a => {
             a.setAttribute('target', '_blank')
         })
 
-        dom.querySelectorAll("abbr[data-privacy-key]").forEach(abbr => {
+        abbrs && abbrs.forEach(abbr => {
             abbr.innerHTML = htmls.fuzzy(abbr.innerHTML)
         })
-        dom.querySelectorAll("img").forEach(t => {
+        imgs && imgs.forEach(t => {
             const src = t.getAttribute('src')
             const path = t.dataset.path
             if (!!src || !path) {
@@ -77,13 +81,18 @@ class AaEditor {
             }
 
             const imgsrc = this.#oss.imgSrc(imgSrcDataMaker(path))
+
             const fa = imgsrc.resize(MAX)
-            t.setAttribute("src", fa['url'])
-            if (fa.height > 0) {
-                t.setAttribute("height", String(fa.width))
-            }
-            if (fa.width > 0) {
-                t.setAttribute("width", String(fa.width))
+            loge(path, fa)
+            if (fa) {
+                t.setAttribute("src", fa['url'])
+                if (fa.height > 0) {
+                    t.setAttribute("height", String(fa.width))
+                }
+                if (fa.width > 0) {
+                    t.setAttribute("width", String(fa.width))
+                }
+
             }
 
         })
@@ -191,6 +200,6 @@ class AaEditor {
         // @patch：当选中图片，右键再按换行，会把图片外面<figure>变成<p>
         content = content.replace(/<p>[^<]*(<(img|video|source|object|embed)[^>]+\/?>)[^<]*<\/p>/ig, '<$2>$1</$2>');
         content = htmls.encode(content)
-        return content;
+        return content
     }
 }
