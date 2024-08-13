@@ -510,19 +510,18 @@ class map {
         if (!item) {
             return objects
         }
-        if (!objects || objects.length === 0) {
+        if (len(objects) === 0) {
             return [item]
         }
 
         // 为保证 react state 更新正常，这里 item 最好指向新的内存空间
         let newItem = {}
-        for (const [key, _] of objects[0]) {
+        map.forEach(objects[0], (key, _) => {
             if (typeof item[key] === 'undefined') {
                 throw new AggregateError(`map.insertOnDuplicateUpdate() the new item miss field ${key}`)
             }
             newItem[key] = item[key]
-        }
-
+        })
         const [_, i] = map.find(objects, condition)
         if (i > 0) {
             objects[i] = newItem   // on duplicate update

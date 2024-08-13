@@ -46,7 +46,7 @@ class AaCache {
      * @param {string} table
      * @param {map|struct} data
      * @param {{is:string|string[]|RegExp, not:string|string[]|RegExp }} [pattern]
-     * @param {struct} [options]
+     * @param {StorageOptions} [options]
      */
     save(table, data, pattern, options) {
         const is = defval(pattern, 'is')
