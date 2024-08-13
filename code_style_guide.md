@@ -1,5 +1,8 @@
 # Code Style Guide
 
+> nil 表示空值；zero 表示类型的默认值（如0，空字符串、false等）
+
+
 > 要注意异步函数内，this.state, this.data 需要重新指定的情况。以及异步函数内，私有方法或属性的作用域问题。
 
 ```js
@@ -35,7 +38,7 @@ data = {A:200}
 * 使用 `/** @type {xxx} */` ，而不是 `// @type {xxx}`。后者编辑器无法识别
 
 ```js
-/** @type (number|string)[] */
+/** @type {(number|string)[]} */
 const numOrStrArray = [1, 2, 3, '4', '5', 6, 7]
 
 /** @type {{name:string, age:number}[]} */

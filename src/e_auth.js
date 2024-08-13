@@ -21,7 +21,7 @@ class AaAuth {
 
     /** @type {TokenData|null} */
     #token
-    /** @type number local authed at in seconds*/
+    /** @type {number} local authed at in seconds*/
     #tokenAuthAt = 0
     #validateTried = false
 

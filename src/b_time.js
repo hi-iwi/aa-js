@@ -524,9 +524,9 @@ class time {
     static Day = 24 * time.Hour
 
 
-    /** @type Date */
+    /** @type {Date} */
     #date
-    /** @type AaDateValidator */
+    /** @type {AaDateValidator} */
     #validator = new AaDateValidator("Invalid Date")
 
     pattern = 'YYYY-MM-DD HH:II:SS'

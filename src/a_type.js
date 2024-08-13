@@ -498,6 +498,8 @@ function bool(...args) {
             return v > 0
         case "boolean":
             return v
+        case 'function':
+            return !!v()
         case "string":
             v = v.trim().toLowerCase()
             if (v === "") {

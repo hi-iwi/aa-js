@@ -35,29 +35,29 @@ const UrlRemoveRedirect = {redirect: null}
 class AaURI {
     name = 'aa-uri'
 
-    /** @type string */
+    /** @type {string} */
     method = ''
     /** @type {map} */
     searchParams
     /** @type {string[]} */
     pathParams = []
-    /** @type string */
+    /** @type {string} */
     #hash  // alias to location.hash
-    /** @type string */
+    /** @type {string} */
     #hostname
-    /** @type string */
+    /** @type {string} */
     #password
-    /** @type string */
+    /** @type {string} */
     #pathname
-    /** @type string */
+    /** @type {string} */
     #port
-    /** @type string e.g. {scheme:string}, https:, tcp: */
+    /** @type {string} e.g. {scheme:string}, https:, tcp: */
     #protocol
-    /** @type string */
+    /** @type {string} */
     #username
 
 
-    /** @type boolean */
+    /** @type {boolean} */
     #isTemplate = false   // is using template
 
     get hash() {
