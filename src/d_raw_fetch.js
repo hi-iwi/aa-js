@@ -184,9 +184,10 @@ class AaRawFetch {
     /**
      * Merge headers with global headers
      * @param {struct} [headers]
+     * @param {boolean} bodyStream
      * @return {struct}
      */
-    #fillUpHeaders(headers) {
+    #fillUpHeaders(headers, bodyStream) {
         headers = struct(headers)
         // 填充以  X- 开头的自定义header
         this.#storage.forEachEntire((key, value) => {
@@ -195,16 +196,17 @@ class AaRawFetch {
             }
         })
         map.fillUp(headers, this.#headers, (k, v, target) => {
+            if (bodyStream && k === 'Content-Type') {
+                return
+            }
+            if (target.hasOwnProperty(k)) {
+                delete target[k]
+                return
+            }
             if (typeof v === 'function') {
                 v = v()
             }
-            if (typeof target[k] === 'undefined' && typeof v !== 'undefined' && v !== null && v !== '') {
-                target[k] = v
-            } else {
-                if (typeof target[k] === "undefined" || target[k] === null || target[k] === '') {
-                    delete target[k]
-                }
-            }
+            target[k] = v
         })
 
         return headers
@@ -219,14 +221,10 @@ class AaRawFetch {
      */
     formatSettings(url, settings) {
         let headers = settings.headers
-        settings = map.fillUp(settings, this.#defaultSettings)   // 要允许外面扩展配置
 
-        headers = this.#fillUpHeaders(headers)
-        let contentType = headers['Content-Type']
-        if (!contentType) {
-            contentType = 'application/json'
-            headers['Content-Type'] = contentType
-        }
+        settings = map.fillUp(settings, this.#defaultSettings)   // 要允许外面扩展配置
+        headers = this.#fillUpHeaders(headers, !!settings.body)
+        let contentType = string(headers, 'Content-Type') // maybe not exists
         settings.method = string(settings, 'method', 'GET').toUpperCase()
         settings.headers = headers  // 先不要使用 new Headers()， 容易出现莫名其妙的问题。直接让fetch自己去转换
 

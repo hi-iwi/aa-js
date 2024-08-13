@@ -254,7 +254,6 @@ class AaStorageEngine {
         panic.arrayErrorType(persistentNames, 'string', OPTIONAL)
 
         this.#storage = storage
-
         if (typeof persistentNames !== "undefined") {
             this.setPersistentNames(persistentNames)
         }
