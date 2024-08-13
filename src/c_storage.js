@@ -506,7 +506,7 @@ class AaStorageEngine {
         let match = value.match(/^(.*)\s\|([a-zA-Z])(\d*)$/)
         if (!match) {
             this.removeItem(key)  // 异常数据，清除为妙
-            return {value:null, persistent, expired}
+            return {value: null, persistent, expired}
         }
         value = match[1]
         let type = match[2]
@@ -537,7 +537,7 @@ class AaStorageEngine {
         }
         if (expireTo > 0 && Date.now() - expireTo >= 0) {
             this.removeItem(key)
-            return {value:null, persistent, expired:true}
+            return {value: null, persistent, expired: true}
         }
         return {value, persistent, expired}
     }
@@ -583,7 +583,9 @@ class AaStorageEngine {
         if (bool(persistent)) {
             st = st.toUpperCase()
         }
-        value = value + ' |' + st + string(expires) // base64数字会变得更长，直接存毫秒，用存储空间换CPU计算时间
+        // 没必要通过计算本年差来缩短expires（这样最多缩短1位长度）；缩短为秒也最多缩短3位长度
+        // base64数字会变得更长，直接存毫秒，用存储空间换CPU计算时间
+        value = value + ' |' + st + string(expires)
         return value
     }
 }
