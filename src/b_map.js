@@ -644,6 +644,21 @@ class map {
         return obj
     }
 
+    /**
+     * Set if not exists
+     * @param obj
+     * @param key
+     * @param value
+     */
+    static setNotExist(obj, key, value) {
+        if (!obj) {
+            return map.kv(key, value)
+        }
+        if (typeof obj[key] === 'undefined') {
+            obj[key] = value
+        }
+        return obj
+    }
 
     /**
      * Merge two objects into a new object

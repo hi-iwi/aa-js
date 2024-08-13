@@ -205,6 +205,9 @@ class AaStorageEngine {
     static DefaultSeparator = ':'
     static DefaultSubSeparator = '.'
 
+    /** @type {number} */
+    defaultExpiresIn
+
     // 这个不要设为私有，否则外面使用会 attempted to get private field on non-instance
     #storage
     #persistentNames = []
@@ -244,13 +247,15 @@ class AaStorageEngine {
     //     throw new SyntaxError("storage length is readonly")
     // }
 
+
     /**
      * @param {Storage|function|object} storage
-     * @param {string[]} [persistentNames]
+     * @param {[string]} [persistentNames]
      * @param {boolean} [withOptions]
      * @param {boolean} [encapsulate]
+     * @param {number} [defaultExpiresIn]
      */
-    init(storage, persistentNames, withOptions, encapsulate) {
+    constructor(storage, persistentNames, withOptions, encapsulate, defaultExpiresIn = 0) {
         panic.arrayErrorType(persistentNames, 'string', OPTIONAL)
 
         this.#storage = storage
@@ -263,19 +268,27 @@ class AaStorageEngine {
         if (typeof encapsulate === "boolean") {
             this.#encapsulate = encapsulate
         }
+        this.defaultExpiresIn = intMax(defaultExpiresIn);
     }
 
-
-    /**
-     * @param {Storage|function|object} storage
-     * @param {[string]} [persistentNames]
-     * @param {boolean} [withOptions]
-     * @param {boolean} [encapsulate]
-     */
-    constructor(storage, persistentNames, withOptions, encapsulate) {
-        this.init(...arguments)
+    cleanExpired() {
+        if (!this.#encapsulate) {
+            return
+        }
+        const keys = Object.keys(this.#storage)
+        if (!keys) {
+            return
+        }
+        // 要保持外面forEach 进行删除操作时安全，就必须要遍历一个独立的数组，而不是直接遍历并操作原数组（破坏序列）
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i]
+            let value = this.#storage.getItem(key)
+            const {expired} = this.decodeValue(key, value)
+            if (expired) {
+                this.removeItem(key)
+            }
+        }
     }
-
 
     /**
      * @param {string[]} persistentNames
@@ -301,7 +314,7 @@ class AaStorageEngine {
             if (typeof value === 'undefined') {
                 return
             }
-            const [_, persistent, expired] = this.decodeValue(key, value)
+            const {persistent, expired} = this.decodeValue(key, value)
             if (persistent && !expired) {
                 items[key] = value
             }
@@ -363,6 +376,10 @@ class AaStorageEngine {
      * @param {StorageOptions} [options]
      */
     setItem(key, value, options) {
+        if (this.defaultExpiresIn > 0) {
+            map.setNotExist(options, 'expires', this.defaultExpiresIn)
+        }
+
         if (this.#encapsulate) {
             value = AaStorageEngine.encodeValue(value, options)
         }
@@ -384,11 +401,15 @@ class AaStorageEngine {
     /**
      * Get item, returns null on not exists
      * @param key
-     * @return {null|string|string|*}
+     * @return {null|*}
      */
     getItem(key) {
         let raw = this.#storage.getItem(key)
-        const [value, ,] = this.decodeValue(key, raw)
+        const [value, expired] = this.decodeValue(key, raw)
+        if (expired) {
+            this.removeItem(key)
+            return null
+        }
         return value
     }
 
@@ -478,17 +499,17 @@ class AaStorageEngine {
      *
      * @param {string} key
      * @param value
-     * @return {*[]}   [value, expired]
+     * @return {{expired: boolean, persistent: boolean, value}}   [value, expired]
      */
     decodeValue(key, value) {
         let expired = false
         let persistent = false
         if (!this.#encapsulate || typeof value !== "string") {
-            return [value, persistent, expired]
+            return {value, persistent, expired}
         }
-        const match = value.match(/^([a-zA-Z]):(.+):(\d*)$/)
+        const match = value.match(/^([a-zA-Z]):(.+):(\d*)T$/)
         if (!match) {
-            return [value, persistent, expired]
+            return {value, persistent, expired}
         }
         let type = match[1]
         persistent = type >= 'A' && type <= 'Z'
@@ -514,9 +535,10 @@ class AaStorageEngine {
         }
         if (expireTo > 0 && Date.now() - expireTo >= 0) {
             this.removeItem(key)
-            return [null, persistent, true]
+            value = null
+            expired = true
         }
-        return [value, persistent, expired]
+        return {value, persistent, expired}
     }
 
     /**
@@ -562,7 +584,7 @@ class AaStorageEngine {
         if (bool(persistent)) {
             st = st.toUpperCase()
         }
-        value = st + ':' + value + ':' + string(expires)   // base64数字会变得更长
+        value = st + ':' + value + ':' + string(expires) + 'T'   // base64数字会变得更长
         return value
     }
 
@@ -572,6 +594,7 @@ class AaStorageEngine {
 
 class AaStorageFactor {
     name = 'aa-storage-factor'
+    static DailyCleanSessionKey = 'aa:storage:daily_clean'
 
     /** @type {AaStorageEngine} */
     local
@@ -592,9 +615,22 @@ class AaStorageFactor {
      * @param {Storage} [sessionStorage]
      */
     constructor(cookieStorage, localStorage, sessionStorage) {
-        this.local = new AaStorageEngine(localStorage ? localStorage : window.localStorage, [], false, true)
+        this.local = new AaStorageEngine(localStorage ? localStorage : window.localStorage, [], false, true, 7 * time.Day)
         this.session = new AaStorageEngine(sessionStorage ? sessionStorage : window.sessionStorage, [], false, true)
         this.cookie = new AaStorageEngine(cookieStorage ? cookieStorage : new AaCookieStorage(), [], true, false)
+
+        this.cleanExpired()
+    }
+
+    cleanExpired() {
+        const cleaned = this.session.getItem(AaStorageFactor.DailyCleanSessionKey)
+        if (cleaned) {
+            return
+        }
+        this.local.cleanExpired()
+        this.session.cleanExpired()
+        // this.cookie.cleanExpired()
+        this.session.setItem(AaStorageFactor.DailyCleanSessionKey, 1)
     }
 
     /**
