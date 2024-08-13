@@ -107,6 +107,7 @@ function Round(round) {
 
 class atype {
     static array = "array"
+    static bigint = 'bigint'
     static boolean = "boolean"
     static class = "class"
     static date = "date"
@@ -121,6 +122,7 @@ class atype {
     // 类型别名
     static alias = {
         array    : "a",
+        bigint   : 'i',
         boolean  : "b",
         class    : "c",
         date     : "d",
@@ -177,6 +179,7 @@ class atype {
         return false
     }
 
+
     static toStringCallable(v) {
         if (v && typeof v.toString === 'function') {
             return v.toString().indexOf('[object ') !== 0
@@ -202,6 +205,8 @@ class atype {
         switch (atype.of(v)) {
             case atype.array:
                 return nullable ? null : []
+            case atype.bigint:
+                return 0n
             case atype.boolean:
                 return false
             case atype.class:
@@ -305,6 +310,8 @@ class   // Returns function XXX()
         switch (atype.of(v)) {
             case atype.array:
                 return v.length === 0
+            case atype.bigint:
+                return v <= 0
             case atype.boolean:
                 return !v
             case atype.class:
@@ -364,6 +371,9 @@ class   // Returns function XXX()
         return typeof defval(...args) === "boolean"
     }
 
+    static isBigInt(...args) {
+        return typeof defval(...args) === 'bigint'
+    }
 
     /**
      * @param {vv_vk_defaultV} args
@@ -602,6 +612,7 @@ function float32(...args) {
  * @param {vv_vk_defaultV} [args]
  * @return {string}
  * @note int64 最大值：9223372036854775807  >  js number 最大值 Number.MAX_SAFE_INTEGER = 9007199254740992
+ * @warn bigint 不支持JSON.Stringify，因此暂时不要用
  */
 function int64a(...args) {
     // int64 和 uint64 都用string类型
@@ -652,6 +663,7 @@ function int8(...args) {
 /**
  * @param {vv_vk_defaultV} [args]
  * @return {string}
+ * @warn bigint 不支持JSON.Stringify，因此暂时不要用
  */
 function uint64a(...args) {
     // int64 和 uint64 都用string类型

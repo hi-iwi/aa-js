@@ -518,7 +518,7 @@ class map {
         let newItem = {}
         map.forEach(objects[0], (key, _) => {
             if (typeof item[key] === 'undefined') {
-                throw new AggregateError(`map.insertOnDuplicateUpdate() the new item miss field ${key}`)
+                throw new TypeError(`map.insertOnDuplicateUpdate() the new item miss field '${key}'. new item: ${JSON.stringify(item)}, the first: ${JSON.stringify(objects[0])}`)
             }
             newItem[key] = item[key]
         })
