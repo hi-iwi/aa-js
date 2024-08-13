@@ -376,10 +376,10 @@ class AaStorageEngine {
      * @param {StorageOptions} [options]
      */
     setItem(key, value, options) {
-        if (this.defaultExpiresIn > 0) {
-            map.setNotExist(options, 'expires', this.defaultExpiresIn)
-        }
 
+        if (this.defaultExpiresIn > 0) {
+            options = map.setNotExist(options, 'expires', this.defaultExpiresIn)
+        }
         if (this.#encapsulate) {
             value = AaStorageEngine.encodeValue(value, options)
         }
@@ -405,11 +405,7 @@ class AaStorageEngine {
      */
     getItem(key) {
         let raw = this.#storage.getItem(key)
-        const [value, expired] = this.decodeValue(key, raw)
-        if (expired) {
-            this.removeItem(key)
-            return null
-        }
+        const {value} = this.decodeValue(key, raw)  // decodeValue will remove expired key
         return value
     }
 
@@ -507,13 +503,15 @@ class AaStorageEngine {
         if (!this.#encapsulate || typeof value !== "string") {
             return {value, persistent, expired}
         }
-        const match = value.match(/^([a-zA-Z]):(.+):(\d*)T$/)
+        let match = value.match(/^(.*)\s\|([a-zA-Z])(\d*)$/)
         if (!match) {
-            return {value, persistent, expired}
+            this.removeItem(key)  // 异常数据，清除为妙
+            return {value:null, persistent, expired}
         }
-        let type = match[1]
+        value = match[1]
+        let type = match[2]
         persistent = type >= 'A' && type <= 'Z'
-        value = match[2]
+
         let expireTo = number(match[3])
         switch (type.toLowerCase()) {
             case atype.aliasOf(null):
@@ -527,7 +525,11 @@ class AaStorageEngine {
                 break;
             case atype.aliasOf('array'):
             case atype.aliasOf('struct'):
-                value = JSON.parse(value)
+                try {
+                    value = JSON.parse(value)
+                } catch (error) {
+                    log.error(`storage parse ${value} failed: ${error}`)
+                }
                 break;
             case atype.aliasOf('date'):
                 value = new Date(value)
@@ -535,8 +537,7 @@ class AaStorageEngine {
         }
         if (expireTo > 0 && Date.now() - expireTo >= 0) {
             this.removeItem(key)
-            value = null
-            expired = true
+            return {value:null, persistent, expired:true}
         }
         return {value, persistent, expired}
     }
@@ -578,17 +579,13 @@ class AaStorageEngine {
         } else if (expires instanceof Date) {
             expires = expires.valueOf()
         }
-
-
         let st = atype.aliasOf(type)
         if (bool(persistent)) {
             st = st.toUpperCase()
         }
-        value = st + ':' + value + ':' + string(expires) + 'T'   // base64数字会变得更长
+        value = value + ' |' + st + string(expires) // base64数字会变得更长，直接存毫秒，用存储空间换CPU计算时间
         return value
     }
-
-
 }
 
 
