@@ -9,7 +9,7 @@ class AaAuth {
 
     static NoTokenError = new AError(AErrorEnum.Unauthorized, 'no token')
 
-    lock = new AaLock()
+    tx = new AaLock()
     /** @type {AaStorageFactor}   不要设为私有，要不外面使用会 attempted to get private field on non-instance */
     #storage
 
@@ -151,7 +151,7 @@ class AaAuth {
         if (token.isValid()) {
             return APromiseResolve(token)
         }
-        if (this.lock.xlock()) {
+        if (this.tx.xlock()) {
             return asleep(300 * time.Millisecond).then(() => {
                 return this.refresh()
             })
@@ -178,7 +178,7 @@ class AaAuth {
             err.log()
             throw err
         }).finally(() => {
-            this.lock.unlock()
+            this.tx.unlock()
         })
     }
 
@@ -268,7 +268,7 @@ class AaAuth {
             const url = token['validate_api']
             let authorization = this.#formatAuthorization(token)
 
-            if (this.lock.xlock()) {
+            if (this.tx.xlock()) {
                 setTimeout(() => {
                     this.validate()
                 }, 300 * time.Millisecond)
@@ -286,7 +286,7 @@ class AaAuth {
                 }
                 log.warn(err.toString())
             }).finally(() => {
-                this.lock.unlock()
+                this.tx.unlock()
             })
         }, nif)
     }
