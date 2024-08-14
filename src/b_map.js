@@ -294,6 +294,28 @@ class map {
     }
 
     /**
+     * Compare property values of two struct
+     * @param {struct} a
+     * @param {struct} b
+     * @param {string[]} keys
+     * @return {boolean}
+     */
+    static compareProps(a, b, keys) {
+        if (!keys) {
+            return map.compare(a, b)
+        }
+        if (!a || !b) {
+            return false
+        }
+        for (let k = 0; k < keys.length; k++) {
+            if (a[k] !== b[k]) {
+                return false
+            }
+        }
+        return true
+    }
+
+    /**
      * Whether object contains all of these elements
      * @param {struct} obj
      * @param {string|array} params

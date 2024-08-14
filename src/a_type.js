@@ -344,7 +344,7 @@ class   // Returns function XXX()
      */
     static isRealId(...args) {
         let v = defval(...args)
-        return v === null ? false : (uint64(v) !== "0")
+        return v === null ? false : (uint64(v) !== 0n)
     }
 
     /**
