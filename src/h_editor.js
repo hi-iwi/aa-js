@@ -147,6 +147,9 @@ class AaEditor {
         if (typeof dom === "string") {
             dom = document.querySelector(dom)
         }
+        if (!dom) {
+            return
+        }
         const links = dom.querySelectorAll('a')
         const abbrs = dom.querySelectorAll("abbr[data-privacy-key]")
         const imgs = dom.querySelectorAll("img")

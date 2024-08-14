@@ -171,10 +171,22 @@ class log {
 function loge(...args) {
     if (len(args) === 1) {
         const err = args[0]
-        if (err instanceof AError || err instanceof Error) {
+
+        // AError extends Error
+        if (err instanceof AError) {
+            if (err.noMatched()) {
+                log.debug(err.toString())
+            } else {
+                log.error(err.toString())
+            }
+            return
+        }
+
+        if (err instanceof Error) {
             log.error(err.toString())
             return
         }
+
         return log.print(...args)
     }
     for (let i = 0; i < args.length; i++) {
