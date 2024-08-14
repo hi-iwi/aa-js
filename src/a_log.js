@@ -160,6 +160,12 @@ class log {
     static warn(...args) {
         log.print('[warn]', ...args)
     }
+
+    static when(condition, ...args) {
+        if (bool(condition)) {
+            loge(...args)
+        }
+    }
 }
 
 function loge(...args) {

@@ -517,10 +517,6 @@ class map {
         // 为保证 react state 更新正常，这里 item 最好指向新的内存空间
         let newItem = {}
         map.forEach(objects[0], (key, value) => {
-            if (typeof item[key] === 'undefined') {
-
-                throw new TypeError(`map.insertOnDuplicateUpdate() the new item miss field '${key}'. new item: ${strings.json(item)}, the first: ${strings.json(objects[0])}`)
-            }
             newItem[key] = typeof item[key] === 'undefined' ? atype.zeroize(value) : item[key]
         })
         const [_, i] = map.find(objects, condition)
