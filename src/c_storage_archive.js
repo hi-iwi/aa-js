@@ -1,4 +1,3 @@
-
 class AaArchive {
     /** @type {AaCache} */
     db
@@ -23,6 +22,10 @@ class AaArchive {
         this.#options = options
     }
 
+    drop() {
+        this.db.drop(this.tableName)
+    }
+
     load() {
         return this.db.selectAll(this.tableName)
     }
@@ -33,10 +36,6 @@ class AaArchive {
      */
     save(state) {
         this.db.save(this.tableName, state, this.#pattern, this.#options)
-    }
-
-    drop() {
-        this.db.drop(this.tableName)
     }
 
     static createTableName() {

@@ -10,17 +10,6 @@ class AaRegistry {
     }
 
     /**
-     * Register a method
-     * @param {string} name
-     * @param method
-     */
-    register(name, method) {
-        panic.errorType(name, 'string')
-        panic.errorType(method, 'function')
-        this.#registers[name] = method
-    }
-
-    /**
      * Activate a registered module
      * @param {string} name
      * @param args
@@ -32,6 +21,17 @@ class AaRegistry {
         }
         log.error("miss register " + name)
         return null
+    }
+
+    /**
+     * Register a method
+     * @param {string} name
+     * @param method
+     */
+    register(name, method) {
+        panic.errorType(name, 'string')
+        panic.errorType(method, 'function')
+        this.#registers[name] = method
     }
 
     /**

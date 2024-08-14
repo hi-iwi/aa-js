@@ -50,17 +50,6 @@ class paths {
     }
 
     /**
-     *
-     * @param {StringN} args
-     * @example join("a/b","../../../xyz")  ===>  ../xyz
-     */
-    static join(...args) {
-        panic.arrayErrorType(args, ['string', 'number'], OPTIONAL)
-        let path = args.join('/')
-        return paths.clean(path)
-    }
-
-    /**
      * Clean a path to get the shortest path name equivalent to path by purely lexical processing.
      * @param path
      * @example
@@ -94,6 +83,18 @@ class paths {
         // Eliminate .. elements that begin a rooted path: that is, replace "/.." by "/" at the beginning of a path.
         return path !== '/' ? path.replace(/\/$/, '') : path
     }
+
+    /**
+     *
+     * @param {StringN} args
+     * @example join("a/b","../../../xyz")  ===>  ../xyz
+     */
+    static join(...args) {
+        panic.arrayErrorType(args, ['string', 'number'], OPTIONAL)
+        let path = args.join('/')
+        return paths.clean(path)
+    }
+
 
 }
 

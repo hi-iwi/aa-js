@@ -8,6 +8,21 @@ class fmt {
     name = 'aa-fmt'
 
     /**
+     * Capitalize the first letter of each word and leave the other letters lowercase
+     * @param {string} s  separate words with spaces, underscore(_) or hyphen(-)
+     * @param handleCases
+     */
+    static capitalizeEachWord(s, handleCases = false) {
+        if (handleCases) {
+            s = fmt.toSnakeCase(s).replace(/_/g, ' ')
+        }
+        s = s.replace(/(^|[\s_-])([a-z])/g, function (x, y, z) {
+            return y + z.toUpperCase()
+        })
+        return s
+    }
+
+    /**
      * Format string with specified formats
      * @param {string} format
      *  %s string
@@ -15,7 +30,7 @@ class fmt {
      * @return {string}
      */
     static sprintf(format, ...args) {
-         let matches = [...format.matchAll(/%s/g)]
+        let matches = [...format.matchAll(/%s/g)]
         if (matches.length !== args.length) {
             log.error(`fmt.sprintf("${format}", ${args})  invalid number of arguments, expected ${matches.length}, but get ${args.length}.`)
         }
@@ -37,7 +52,7 @@ class fmt {
      * @example fmt.translate({'I LOVE %s':'我爱%s'}, "I LOVE %s", "你")    ===>   我爱你
      */
     static translate(dict, ...args) {
-         if (args.length < 1) {
+        if (args.length < 1) {
             return ""
         }
         let format = dict && dict[args[0]] ? dict[args[0]] : args[0]
@@ -45,61 +60,13 @@ class fmt {
     }
 
     /**
-     *
-     * @param {string} s
-     * @return {string}
-     */
-    static toPascalCase(s) {
-         s = fmt.toCamelCase(s)
-        return s[0].toUpperCase() + s.substring(1)
-    }
-
-    /**
      * Convert  UPPER_UNDERSCORE_CASE/snake_case/PascalCase/kebab-case to  camelCase
      * @param {string } s
      */
     static toCamelCase(s) {
-         return s.toLowerCase().replace(/[^a-z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
+        return s.toLowerCase().replace(/[^a-z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
     }
 
-    /**
-     * Convert UPPER_UNDERSCORE_CASE/PascalCase/camelCase/kebab-case to lower-case snake case(underscore_case)
-     * @param {string} s
-     */
-    static toSnakeCase(s) {
-         s = s.replace(/-/g, '_')  // kebab-case
-        let isPascal = s && (s[0] >= 'A' && s[0] <= 'Z')
-
-        s = s.replace(/_?([A-Z]+)/g, function (x, y) {
-            return "_" + y.toLowerCase()
-        })
-        return isPascal ? s.replace(/^_/, "") : s
-    }
-
-    /**
-     * Capitalize the first letter of each word and leave the other letters lowercase
-     * @param {string} s  separate words with spaces, underscore(_) or hyphen(-)
-     * @param handleCases
-     */
-    static capitalizeEachWord(s, handleCases = false) {
-        if (handleCases) {
-            s = fmt.toSnakeCase(s).replace(/_/g, ' ')
-        }
-        s = s.replace(/(^|[\s_-])([a-z])/g, function (x, y, z) {
-            return y + z.toUpperCase()
-        })
-        return s
-    }
-
-    /**
-     * Convert to sentence-case
-     */
-    static toSentenceCase(s, handleCases = false) {
-         if (handleCases) {
-            s = fmt.toSnakeCase(s).replace(/_/g, ' ')
-        }
-        return !s ? "" : s[0].toUpperCase() + s.substring(1)
-    }
 
     // 将阿拉伯数字，转为小写中文
 
@@ -110,7 +77,7 @@ class fmt {
      * @return {string}
      */
     static toChineseNumber(num, financial) {
-         num = float64(num)
+        num = float64(num)
         let hanziNum = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九']
 
         let units = ['个', '万', '亿', '万亿', '兆']
@@ -169,4 +136,37 @@ class fmt {
         return hanzi
     }
 
+    /**
+     *
+     * @param {string} s
+     * @return {string}
+     */
+    static toPascalCase(s) {
+        s = fmt.toCamelCase(s)
+        return s[0].toUpperCase() + s.substring(1)
+    }
+
+    /**
+     * Convert to sentence-case
+     */
+    static toSentenceCase(s, handleCases = false) {
+        if (handleCases) {
+            s = fmt.toSnakeCase(s).replace(/_/g, ' ')
+        }
+        return !s ? "" : s[0].toUpperCase() + s.substring(1)
+    }
+
+    /**
+     * Convert UPPER_UNDERSCORE_CASE/PascalCase/camelCase/kebab-case to lower-case snake case(underscore_case)
+     * @param {string} s
+     */
+    static toSnakeCase(s) {
+        s = s.replace(/-/g, '_')  // kebab-case
+        let isPascal = s && (s[0] >= 'A' && s[0] <= 'Z')
+
+        s = s.replace(/_?([A-Z]+)/g, function (x, y) {
+            return "_" + y.toLowerCase()
+        })
+        return isPascal ? s.replace(/^_/, "") : s
+    }
 }

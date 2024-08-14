@@ -151,7 +151,7 @@ class AaAuth {
         if (token.isValid()) {
             return APromiseResolve(token)
         }
-        if (!this.lock.lock()) {
+        if (this.lock.xlock()) {
             return asleep(300 * time.Millisecond).then(() => {
                 return this.refresh()
             })
@@ -268,7 +268,7 @@ class AaAuth {
             const url = token['validate_api']
             let authorization = this.#formatAuthorization(token)
 
-            if (!this.lock.lock()) {
+            if (this.lock.xlock()) {
                 setTimeout(() => {
                     this.validate()
                 }, 300 * time.Millisecond)
@@ -391,7 +391,7 @@ class AaAuth {
         return {
             "access_token" : token["access_token"],
             "conflict"     : token.hasOwnProperty('conflict') ? bool(token["conflict"]) : void false,
-            "expires_in"   : intMax(token['expires_in']),
+            "expires_in"   : int54(token['expires_in']),
             "refresh_api"  : string(token, "refresh_api"),  // 非必要
             "refresh_token": string(token, "refresh_token"),// 非必要
             "scope"        : token.hasOwnProperty('scope') ? token["secure"] : null,

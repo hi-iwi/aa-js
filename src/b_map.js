@@ -178,7 +178,7 @@ class map {
     }
 
     toString() {
-        return JSON.stringify(this.props)
+        return strings.json(this.props)
     }
 
     values() {
@@ -234,7 +234,7 @@ class map {
         }
 
         try {
-            return JSON.parse(JSON.stringify(data))
+            return strings.unjson(strings.json(data))
         } catch (err) {
         }
         return data
@@ -518,7 +518,7 @@ class map {
         let newItem = {}
         map.forEach(objects[0], (key, _) => {
             if (typeof item[key] === 'undefined') {
-                throw new TypeError(`map.insertOnDuplicateUpdate() the new item miss field '${key}'. new item: ${JSON.stringify(item)}, the first: ${JSON.stringify(objects[0])}`)
+                throw new TypeError(`map.insertOnDuplicateUpdate() the new item miss field '${key}'. new item: ${strings.json(item)}, the first: ${strings.json(objects[0])}`)
             }
             newItem[key] = item[key]
         })

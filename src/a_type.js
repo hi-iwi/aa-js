@@ -344,7 +344,7 @@ class   // Returns function XXX()
      */
     static isRealId(...args) {
         let v = defval(...args)
-        return v === null ? false : (uint64a(v) !== "0")
+        return v === null ? false : (uint64(v) !== "0")
     }
 
     /**
@@ -483,9 +483,9 @@ function func(...args) {
 
 
 function _inRange(x, min, max, name) {
-    if (x < min || x > max) {
+    if ((typeof min !== 'undefined' && x < min) || (typeof max !== 'undefined' && x > max)) {
         if (!name) {
-            name = "[" + min + "," + max + "]"
+            name = `[${min}, ${max}]`
         }
         let msg = x + " can't be converted to " + name
         throw new RangeError(msg)
@@ -608,32 +608,26 @@ function float32(...args) {
     return float64(...args)
 }
 
-/**
- * @param {vv_vk_defaultV} [args]
- * @return {string}
- * @note int64 最大值：9223372036854775807  >  js number 最大值 Number.MAX_SAFE_INTEGER = 9007199254740992
- * @warn bigint 不支持JSON.Stringify，因此暂时不要用
- */
-function int64a(...args) {
-    // int64 和 uint64 都用string类型
-    let v = defval(...args)
-    return v === null ? "0" : v + ''
-}
 
 /**
  * @param {vv_vk_defaultV} [args]
  * @return {number}
+ * @note 暂时不允许 int64，后端所有int64范围都应该保持载 int54范围内
+ *  int64   [-2^63,       2^63 -1]
+ *  int54   [-(2^53 - 1), 2^53 – 1]    ===> [Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER]
+ *  timestamp [0, 2^38]
  */
-function intMax(...args) {
+function int54(...args) {
     return Math.floor(number(...args))
 }
+
 
 /**
  * @param {vv_vk_defaultV} [args]
  * @return {number}
  */
 function int32(...args) {
-    return _inRange(intMax(...args), -2147483648, 2147483647, 'int32')
+    return _inRange(int54(...args), -2147483648, 2147483647, 'int32')
 }
 
 /**
@@ -641,7 +635,7 @@ function int32(...args) {
  * @return {number}
  */
 function int24(...args) {
-    return _inRange(intMax(...args), -8388608, 8388607, 'int24')
+    return _inRange(int54(...args), -8388608, 8388607, 'int24')
 }
 
 /**
@@ -649,7 +643,7 @@ function int24(...args) {
  * @return {number}
  */
 function int16(...args) {
-    return _inRange(intMax(...args), -32768, 32767, 'int16')
+    return _inRange(int54(...args), -32768, 32767, 'int16')
 }
 
 /**
@@ -657,18 +651,17 @@ function int16(...args) {
  * @return {number}
  */
 function int8(...args) {
-    return _inRange(intMax(...args), -128, 127, 'int8')
+    return _inRange(int54(...args), -128, 127, 'int8')
 }
 
 /**
  * @param {vv_vk_defaultV} [args]
- * @return {string}
- * @warn bigint 不支持JSON.Stringify，因此暂时不要用
+ * @return {bigint} bigint 可以跟number比较，但是不可以直接计算
  */
-function uint64a(...args) {
-    // int64 和 uint64 都用string类型
+function uint64(...args) {
     let v = defval(...args)
-    return v === null ? "0" : (v + '')
+    v = v === null ? 0n : BigInt(v)
+    return _inRange(v, 0, void 0, 'uint64')
 }
 
 /**
@@ -676,7 +669,7 @@ function uint64a(...args) {
  * @return {number}
  */
 function uint32(...args) {
-    return _inRange(intMax(...args), 0, 4294967295, 'uint32')
+    return _inRange(int54(...args), 0, 4294967295, 'uint32')
 }
 
 /**
@@ -684,7 +677,7 @@ function uint32(...args) {
  * @return {number}
  */
 function uint24(...args) {
-    return _inRange(intMax(...args), 0, 16777215, 'uint24')
+    return _inRange(int54(...args), 0, 16777215, 'uint24')
 }
 
 /**
@@ -692,7 +685,7 @@ function uint24(...args) {
  * @return {number}
  */
 function uint16(...args) {
-    return _inRange(intMax(...args), 0, 65535, 'uint16')
+    return _inRange(int54(...args), 0, 65535, 'uint16')
 }
 
 /**
@@ -700,7 +693,7 @@ function uint16(...args) {
  * @return {number}
  */
 function uint8(...args) {
-    return _inRange(intMax(...args), 0, 255, 'uint8')
+    return _inRange(int54(...args), 0, 255, 'uint8')
 }
 
 /**

@@ -8,31 +8,6 @@ class maths {
     name = 'aa-maths'
 
     /**
-     * Convert responsive size to pixel, now support rem only.
-     * @param {ResponsiveSize|struct} vv
-     * @param {string} [vk]
-     * @param {ResponsiveSize|struct} [defaultV]
-     * @return {number}
-     */
-    static pixel(vv, vk, defaultV) {
-        vv = defval(...arguments)
-        if (vv === null) {
-            return 0
-        }
-        if (typeof vv === "number") {
-            return Math.floor(vv)
-        }
-        vv = string(vv).replace(/\s/g, '').toLowerCase()
-        if (vv.indexOf("rem") > -1) {
-            // 计算1rem对应px
-            const rem = parseFloat(window.getComputedStyle(document.documentElement)["fontSize"])  // 1rem 对应像素
-            return Math.floor(float32(vv.replace("rem", '')) * rem)
-        }
-        return Math.floor(float32(vv))
-    }
-
-
-    /**
      * Get the value of the closest key in a setting
      * @param {struct} settings
      * @param {ComparisonSymbol} symbol
@@ -55,6 +30,42 @@ class maths {
         }
 
         return void 0
+    }
+
+    /**
+     * Format bytes to B/KB/MB/GB/TB/PB/EB/ZB/YB
+     * @param {number} bytes
+     * @param {number} decimals
+     * @returns {[number, string]}
+     */
+    static formatBytes(bytes, decimals = 0) {
+        if (!+bytes) {
+            return [0, 'B']
+        }
+        const k = 1024
+        const dm = decimals < 0 ? 0 : decimals
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+        const i = Math.floor(Math.log(bytes) / Math.log(k))
+        return [parseFloat((bytes / Math.pow(k, i)).toFixed(dm)), sizes[i]]
+    }
+
+
+    /**
+     * Get the closest width matches to settings
+     * @param {ResponsiveSize|struct} settings
+     * @param {ResponsiveSize} [maxHeight]
+     * @return {number}
+     */
+    static maxHeight(settings, maxHeight) {
+        let value = 0
+        // @example {320:"5rem", 640:1080, 1280: 2048}
+        if (atype.isStruct(settings)) {
+            value = maths.closestSetting(settings, '<=', value)
+        }
+        if (!value) {
+            value = maxHeight
+        }
+        return maths.pixel(value)
     }
 
     /**
@@ -85,38 +96,27 @@ class maths {
     }
 
     /**
-     * Get the closest width matches to settings
-     * @param {ResponsiveSize|struct} settings
-     * @param {ResponsiveSize} [maxHeight]
+     * Convert responsive size to pixel, now support rem only.
+     * @param {ResponsiveSize|struct} vv
+     * @param {string} [vk]
+     * @param {ResponsiveSize|struct} [defaultV]
      * @return {number}
      */
-    static maxHeight(settings, maxHeight) {
-        let value = 0
-        // @example {320:"5rem", 640:1080, 1280: 2048}
-        if (atype.isStruct(settings)) {
-            value = maths.closestSetting(settings, '<=', value)
+    static pixel(vv, vk, defaultV) {
+        vv = defval(...arguments)
+        if (vv === null) {
+            return 0
         }
-        if (!value) {
-            value = maxHeight
+        if (typeof vv === "number") {
+            return Math.floor(vv)
         }
-        return maths.pixel(value)
-    }
-
-    /**
-     * Format bytes to B/KB/MB/GB/TB/PB/EB/ZB/YB
-     * @param {number} bytes
-     * @param {number} decimals
-     * @returns {[number, string]}
-     */
-    static formatBytes(bytes, decimals = 0) {
-        if (!+bytes) {
-            return [0, 'B']
+        vv = string(vv).replace(/\s/g, '').toLowerCase()
+        if (vv.indexOf("rem") > -1) {
+            // 计算1rem对应px
+            const rem = parseFloat(window.getComputedStyle(document.documentElement)["fontSize"])  // 1rem 对应像素
+            return Math.floor(float32(vv.replace("rem", '')) * rem)
         }
-        const k = 1024
-        const dm = decimals < 0 ? 0 : decimals
-        const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-        const i = Math.floor(Math.log(bytes) / Math.log(k))
-        return [parseFloat((bytes / Math.pow(k, i)).toFixed(dm)), sizes[i]]
+        return Math.floor(float32(vv))
     }
 
     /**

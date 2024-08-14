@@ -43,6 +43,29 @@ class AaCache {
         return keys.slice(1).join(sub)
     }
 
+    /**
+     * Drop table
+     * @param table
+     */
+    drop(table) {
+        const tableName = this.#formatTableName(table)
+        this.#storageEngine.removeItems(new RegExp("^" + strings.escapeReg(tableName)))
+    }
+
+    /**
+     * Find from table
+     * @param {string} table
+     * @param {string|RegExp} field
+     * @return {string|*|null}
+     */
+    find(table, field) {
+        if (!table || !field) {
+            throw new TypeError(`storage cache error: select ${field} from ${table}`)
+        }
+        let key = this.#formatKeyname(table, field)
+        return this.#storageEngine.getItem(key)
+    }
+
     // pattern {is://, not:/(^_)|(_total)/} -->
     /**
      * Save data into table
@@ -93,14 +116,6 @@ class AaCache {
         })
     }
 
-    /**
-     * Drop table
-     * @param table
-     */
-    drop(table) {
-        const tableName = this.#formatTableName(table)
-        this.#storageEngine.removeItems(new RegExp("^" + strings.escapeReg(tableName)))
-    }
 
     /**
      * Select from table
@@ -126,20 +141,6 @@ class AaCache {
             items[key] = v
         }
         return items
-    }
-
-    /**
-     * Find from table
-     * @param {string} table
-     * @param {string|RegExp} field
-     * @return {string|*|null}
-     */
-    find(table, field) {
-        if (!table || !field) {
-            throw new TypeError(`storage cache error: select ${field} from ${table}`)
-        }
-        let key = this.#formatKeyname(table, field)
-        return this.#storageEngine.getItem(key)
     }
 
 

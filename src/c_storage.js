@@ -268,7 +268,7 @@ class AaStorageEngine {
         if (typeof encapsulate === "boolean") {
             this.#encapsulate = encapsulate
         }
-        this.defaultExpiresIn = intMax(defaultExpiresIn);
+        this.defaultExpiresIn = int54(defaultExpiresIn);
     }
 
     cleanExpired() {
@@ -560,7 +560,7 @@ class AaStorageEngine {
             case 'array':
             case 'object':
             case 'struct':
-                value = JSON.stringify(value)
+                value = strings.json(value)
                 break;
             case 'date':
                 break;

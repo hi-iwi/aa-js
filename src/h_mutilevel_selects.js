@@ -120,7 +120,7 @@ class AaMultiLevelSelects {
                     for (let n = 0; n < opts[k].length; n++) {
                         tt = opts[k][n].text
                         if (v === opts[k][n].value && string(t) !== string(tt)) {
-                            console.error("AaSelect: conflict\n    " + JSON.stringify(opts[k][n]) + "\n    " + JSON.stringify(opts[i][j]))
+                            console.error("AaSelect: conflict\n    " + strings.json(opts[k][n]) + "\n    " + strings.json(opts[i][j]))
                         }
                     }
                 }
@@ -167,7 +167,7 @@ class AaMultiLevelSelects {
 
 
     clone() {
-        let newData = this.#data ? strings.unjson(JSON.stringify(this.#data)) : null
+        let newData = this.#data ? strings.unjson(strings.json(this.#data)) : null
         return new AaMultiLevelSelects(newData)
     }
 

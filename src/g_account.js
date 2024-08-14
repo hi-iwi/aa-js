@@ -119,7 +119,7 @@ class AaAccount {
                 return APromiseReject("invalid profile fetch " + url)
             }
 
-            if (!this.#lock.lock()) {
+            if (this.#lock.xlock()) {
                 return asleep(200 * time.Millisecond).then(() => {
                     return this.getProfile(refresh)
                 })

@@ -15,6 +15,11 @@ class AaLock {
     constructor() {
     }
 
+    destroy() {
+        this.log('Destroy lock')
+        clearTimeout(this.#timer)
+    }
+
     /**
      * Check current lock is locked
      * @return {boolean}
@@ -50,13 +55,10 @@ class AaLock {
         return true
     }
 
-    /**
-     * Lock and return the opposite result to this.lock()
-     * @param {number} [timeout] in millisecond
-     * @return {boolean} the opposite result of locking
-     */
-    xlock(timeout) {
-        return !this.lock(timeout)
+    log(msg) {
+        if (AaLock.debug) {
+            log.debug("#" + this.#id + " " + msg)
+        }
     }
 
     unlock() {
@@ -66,16 +68,15 @@ class AaLock {
     }
 
 
-    destroy() {
-        this.log('Destroy lock')
-        clearTimeout(this.#timer)
+    /**
+     * Lock and return the opposite result to this.lock()
+     * @param {number} [timeout] in millisecond
+     * @return {boolean} the opposite result of locking
+     */
+    xlock(timeout) {
+        return !this.lock(timeout)
     }
 
-    log(msg) {
-        if (AaLock.debug) {
-            log.debug("#" + this.#id + " " + msg)
-        }
-    }
 
     static atomicId() {
         return ++_aaLockIncr_

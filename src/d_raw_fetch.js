@@ -93,7 +93,7 @@ class AaRawFetch {
         if (isDataAllQueryString || ["GET", "HEAD", "OPTION", "DELETE"].includes(method)) {
             const p = new AaURI(url, data).parse()
             if (!p.ok) {
-                throw new SyntaxError(`miss parameter(s) in url: ${method} ${url} ${JSON.stringify(data)}`)
+                throw new SyntaxError(`miss parameter(s) in url: ${method} ${url} ${strings.json(data)}`)
             }
             return [p.href, null]
         }
@@ -101,7 +101,7 @@ class AaRawFetch {
         let queries, ok;
         [url, queries, ok] = AaURI.lookup(url, data)
         if (!ok) {
-            throw new SyntaxError(`miss parameter(s) in url: ${method} ${url} ${JSON.stringify(data)}`)
+            throw new SyntaxError(`miss parameter(s) in url: ${method} ${url} ${strings.json(data)}`)
         }
 
         if (len(queries) === 0) {
@@ -173,7 +173,7 @@ class AaRawFetch {
         }
         try {
             //  这里会识别对象的 .toJSON() 方法
-            return JSON.stringify(data)
+            return strings.json(data)
         } catch (e) {
             log.error(e.toString(), data)
         }

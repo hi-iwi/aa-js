@@ -56,16 +56,15 @@ class log {
         log.alertEffect(s)
     }
 
+    static breakpoint(...args) {
+        log._breakpointIncr++
+        // args 可能是 object
+        args.unshift("%c· brk " + log._breakpointIncr + '  ', 'color:#f00;font-weight:700;')
+        log.print(...args)
+    }
+
     static error(...args) {
         log.print('[error]', ...args)
-    }
-
-    static warn(...args) {
-        log.print('[warn]', ...args)
-    }
-
-    static info(...args) {
-        log.print('[info]', ...args)
     }
 
     /**
@@ -77,15 +76,14 @@ class log {
     }
 
     // console.log with color
-
     static draw(rgb, ...args) {
         log.print(new AaLoggerStyle(rgb), ...args)
     }
 
-    static strong(...args) {
-        log.print(new AaLoggerStyle('#000', 700), ...args)
-    }
 
+    static info(...args) {
+        log.print('[info]', ...args)
+    }
 
     /**
      *
@@ -155,13 +153,13 @@ class log {
         }
     }
 
-    static breakpoint(...args) {
-        log._breakpointIncr++
-        // args 可能是 object
-        args.unshift("%c· brk " + log._breakpointIncr + '  ', 'color:#f00;font-weight:700;')
-        log.print(...args)
+    static strong(...args) {
+        log.print(new AaLoggerStyle('#000', 700), ...args)
     }
 
+    static warn(...args) {
+        log.print('[warn]', ...args)
+    }
 }
 
 function loge(...args) {
