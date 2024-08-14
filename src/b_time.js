@@ -1373,24 +1373,26 @@ class TimeDiff {
 
 /**
  * New a {time} in `YYYY-MM-DD` pattern
- * @param {struct|NumberX|string} vv
+ * @param {struct|NumberX|string} [vv]
  * @param {StringN} [vk]
  * @param {time|Date|NumberX|string} [defaultV]
  * @return {time}
  */
 function date(vv, vk, defaultV) {
     vv = defval(...arguments)
-    return new time(vv).setPattern('YYYY-MM-DD')
+    const t = new time(vv ? vv : AaDateString.minDate)
+    return t.setPattern('YYYY-MM-DD')
 }
 
 /**
  * New a {time} in `YYYY-MM-DD HH:II:SS` pattern
- * @param {struct|NumberX|string} vv
+ * @param {struct|NumberX|string} [vv]
  * @param {StringN} [vk]
  * @param {time|Date|NumberX|string} [defaultV]
  * @return {time}
  */
 function datetime(vv, vk, defaultV) {
     vv = defval(...arguments)
-    return new time(vv).setPattern('YYYY-MM-DD HH:II:SS')
+    const t = new time(vv ? vv : AaDateString.minDatetime)
+    return t.setPattern('YYYY-MM-DD HH:II:SS')
 }
