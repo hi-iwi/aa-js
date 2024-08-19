@@ -130,6 +130,7 @@ class AaDateZero extends Date {
     toJSON() {
         return this.value
     }
+
 }
 
 class AaDateString {
@@ -927,6 +928,10 @@ class time {
         return this.toString()
     }
 
+    serialize() {
+        return string(this.valueOf())
+    }
+
     static dateString(vv, vk, defaultV) {
         vv = defval(...arguments)
         if (vv) {
@@ -1003,6 +1008,15 @@ class time {
      */
     static toYearMonthString(num) {
         return num / 100 + "-" + num % 100
+    }
+
+    /**
+     * @param {StringN} str
+     * @return {time}
+     * @note compatible with this.serialize()
+     */
+    static unserialize(str) {
+        return new time(number(str))
     }
 }
 

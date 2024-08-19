@@ -102,6 +102,7 @@ A Javascript SDK of AaGo
 | Percent           |           |                                       |
 | VMoney            |           |                                       |
 | ---------------   | --------- | ------------------------------------- |
+| [AaArchive]       |           | use `aa.archive()` instead            |
 | [AaRegistry]      |           | use `aa.registry()` instead           |
 | [AaCookieStorage] |           | use `aa.storage()` instead            |
 | [AaStorageEngine] |           | use `aa.storage()` instead            |

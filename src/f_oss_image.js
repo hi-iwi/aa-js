@@ -3,7 +3,7 @@
  * @typedef {{path: string, filetype: number, size: number, provider: number, allowed: (number[][]|null), origin: string, width: number, crop_pattern: string, resize_pattern: string, height: number,thumbnail?: string,  multiple_file?: string}} ImgSrcStruct
  * @typedef {{width: number, url: string, height: number, ratio: Decimal, originalWidth: number, originalHeight: number}} ImgResizedData
  */
-class AaImgSrc {
+class AaImgSrc extends AaSrc {
     name = 'aa-img-src'
 
 
@@ -18,6 +18,10 @@ class AaImgSrc {
     width
     height
     allowed
+    /**
+     * @override
+     * @type {string|void}
+     */
     jsonkey
 
     /** @type {ImageBase64|filepath} for upload */
@@ -25,9 +29,12 @@ class AaImgSrc {
     /** @type {File} for upload */
     #multipleFile
 
+    constructor() {
+        super()
+    }
 
-    valid() {
-        return len(this.cropPattern) > 0 && len(this.resizePattern) > 0
+    isValid() {
+        return this.path && this.cropPattern && this.resizePattern
     }
 
 
@@ -39,7 +46,7 @@ class AaImgSrc {
         if (this.#thumbnail) {
             return this.#thumbnail
         }
-        if (real || !this.valid()) {
+        if (real || !this.isValid()) {
             return void ""
         }
         return this.crop(width, height).url
@@ -53,6 +60,10 @@ class AaImgSrc {
         return this.#multipleFile
     }
 
+    /**
+     * @override
+     * @return {{path, filetype, size, provider, allowed, jsonkey, origin, width, crop_pattern, resize_pattern, height}}
+     */
     data() {
         return {
             'provider'      : this.provider,
@@ -69,12 +80,15 @@ class AaImgSrc {
         }
     }
 
+
     /**
      * @param {ImgSrcStruct|AaImgSrc|string|*} [data]
      * @param {ImageBase64|filepath} [thumbnail]
      * @param {File} [multipleFile]
+     * @note 由于 construct 返回null是无效的，这里对无效的直接返回null
      */
-    init(data, thumbnail, multipleFile) {
+    constructor(data, thumbnail, multipleFile) {
+        super()
         map.overwrite(this, data, key => {
             key = fmt.toCamelCase(key)
             if (['thumbnail', 'multipleFile'].includes(key)) {
@@ -87,14 +101,93 @@ class AaImgSrc {
         this.#multipleFile = multipleFile
     }
 
+
     /**
-     * @param {ImgSrcStruct|AaImgSrc|string|*} [data]
-     * @param {ImageBase64|filepath} [thumbnail]
-     * @param {File} [multipleFile]
+     * Get Ratio of width/height
+     * @return {Decimal}
      */
-    constructor(data, thumbnail, multipleFile) {
-        this.init(data, thumbnail, multipleFile)
+    ratio() {
+        return Decimal.div(this.width, this.height)
     }
+
+    /**
+     * Crop image to the closest size after resizing by window.devicePixelRatio
+     * @param {number} width
+     * @param {number} height
+     * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
+     */
+    crop(width, height) {
+        if (!this.isValid()) {
+            throw new TypeError(`invalid AaImgSrc`)
+        }
+        [width, height] = this.#allowedSize(width, height)
+        const pattern = string(this.cropPattern)
+        const url = pattern.replace(/\${WIDTH}/g, string(width)).replace(/\${HEIGHT}/g, string(height))
+        const ratio = Decimal.div(width, height)
+        return {
+            width         : width,
+            height        : height,
+            ratio         : ratio,
+            url           : url,
+            originalWidth : this.width,
+            originalHeight: this.height,
+        }
+    }
+
+    /**
+     * Resize image to the closest size after resizing by window.devicePixelRatio
+     * @param {number|MAX} [maxWidth]
+     * @param {number} [maxHeight]
+     * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
+     */
+    resize(maxWidth = MAX, maxHeight) {
+        if (!this.isValid()) {
+            throw new TypeError(`invalid AaImgSrc`)
+        }
+        if (!maxWidth || maxWidth === MAX) {
+            maxWidth = AaEnv.maxWidth()
+        }
+        let [width, height] = this.#allowedSize(maxWidth)
+        const ratio = Decimal.div(width, height)
+        if (maxHeight > 0 && height > maxHeight) {
+            height = maxHeight
+            width = ratio.beDivided(maxWidth).toReal()
+        }
+
+        const pattern = string(this.resizePattern)
+        const url = pattern.replace(/\${MAXWIDTH}/g, maxWidth)
+        return {
+            width         : width,
+            height        : height,
+            ratio         : ratio,
+            url           : url,
+            originalWidth : this.width,
+            originalHeight: this.height,
+        }
+    }
+
+    /**
+     * Get the original image, return resized if original image not exists
+     * @return {ImgResizedData|null} 返回struct是最合适的，方便直接并入组件 state
+     */
+    getOriginal() {
+        if (!this.isValid()) {
+            throw new TypeError(`invalid AaImgSrc`)
+        }
+        if (!this.origin) {
+            return this.resize(this.width, this.height)
+        }
+        const ratio = Decimal.div(this.width, this.height)
+        return {
+            width         : this.width,
+            height        : this.height,
+            ratio         : ratio,
+            url           : this.origin,
+            originalWidth : this.width,
+            originalHeight: this.height,
+        }
+    }
+
 
     /**
      * Return the closest size
@@ -105,6 +198,14 @@ class AaImgSrc {
     #allowedSize(width, height = 0) {
         width = Math.ceil(width * window.devicePixelRatio)
         height = Math.ceil(height * window.devicePixelRatio)
+
+        if (this.width && width > this.width) {
+            width = this.width
+        }
+        if (this.height && height > this.height) {
+            height = this.height
+        }
+
         const allowed = this.allowed
         if (len(allowed) === 0) {
             if (width > 0 && height > 0) {
@@ -155,101 +256,15 @@ class AaImgSrc {
     }
 
     /**
-     * Get Ratio of width/height
-     * @return {Decimal}
+     * @override
+     * @param {ImgSrcStruct} data
+     * @return {*}
      */
-    ratio() {
-        return Decimal.div(this.width, this.height)
+    static isDataValid(data) {
+        return data && data['path'] && data['crop_pattern'] && data['resize_pattern']
     }
 
     /**
-     * Crop image to the closest size after resizing by window.devicePixelRatio
-     * @param {number} width
-     * @param {number} height
-     * @return {ImgResizedData|null} 返回struct是最合适的，方便直接并入组件 state
-     */
-    crop(width, height) {
-        if (!this.valid()) {
-            return null
-        }
-        [width, height] = this.#allowedSize(width, height)
-        const pattern = string(this.cropPattern)
-        const url = pattern.replace(/\${WIDTH}/g, string(width)).replace(/\${HEIGHT}/g, string(height))
-        const ratio = Decimal.div(width, height)
-        return {
-            width         : width,
-            height        : height,
-            ratio         : ratio,
-            url           : url,
-            originalWidth : this.width,
-            originalHeight: this.height,
-        }
-    }
-
-    /**
-     * Resize image to the closest size after resizing by window.devicePixelRatio
-     * @param {number|MAX} [maxWidth]
-     * @param {number} [maxHeight]
-     * @return {ImgResizedData|null} 返回struct是最合适的，方便直接并入组件 state
-     */
-    resize(maxWidth = MAX, maxHeight) {
-        if (!this.valid()) {
-            return null
-        }
-        if (!maxWidth || maxWidth === MAX) {
-            maxWidth = AaEnv.maxWidth()
-        }
-        let [width, height] = this.#allowedSize(maxWidth)
-        const ratio = Decimal.div(width, height)
-        if (maxHeight > 0 && height > maxHeight) {
-            height = maxHeight
-            width = ratio.beDivided(maxWidth).toReal()
-        }
-
-        const pattern = string(this.resizePattern)
-        const url = pattern.replace(/\${MAXWIDTH}/g, maxWidth)
-        return {
-            width         : width,
-            height        : height,
-            ratio         : ratio,
-            url           : url,
-            originalWidth : this.width,
-            originalHeight: this.height,
-        }
-    }
-
-    /**
-     * Get the original image, return resized if original image not exists
-     * @return {ImgResizedData|null} 返回struct是最合适的，方便直接并入组件 state
-     */
-    getOriginal() {
-        if (!this.valid()) {
-            return null
-        }
-        if (!this.origin) {
-            return this.resize(this.width, this.height)
-        }
-        const ratio = Decimal.div(this.width, this.height)
-        return {
-            width         : this.width,
-            height        : this.height,
-            ratio         : ratio,
-            url           : this.origin,
-            originalWidth : this.width,
-            originalHeight: this.height,
-        }
-    }
-
-
-    // aaFetch 层会处理该数据
-    toJSON() {
-        let key = this.jsonkey && this.hasOwnProperty(this.jsonkey) ? this.jsonkey : 'path'
-        return this[key]
-    }
-
-
-    /**
-     *
      * @param {string} path
      * @return {{path: (string|*), filetype: number, size: number, width: number, height: number}}
      */
@@ -271,6 +286,7 @@ class AaImgSrc {
             height  : height,
         }
     }
+
 
     /**
      * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state

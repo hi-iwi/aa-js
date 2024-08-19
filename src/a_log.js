@@ -147,6 +147,10 @@ class log {
         if (dbg.disabled()) {
             return
         }
+        if (args.length === 1) {
+            console.log(args[0])
+            return
+        }
         console.log('')
         for (let i = 0; i < args.length; i++) {
             console.log(`[${i}]`, args[i])

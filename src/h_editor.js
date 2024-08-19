@@ -1,22 +1,40 @@
 /**
- * @typedef {(path:string) => struct} ImgSrcDataMaker
+ * @typedef {(src:string)=>(AaAudioSrc|AaFileSrc|AaImgSrc|AaVideoSrc)}  SrcComposer
  */
 class AaEditor {
     name = 'aa-editor'
 
-    static encodeTemplate = {
+    /** @type {void|((href:string)=>string)} */
+    anchorHrefHandler
+    // 这里是上传服务器的最终结果，也就是编辑器编辑完成后，提交前进行的操作，因此不需要支持所有标签
+    submittableAttributeWhitelist = {
+        default: ['class', 'contenteditable', 'style'],
+        IMG    : ['alt', 'data-path', 'width', 'height'],
+        TABLE  : [],
+        TD     : ['data-row', 'nowrap'],
+        LI     : ['data-list'],
+        PRE    : ['data-language'],
+    }
+    temporaryAttributeWhitelist = {
+        default: ['title'],
+        IMG    : ['src'],
+    }
+
+    classWhitelist = [/^e-/]
+    styleWhitelist = ['background', 'background-color', 'color', 'zoom']
+    textAlignWhitelist = ['center', 'justify', 'right']
+    inlineElements = ['B', 'DEL', 'EM', 'I', 'PRIVACY', 'S', 'SPAN', 'STRONG', 'SUB', 'SUP', 'U']
+    emptyableElements = ['DD', 'DT', 'P', 'TD']
+    srcElements = ['AUDIO', 'IMG', 'VIDEO']
+
+    encodeTemplate = {
         // 不替换空格，否则看起来不方便
-        ">"     : "&#62;",
-        '&gt;'  : '&#62;',
-        "<"     : "&#60;",
-        '&lt;'  : '&#60;',
-        "'"     : "&#39;",   // 不要替换引号；否则会导致html标签难以读
-        '"'     : "&#34;",
-        '&quot;': '&#34;',
+        ">": "&#62;", '&gt;': '&#62;', "<": "&#60;", '&lt;': '&#60;', "'": "&#39;",   // 不要替换引号；否则会导致html标签难以读
+        '"': "&#34;", '&quot;': '&#34;',
         // '&'     : '&#38;',   // 不要替换 &，& 本身是转义，如果替换会导致反复转义。
         // '&amp;' : '&#38;',
     }
-    static decodeTemplate = {
+    decodeTemplate = {
         "&#62;" : '>',
         '&gt;'  : '>',
         "&#60;" : '<',
@@ -27,182 +45,234 @@ class AaEditor {
         '&#38;' : '&',
         '&amp;' : '&',
     }
+    fuzzyTag = '<i class="fuzzy"></i>'
 
-    static fuzzyTag = '<i class="fuzzy"></i>'
+    /** @type {{[key:string]:SrcComposer}} */
+    defaultSrcComposers
 
-
-    /** @type {ImgSrcDataMaker|null} */
-    imgSrcDataMaker
-    videoSrcDataMaker
-    audioSrcDataMaker
-    fileSrcDataMaker
-
-    /** @type {[string]} e.g. ".className",  "#ID",  "tag" */
-    whiteList = [".hidden-url"]
-
-    #oss
-
-    /**
-     * @param {AaOSS} oss
-     * @param ossDataMakers
-     */
-    constructor(oss, ...ossDataMakers) {
-        this.#oss = oss
-        for (let i = 0; i < ossDataMakers.length; i++) {
-            let maker = ossDataMakers[i]
-            if (maker instanceof AaImgSrc) {
-                this.imgSrcDataMaker = maker
-            } else if (maker instanceof AaVideoSrc) {
-                this.videoSrcDataMaker = maker
-            } else if (maker instanceof AaAudioSrc) {
-                this.audioSrcDataMaker = maker
-            } else if (maker instanceof AaFileSrc) {
-                this.fileSrcDataMaker = maker
-            }
-        }
+    constructor() {
     }
 
-
     /**
-     * Clean up HTML content
-     * @param content
-     * @TODO 扩展 imgSrc/videoSrc/audioSrc/fileSrc
+     *
+     * @param {string|Node} content
+     * @param {DOM|null} [appendTo]
+     * @param {{[key:string]:SrcComposer}|null} [srcComposers]
+     * @param {(node:DOM)=>(DOM|null)} [hook]
+     * @return {HTMLElement|null}
      */
-    cleanRichHTML(content) {
-        const whites = this.whiteList
-
-        // 替换所有标签两边多余空格
-        content = content.replace(/<div[^>]*>\s*(<img[^>]+>)\s*<\/div>/ig, '<figure>$1</figure>');
-
-
-        content = content.replace(/<div/ig, '<p');
-        content = content.replace(/<\/div>/ig, '</p>');
-        // 这个要放最上面
-        content = content.replace(/(<figure[^>]*>.*?)((<p\s+style\s*=\s*"\s*text-align:\s*(left|right|justify)[^"]*"[^>]*>.*?<\/p>[\r\n\s]*)+)<\/figure>/ig, '$1</figure>$2');
-        content = content.replace(/(<figure[^>]*>.*?)((<p\s+class\s*=\s*"(xl|xr|xj)"[^>]*>.*?<\/p>[\r\n\s]*)+)<\/figure>/ig, '$1</figure>$2');
-
-        content = content.replace(/style\s*=\s*"\s*text-align:\s*left[^"]*"/ig, 'class="xl"');  // figure 里面可能会有这个
-        content = content.replace(/style\s*=\s*"[^"]*text-align:\s*center[^"]*"/ig, 'class="xc"');
-        content = content.replace(/style\s*=\s*"[^"]*text-align:\s*right[^"]*"/ig, 'class="xr"');
-        content = content.replace(/style\s*=\s*"[^"]*text-align:\s*justify[^"]*"/ig, 'class="xj"');
-
-        // refer to  SensitiveBackgroundColor
-        content = content.replace(/<span[^>]+style\s*=\s*"[^"]*background-color\s*:\s*rgb\(\s*171,\s*205,\s*239\s*\)[^"]*"[^>]*>\s*([^<]+)\s*<\/span>/ig, '<privacy>$1</privacy>');
-
-        content = content.replace(/style\s*=\s*"[^"]*\s*"/ig, '');
-        content = content.replace(/>[\s\t\n]*([^<]*)[\s\t\n]*</ig, '>$1<');
-        content = content.replace(/\s*background(-color)\s*:\s*initial\s*;?/ig, '');
-        content = content.replace(/<span\s*>\s*([^<]+)\s*<\/span>/ig, '$1');
-        content = content.replace(/<p>(&nbsp;)+/ig, '<p>')
-        content = content.replace(/(&nbsp;)+<\/p>/ig, '</p>')
-        content = content.replace(/<p>(<br\s*\/?\s*>|&nbsp;|\s|\t|\n)*<\/p>/ig, '');
-
-        content = content.replace(/<a\s[^"]*href="([^"]+)"([^>]*)>/ig, function (html, url, others) {
-            return '<a href="' + url + '"' + others + ' rel="nofollow">';
-        });
-
-        content = content.replace(/<\/?span>/ig, '')  // 移除所有 空span。  后面提交的时候，再移除所有span
-
-        content = content.replace(/<\/?span[^>]*>/ig, '')  // 移除所有 span
-        content = content.replace(/\sstyle\s*=\s*"\s*text-align:\s*left[^"]*"/ig, '');
-        content = content.replace(/\sclass\s*=\s*"\s*xl"/ig, '');
-        // 删除所有  img src
-        content = content.replace(/<img\s([^>]*)\s*src="([^">]*)"([^>]*)data-path="([^">]+)"/ig, '<img data-path="$4"$1$3')
-        content = content.replace(/<img\s([^>]*)\s*data-path="([^">]+)"([^>]*)src="([^">]*)"/ig, '<img data-path="$2"$1$3')
-        content = content.replace(/<img\sdata-path="([^"]+)"\s+/ig, '<img data-path="$1" ')
-
-        content = content.replace(/class="([^"]*)"/ig, function (html, className) {
-            let aaArticlePrefix = "aa-article"
-            // 仅允许 .x 开头 以及 .aa-article 开头的 className，或者在白名单的
-            if (className[0] !== 'x' && className.substring(0, aaArticlePrefix.length) !== aaArticlePrefix) {
-                let isWhiteClass = false
-                if (whites) {
-                    for (let i = 0; i < whites.length; i++) {
-                        if (whites[i].substring(0, 1) === '.' && className === whites[i]) {
-                            isWhiteClass = true
-                            break
-                        }
-                    }
-                }
-                if (!isWhiteClass) {
-                    return ''
+    decodeContent(content, appendTo, srcComposers, hook) {
+        // 剪贴板从word复制，会组成 <html><body>
+        content = AaDOM.parse(content, 'text/html')
+        if (!content) {
+            return null
+        }
+        AaDOM.forAll(content, node => {
+            if (hook) {
+                node = hook(node)
+                if (!node) {
+                    return
                 }
             }
-            return 'class="' + className + '"'
-        })
+            if (node.nodeType !== Node.ELEMENT_NODE) {
+                return
+            }
+            switch (node.tagName) {
+                case 'A':
+                    node.setAttribute('target', '_blank')  // for user
+                    break
+                case 'IMG':
+                    this.decodeImgPath(node, this.getSrcComposer(node.tagName, srcComposers))
+                    break
+            }
 
-        // @patch：当选中图片，右键再按换行，会把图片外面<figure>变成<p>
-        content = content.replace(/<p>[^<]*(<(img|video|source|object|embed)[^>]+\/?>)[^<]*<\/p>/ig, '<$2>$1</$2>');
-        content = this.encodeHTML(content)
-        return content
+            if (node.hasAttribute('data-privacy-key')) {
+                node.innerHTML = this.fuzzy(node.innerHTML)
+            }
+        })
+        return AaDOM.appendChildNodes(content, appendTo)
+    }
+
+    /**
+     * @param {HTMLElement} node
+     * @param {SrcComposer} [composer]
+     */
+    decodeImgPath(node, composer) {
+        const src = node.getAttribute('src')
+        const path = node.dataset.path
+        if ((!src && !path) || typeof composer !== "function") {
+            return
+        }
+
+        /** @type {AaImgSrc} */
+        const imgsrc = composer(path ? path : src)
+        if (!imgsrc) {
+            return
+        }
+        const fa = imgsrc.resize(MAX)
+        node.setAttribute("src", fa.url)
+        node.dataset.path = imgsrc.path
+        if (fa.height > 0 && fa.width > 0) {
+            node.setAttribute("height", String(fa.height))
+            node.setAttribute("width", String(fa.width))
+        }
     }
 
 
     /**
      * @param {HTMLElement|string} dom    id: #ID, class: .className
-     * @param imgSrcDataMaker
-     * @TODO 扩展 imgSrc/videoSrc/audioSrc/fileSrc
+     * @param  {{[key:string]:SrcComposer}} [srcComposers]
      */
-    decodeDom(dom, imgSrcDataMaker) {
+    decodeSelector(dom, srcComposers) {
         if (typeof dom === "string") {
             dom = document.querySelector(dom)
         }
-        if (!dom) {
-            return
-        }
-        const links = dom.querySelectorAll('a')
-        const abbrs = dom.querySelectorAll("abbr[data-privacy-key]")
-        const imgs = dom.querySelectorAll("img")
-
-        links && links.forEach(a => {
-            a.setAttribute('target', '_blank')
-        })
-
-        abbrs && abbrs.forEach(abbr => {
-            abbr.innerHTML = this.fuzzy(abbr.innerHTML)
-        })
-        imgs && imgs.forEach(t => {
-            const src = t.getAttribute('src')
-            const path = t.dataset.path
-            if (!!src || !path) {
-                return
-            }
-
-            imgSrcDataMaker = this.maker(imgSrcDataMaker, this.imgSrcDataMaker)
-            if (typeof imgSrcDataMaker !== "function") {
-                return
-            }
-
-            const imgsrc = this.#oss.imgSrc(imgSrcDataMaker(path))
-
-            const fa = imgsrc.resize(MAX)
-            if (fa) {
-                t.setAttribute("src", fa['url'])
-                if (fa.height > 0) {
-                    t.setAttribute("height", String(fa.width))
-                }
-                if (fa.width > 0) {
-                    t.setAttribute("width", String(fa.width))
-                }
-
-            }
-
-        })
+        return this.decodeContent(document.querySelector(dom), null, srcComposers)
     }
 
     /**
-     * HTML decode
-     * @param {StringN} s
+     * Clean HTML content before submit
+     * @param {HTMLElement|string} content
+     * @param {{[key:string]:SrcComposer}|null} [srcComposers]
      * @return {string}
-     * @TODO 扩展 imgSrc/videoSrc/audioSrc/fileSrc
      */
-    decodeHTML(s) {
+    encodeContent(content, srcComposers) {
+        // 剪贴板从word复制，会组成 <html><body>
+        content = AaDOM.parse(content, 'text/html')
+        if (!content) {
+            return ''
+        }
+        content = this.formatContent(content, srcComposers, true)
+        return content ? content.innerHTML : ''
+    }
+
+    /**
+     * Clean pasted HTML content before insert into editor content
+     * @param {HTMLElement|string} content
+     * @param {{[key:string]:SrcComposer}} [srcComposers]
+     * @param {boolean} [beforeSubmit]
+     * @param {(node:DOM)=>(DOM|null)} [hook]
+     * @return {HTMLElement}
+     */
+    formatContent(content, srcComposers, beforeSubmit, hook) {
+        content = AaDOM.parse(content, 'text/html')
+        if (!content) {
+            return null
+        }
+        AaDOM.forAll(content, node => {
+            if (node && hook) {
+                node = hook(node)
+            }
+            // maybe removed by child TEXT_NODE nodeValue=''
+            if (!node) {
+                return
+            }
+            let parent = node.parentNode
+            switch (node.nodeType) {
+                case Node.COMMENT_NODE:
+                    parent.removeChild(node)
+                    break
+                case Node.ELEMENT_NODE:
+                    this.#cleanHtmlElement(node, srcComposers, beforeSubmit)
+                    break
+                case Node.TEXT_NODE:
+                    // all descendant text nodes must come here
+                    let v = node.nodeValue
+                    if (!v) {
+                        if (!arrays.contains(this.emptyableElements, parent.tagName) && parent.parentNode && parent.innerHTML === '') {
+                            parent.parentNode.removeChild(parent)
+                        }
+                    } else {
+                        v = this.#encodeTextNode(v)
+                        if (v !== node.nodeValue) {
+                            node.nodeValue = v
+                        }
+                    }
+                    break
+            }
+        })
+        return content
+    }
+
+
+    /**
+     * Convert fuzzy strings
+     * @param {string} s
+     * @param {string} [tag]
+     * @return {string}
+     */
+    fuzzy(s, tag) {
+        if (!s) {
+            return s
+        }
+        if (!tag) {
+            tag = this.fuzzyTag
+        }
+        s = s.replace(/[\r\n]+/g, '<br>')
+        s = s.replace(/<fuzzy>\s*\d+\s*:\s*(\d+)\s*<\/fuzzy>/ig, (m, l) => tag.repeat(l))
+        return s
+    }
+
+    /**
+     * @param {string} tagName
+     * @param {{[key:string]:SrcComposer}} [composers]
+     * @return {SrcComposer|null}
+     */
+    getSrcComposer(tagName, composers) {
+        if (composers && composers[tagName]) {
+            return composers[tagName]
+        }
+        if (this.defaultSrcComposers && this.defaultSrcComposers[tagName]) {
+            return this.defaultSrcComposers[tagName]
+        }
+        return null
+    }
+
+    /**
+     *
+     * @param {string} tagName
+     * @param {Attr|{name:string, value:string}} attr
+     * @param {boolean} [beforeSubmit]
+     * @return {boolean}
+     */
+    isWhiteAttribute(tagName, attr, beforeSubmit) {
+        if (['initial'].includes(attr.value)) {
+            return false
+        }
+        const w = this.submittableAttributeWhitelist
+        if (w.default && w.default.includes(attr.name)) {
+            return true
+        }
+        if (w[tagName] && w[tagName].includes(attr.name)) {
+            return true
+        }
+
+        if (beforeSubmit) {
+            return false
+        }
+        const tmp = this.temporaryAttributeWhitelist
+
+        if (tmp.default && tmp.default.includes(attr.name)) {
+            return true
+        }
+        if (tmp[tagName] && tmp[tagName].includes(attr.name)) {
+            return true
+        }
+        return false
+    }
+
+    /**
+     * Decode text to HTML
+     * @param s
+     * @return {string}
+     */
+    textToHtml(s) {
         if (!s) {
             return ""
         }
 
-        s = string(s).replace(/&amp;/ig, '&')
-        for (const [k, v] of Object.entries(AaEditor.decodeTemplate)) {
+        s = string(s)
+        for (const [k, v] of Object.entries(this.decodeTemplate)) {
             if (s.indexOf(k) > -1) {
                 s = s.replace(new RegExp(k, 'g'), v)
             }
@@ -211,105 +281,152 @@ class AaEditor {
             let num = parseInt(numStr, 10); // read num as normal number
             return String.fromCharCode(num);
         });
-        return s
-    }
-
-    // content 一般由编辑器编辑，这里无法实时获取，因此传参更适合
-    /**
-     *
-     * @param {string} content
-     * @param {ImgSrcDataMaker} [imgSrcDataMaker]
-     * @return {string}
-     */
-
-    decodeRichHTML(content, imgSrcDataMaker) {
-        content = this.fuzzy(content)
-        imgSrcDataMaker = this.maker(imgSrcDataMaker, this.imgSrcDataMaker)
-        if (typeof imgSrcDataMaker !== "function") {
-            return content
-        }
-        content = content.replace(/(<img\s[^>]*data-path=")([^"]+)"/ig, (match, a, path) => {
-            const imgsrc = this.#oss.imgSrc(imgSrcDataMaker(path))
-            const fa = imgsrc.resize(MAX) // aa.oss.imgSrc(provider(path)).resize(MAX)
-            let attr = a + path + '" src="' + fa.url + '"'
-            if (fa.height > 0) {
-                attr += ' height="' + fa.height + '"'
-            }
-            if (fa.width > 0) {
-                attr += ' width="' + fa.width + '"'
-            }
-            return attr
-        })
-        return content
-    }
-
-    decodeText(s) {
-        s = string(s).replace(new RegExp('<br>', 'g'), '\r\n')
-        return this.decodeHTML(s)
-    }
-
-    /**
-     * HTML encode
-     * @param {StringN} s
-     * @return {string|string|*|string}
-     */
-    encodeHTML(s) {
-        if (!s) {
-            return ""
-        }
-        const parser = new DOMParser()
-        const doc = parser.parseFromString(s, 'text/html')
-        const elements = doc.querySelector('body')
-        this.#encodeVirtualDom(elements)
-        return elements.innerHTML.replace(/&amp;/ig, '&')
-    }
-
-    // 无标签的text，替换 换行符、空格
-    encodeText(s) {
-        if (!s) {
-            return ""
-        }
-
-        s = string(s)
-        for (const [k, v] of Object.entries(AaEditor.encodeTemplate)) {
-            if (s.indexOf(k) > -1) {
-                s = s.replace(new RegExp(k, 'g'), v)
-            }
-        }
         s = s.replace(/\r\n/g, '<br>')  // Win: \r\n
         s = s.replace(/[\r\n]/g, '<br>')  // Unix: \n;  Mac: \r
         return s
     }
 
-    // 对文章中敏感词进行马赛克化
-    fuzzy(s, tag = AaEditor.fuzzyTag) {
-        if (!s || !tag) {
-            return s
+    #cleanAnchor(node) {
+        if (this.anchorHrefHandler) {
+            let href = this.anchorHrefHandler(node.href)
+            if (!href) {
+                node.parentNode.removeChild(node)
+                return null
+            }
+            if (href !== node.href) {
+                node.href = href
+            }
         }
-        s = s.replace(/[\r\n]+/g, '<br>')
-        s = s.replace(/<s>\s*\d+\s*:\s*(\d+)\s*<\/s>/ig, (m, l) => tag.repeat(l))
-        return s
+        node.rel = 'nofollow'   // for SEO
+        return node
+    }
+
+    #cleanAttrs(node, beforeSubmit) {
+        this.#cleanAttrStyle(node)
+        let remove = []  // node.attributes 是动态的，因此不能直接遍历删除
+        const tagName = node.tagName
+        for (const attr of node.attributes) {
+            if (!this.isWhiteAttribute(tagName, attr, beforeSubmit)) {
+                remove.push(attr.name)
+            }
+        }
+        if (remove.length > 0) {
+            remove.map(attr => {
+                node.removeAttribute(attr)
+            })
+            log.debug(`remove ${tagName} attribute: ${remove.join(' ,')}`)
+        }
+    }
+
+    #cleanClassList(node) {
+        if (node.classList.length > 0) {
+            node.classList.forEach(c => {
+                if (!arrays.contains(this.classWhitelist, c)) {
+                    node.classList.remove(c)
+                    log.debug(`remove ${node.tagName} class ${c}`)
+                }
+            })
+        }
+        if (node.classList.length === 0) {
+            node.removeAttribute('class')
+        }
+    }
+
+    #cleanAttrStyle(node) {
+        const styles = AaDOM.parseStyleAttr(node)   // must from attribute, not node.style
+        if (!styles) {
+            node.removeAttribute('style')
+            return
+        }
+
+        let align = styles['text-align'] ? styles['text-align'] : node.getAttribute('align')
+        if (align && this.textAlignWhitelist.includes(align)) {
+            node.classList.add('e-align-' + align)
+        }
+        node.removeAttribute('align')
+        let remove = []
+        for (const [name,] of Object.entries(styles)) {
+            if (!arrays.contains(this.styleWhitelist, name)) {
+                remove.push(name)
+                delete styles[name]  // 删除安全
+            }
+        }
+        if (remove.length > 0) {
+            log.debug(`remove ${node.tagName} style: ${remove.join(' ,')}`)
+            if (len(styles) === 0) {
+                node.removeAttribute('style')
+            } else {
+                node.setAttribute('style', map.join(styles, ':', ';'))
+            }
+        }
+    }
+
+    #cleanHtmlElement(node, srcComposers, beforeSubmit) {
+        if (this.srcElements.includes(node.tagName)) {
+            let composer = this.getSrcComposer(node.tagName, srcComposers)
+            node = this.#cleanSrcElement(node, composer)
+        } else if (node.tagName === 'A') {
+            node = this.#cleanAnchor(node)
+        }
+
+        if (!node) {
+            return node
+        }
+
+        this.#cleanAttrs(node, beforeSubmit)
+        this.#cleanClassList(node)
+        return this.#cleanHtmlTag(node)
     }
 
     /**
-     * @protected
-     * @param maker
-     * @param defaultMaker
-     * @return {*}
+     * @param {HTMLElement} node
      */
-    maker(maker, defaultMaker) {
-        if (typeof maker !== "function") {
-            maker = defaultMaker
+    #cleanHtmlTag(node) {
+        if (/[^A-Z\d]/.test(node.tagName)) {
+            if (node.innerHTML === '') {
+                node.parentNode.removeChild(node)
+                return null
+            }
+            let newNode = document.createElement('span')
+            newNode.innerHTML = node.innerHTML
+            node.parentNode.insertBefore(newNode, node)
         }
-        if (typeof maker !== "function") {
-            log.warn('miss oss data maker defined in AaEditor')
+
+        if (node.childNodes.length === 1) {
+            let first = node.childNodes.item(0)
+            // 本函数需要倒序遍历子节点，因此不需要处理子节点了，只需要处理是否为 span即可
+            if (first.nodeType === Node.ELEMENT_NODE && first.tagName === 'SPAN') {
+                node.innerHTML = first.innerHTML
+            }
         }
-        return maker
+        return node
+    }
+
+    #cleanSrcElement(node, composer) {
+        let path = node.dataset.path
+        let src = node.src
+        if (composer && src) {
+            let srcObj = composer(src)
+            if (srcObj) {
+                if (path && path !== srcObj.path) {
+                    log.warn(`data-path overwrite: ${path} ---> ${srcObj.path} `)
+                }
+                path = srcObj.path
+                node.dataset.path = path
+                node.setAttribute('src', srcObj.resize(MAX).url)
+            }
+        }
+        if (!path) {
+            node.parentNode.removeChild(node)
+            log.warn(`remove ${node.tagName} src=${src}`)
+            return null
+        }
+        return node
     }
 
 
     #encodeTextNode(s) {
-        for (const [k, v] of Object.entries(AaEditor.encodeTemplate)) {
+        for (const [k, v] of Object.entries(this.encodeTemplate)) {
             if (s.indexOf(k) > -1) {
                 s = s.replace(new RegExp(k, 'g'), v)
             }
@@ -317,21 +434,5 @@ class AaEditor {
         return s
     }
 
-    #encodeVirtualDom(dom) {
-        if (!dom) {
-            return
-        }
-        dom.childNodes.forEach(node => {
-            // text nodes' type is 3, test nodes are not inside an element
-            // e.g.  `Hello, I'm <b>Aario</b>! What is <i>your name</i>?` => text, b, text, i, text
-            if (node.nodeType === Node.TEXT_NODE && node.nodeValue !== '') {
-                const v = this.#encodeTextNode(node.nodeValue)
-                if (v !== node.nodeValue) {
-                    node.nodeValue = v
-                }
-                return
-            }
-            this.#encodeVirtualDom(node)
-        })
-    }
+
 }

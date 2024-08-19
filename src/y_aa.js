@@ -1,6 +1,9 @@
 class Aa {
     name = 'aa'
+    /** @type {typeof AaDOM} */
+    dom = AaDOM
 
+    hack = AaHack
 
     /** @type {AaRegistry} */
     registry
@@ -70,6 +73,16 @@ class Aa {
         this.editor = editor
     }
 
+    /**
+     * @param {Class|function|string|*} tableName
+     * @param {AaCache} db
+     * @param {AaCachePattern} [pattern]
+     * @param {StorageOptions} [options]
+     */
+    archive(tableName, db, pattern, options) {
+        return new AaArchive(...arguments)
+    }
+
     compare(a, b) {
         if (!(a && b)) {
             return false
@@ -108,6 +121,8 @@ class Aa {
         return a === b
     }
 
+    // imgSrc ===> aa.oss.imgSrc
+
     mselects(opts, cast, inherit = false) {
         return new AaMultiLevelSelects(...arguments)
     }
@@ -123,21 +138,7 @@ class Aa {
         return new AaURI(...arguments)
     }
 
-    /**
-     *
-     * @param {ImgSrcStruct|AaImgSrc|string|*} [data]
-     * @param {ImageBase64|filepath} [thumbnail]
-     * @param {File} [multipleFile]
-     * @return {AaImgSrc}
-     */
-    imgSrc(data, thumbnail, multipleFile) {
-        if (data instanceof AaImgSrc) {
-            data.setThumbnail(thumbnail)
-            data.setMultipleFile(multipleFile)
-            return data
-        }
-        return new AaImgSrc(...arguments)
-    }
+
 }
 
 

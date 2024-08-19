@@ -77,10 +77,9 @@ class map {
     }
 
     /**
-     *
      * @param {IteratorCallback} callback
-     * @param {((a:any, b:any)=>number)|boolean} [sort]
-     * @return {*[]}
+     * @param {SortMethod} [sort]
+     * @return {*[]|void}
      */
     forEach(callback, sort = false) {
         return map.forEach(this.props, callback, sort)
@@ -121,6 +120,18 @@ class map {
         return this.props.hasOwnProperty(key) && (allowUndefined || typeof this.props[key] != "undefined")
     }
 
+    /**
+     * Join object keys and values
+     * @param {string} [kvSeparator]
+     * @param {string} [separator]
+     * @param {(key:StringN, value:any)=>boolean} [assert]
+     * @param {SortMethod} [sort]
+     * @return {string}
+     */
+    join(kvSeparator = '=', separator = '&', assert = null, sort = true) {
+        return map.join(this, kvSeparator, separator, assert, sort)
+    }
+
     keys() {
         return Object.keys(this.props)
     }
@@ -149,32 +160,31 @@ class map {
         return this
     }
 
+
     /**
      *
-     * @param {(key:StringN, value:any)=>boolean} [assert]
+     * @param {(key:StringN, value:any)=>{key:string,value:any, ok:boolean}} [hook]
      * @param {((a:any, b:any)=>number)|boolean} [sort]
      * @return {string}
      */
-    toQueryString(assert, sort = true) {
-        let params = [];
-        this.forEach((key, value) => {
-            if (typeof value === "function") {
-                value = value()
-            }
-            if (value === "" || typeof value === "undefined" || value === null) {
-                return
-            }
-            if (assert && assert(key, value)) {
-                return
+    toQueryString(hook, sort = true) {
+        return this.join('=', '&', (key, value) => {
+            if (hook) {
+                let {k, v, ok} = hook(key, value)
+                if (!ok) {
+                    return {k, v, ok}
+                }
+                key = k
+                value = v
             }
 
-            if (Array.isArray(value)) {
-                value = value.join(",")  // url param，数组用逗号隔开模式
+            value = string(value)
+            if (value === '') {
+                return {key, value, ok: false}
             }
-            value = encodeURIComponent(string(value))
-            params.push(key + '=' + value)
+            value = encodeURIComponent(value)
+            return {key, value, ok: true}
         }, sort)
-        return params.join('&')
     }
 
     toString() {
@@ -410,10 +420,9 @@ class map {
     }
 
     /**
-     *
-     * @param {array|struct|map|URLSearchParams|*} iterable
-     * @param {(key:StringN, value:any)=>*} callback
-     * @param {((a:any, b:any)=>number)|boolean} [sort]
+     * @param {iterable} iterable
+     * @param {IteratorCallback} callback
+     * @param {SortMethod} [sort]
      * @return {*[]|void}
      */
     static forEach(iterable, callback, sort = false) {
@@ -549,6 +558,34 @@ class map {
         // JS 这种情况不会预先执行函数，而需要等判断结果后，择一执行
         insertToHead ? objects.push(newItem) : objects.unshift(newItem)
         return objects
+    }
+
+    /**
+     * Join object keys and values
+     * @param {iterable} iterable
+     * @param {string} [kvSeparator]
+     * @param {string} [separator]
+     * @param {(key:StringN, value:any)=>{key:string,value:any, ok:boolean}} [hook]
+     * @param {SortMethod} [sort]
+     * @return {string}
+     */
+    static join(iterable, kvSeparator = '=', separator = '&', hook = null, sort = true) {
+        kvSeparator = typeof kvSeparator !== 'string' ? '=' : kvSeparator
+        separator = typeof separator !== 'string' ? '&' : separator
+        let s = ''
+        map.forEach(iterable, (key, value) => {
+            if (hook) {
+                const {k, v, ok} = hook(key, value)
+                if (!ok) {
+                    return
+                }
+                key = k
+                value = v
+            }
+            value = string(value)
+            s += separator + key + kvSeparator + value
+        }, sort)
+        return s ? s.slice(separator.length) : s
     }
 
     /**

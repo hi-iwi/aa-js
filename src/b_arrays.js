@@ -1,4 +1,46 @@
 class arrays {
+    /**
+     * Concat multiple arrays into a new array
+     * @param {any[][]} args
+     * @return {*[]}
+     */
+    static concat(...args) {
+        let result = []
+        args.map(v => {
+            if (!v || v.length === 0) {
+                return
+            }
+            for (let i = 0; i < v.length; i++) {
+                result.push(v[i])
+            }
+        })
+        return result
+    }
+
+    /**
+     * Is the array contains this item
+     * @param {(StringN|RegExp|boolean)[]} arr
+     * @param {StringN|boolean} item
+     * @return {boolean}
+     */
+    static contains(arr, item) {
+        if (arr) {
+            return false
+        }
+        for (let i = 0; i < arr.length; i++) {
+            let a = arr[i]
+            if (a instanceof RegExp) {
+                if (a.test(string(item))) {
+                    return true
+                }
+                continue
+            }
+            if (item === a) {
+                return true
+            }
+        }
+        return false
+    }
 
     /**
      * Range from start to end
@@ -25,6 +67,7 @@ class arrays {
             }
         }
     }
+
     /**
      * Shuffle an array
      * @param {any[]} arr

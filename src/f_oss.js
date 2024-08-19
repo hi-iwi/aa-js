@@ -127,7 +127,44 @@ const AaFileTypeEnum = {
 
 }
 
+class AaSrc {
+    jsonkey
 
+    constructor() {
+    }
+
+    data() {
+        return {}
+    }
+
+    serialize() {
+        return strings.json(this.data())
+    }
+
+    // aaFetch 层会处理该数据
+    toJSON() {
+        let key = this.jsonkey && this.hasOwnProperty(this.jsonkey) ? this.jsonkey : 'path'
+        return this[key]
+    }
+
+    static isDataValid(data) {
+        return true
+    }
+
+    /**
+     * @param {StringN} str
+     * @return {AaImgSrc|null}
+     * @note compatible with this.serialize()
+     */
+    static unserialize(str) {
+        const self = this   // 使用 this （不能用 this.constructor()). 可以传递到子类
+        let data = strings.unjson(str)
+        if (!self.isDataValid(data)) {
+            return null
+        }
+        return new AaImgSrc(data)
+    }
+}
 
 
 class AaOSS {
@@ -177,14 +214,22 @@ class AaOSS {
     }
 
     /**
-     * New AaImgSrc
-     * @param {struct} data
-     * @return {AaImgSrc}
+     *
+     * @param {ImgSrcStruct|AaImgSrc} [data]
+     * @param {ImageBase64|filepath} [thumbnail]
+     * @param {File} [multipleFile]
+     * @return {AaImgSrc|null}
      */
-    imgSrc(data) {
+    imgSrc(data, thumbnail, multipleFile) {
         if (data instanceof AaImgSrc) {
+            data.setThumbnail(thumbnail)
+            data.setMultipleFile(multipleFile)
             return data
         }
-        return new AaImgSrc(data)
+        if (!AaImgSrc.isDataValid(data)) {
+            return null
+        }
+
+        return new AaImgSrc(...arguments)
     }
 }

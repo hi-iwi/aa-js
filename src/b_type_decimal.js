@@ -361,6 +361,9 @@ class Decimal {
         return this.value
     }
 
+    serialize() {
+        return String(this.value)
+    }
 
     toJSON() {
         return String(this.value)
@@ -411,10 +414,17 @@ class Decimal {
         return [s, true]
     }
 
+    /**
+     * @param {StringN} str
+     * @return {AaImgSrc|null}
+     * @note compatible with this.serialize()
+     */
+    static unserialize(str) {
+        return new this.constructor(int54(str))  // 使用 this.constructor(). 可以传递到子类
+    }
 }
 
 /**
- *
  * @param {struct|NumberX|Decimal} [vv]
  * @param {StringN} [vk]
  * @param {NumberX|Decimal} [defaultV]

@@ -119,36 +119,41 @@ class atype {
     static string = "string"
     static undefined = "undefined"
     static regexp = "regexp"
+
+
     // 类型别名
     static alias = {
         array    : "a",
-        bigint   : 'i',
         boolean  : "b",
         class    : "c",
         date     : "d",
-        dom      : "h",
         function : "f",
+        dom      : "h",
+        bigint   : 'i',
         null     : "l",
-        number   : "n",
         struct   : "m",
+        number   : "n",
+        regexp   : "r",
         string   : "s",
         undefined: "u",
-        regexp   : "r",
+
+        _serializable: 'z'         // 特殊类，可以序列化为JSON字符串，并且将字符串对应的JSON作为构造参数，自动还原
     }
 
-    /**
-     * Check if any of these arguments is undefined
-     * @param args
-     * @return {boolean}
-     */
-    static anyUndefined(...args) {
-        for (let i = 0; i < args.length; i++) {
-            if (typeof args[i] === 'undefined') {
-                return true
-            }
+    // 缩短类型为1个字符
+    static aliasOf(t) {
+        if (typeof t === "undefined") {
+            return atype.alias.undefined
         }
-        return false
+        if (t === null) {
+            return atype.alias.null
+        }
+        if (typeof t !== "string") {
+            t = atype.of(t)
+        }
+        return atype.alias[t] ? atype.alias[t] : atype.alias.undefined
     }
+
 
     /**
      * Check if any of these arguments is not the type
@@ -159,6 +164,20 @@ class atype {
     static anyNot(type, ...args) {
         for (let i = 0; i < args.length; i++) {
             if (typeof args[i] !== type && atype.of(args[i]) !== type) {
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * Check if any of these arguments is undefined
+     * @param args
+     * @return {boolean}
+     */
+    static anyUndefined(...args) {
+        for (let i = 0; i < args.length; i++) {
+            if (typeof args[i] === 'undefined') {
                 return true
             }
         }
@@ -179,6 +198,211 @@ class atype {
         return false
     }
 
+
+    // 对象 a={}   !a 为 false。。  a =={} 也是 false
+    static isEmpty(...args) {
+        let v = defval(...args)
+        if (v === null) {// 不要用 AaLib.Type 判断是否 undefined
+            return true
+        }
+
+        switch (atype.of(v)) {
+            case atype.array:
+                return v.length === 0
+            case atype.bigint:
+                return v <= 0
+            case atype.boolean:
+                return !v
+            case atype.class:
+                return false
+            case atype.date:
+            case atype.dom:
+            case atype.function:
+                return false
+            case atype.null:
+                return true
+            case atype.number:
+                return v <= 0
+            case atype.struct:
+                v = Object.keys(v)
+                return v.length === 0
+            case atype.string:
+                return v === ""
+        }
+        return !v
+    }
+
+    static notEmpty(...args) {
+        return !atype.isEmpty(...args)
+    }
+
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
+    static notRealId(...args) {
+        return !atype.isRealId(...args)
+    }
+
+
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
+    static isArray(...args) {
+        return Array.isArray(defval(...args))
+    }
+
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
+    static isBoolean(...args) {
+        return typeof defval(...args) === "boolean"
+    }
+
+    static isBigInt(...args) {
+        return typeof defval(...args) === 'bigint'
+    }
+
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
+    static isDate(...args) {
+        return atype.of(...args) === "date"
+    }
+
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
+    static isDom(...args) {
+        return atype.of(...args) === "dom"
+    }
+
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
+    static isFunction(...args) {
+        return typeof defval(...args) === "function"
+    }
+
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
+    static isNumber(...args) {
+        return typeof defval(...args) === "number"
+    }
+
+    /**
+     * 必须是 > 0的数字，注意 bigint
+     * @param {vv_vk_defaultV} args
+     * @return {boolean|boolean}
+     */
+    static isRealId(...args) {
+        let v = defval(...args)
+        return v === null ? false : (uint64(v) !== 0n)
+    }
+
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
+    static isSerializable(...args) {
+        const v = defval(...args)
+        if (!v || !v.constructor || !v.constructor.name) {
+            return false
+        }
+        if (typeof v.serialize !== 'function') {
+            return false
+        }
+        return AaHack.staticCallable(v.constructor.name, 'unserialize')
+    }
+
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     * @note 仅为 {} 结构体；不要用 typeof arr === "object" 判定是否是结构体，因为 typeof [] 也是 object。而 AaType.Of([]) 为array, AaType.Of({}) 为 object
+     */
+    static isStruct(...args) {
+        return atype.of(...args) === "struct"
+    }
+
+
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
+    static isString(...args) {
+        return typeof defval(...args) === "string"
+    }
+
+    /**
+     * @param {vv_vk_defaultV} args
+     * @return {boolean}
+     */
+    static isRegexp(...args) {
+        return atype.of(...args) === "regexp"
+    }
+
+    /*
+
+"array", "boolean", "date", "dom", "function", null, "number", "struct", "string", "undefined", "regexp" "class"
+/[a-z]/.constructor
+"John".constructor                // Returns function String(){[native code]}
+(3.14).constructor                // Returns function Number(){[native code]}
+false.constructor                 // Returns function Boolean(){[native code]}
+[1,2,3,4].constructor             // Returns function Array(){[native code]}
+{name:'John',age:34}.constructor  // Returns function Object(){[native code]}
+new Date().constructor            // Returns function Date(){[native code]}
+function () {}.constructor        // Returns function Function(){[native code]}
+NaN.constructor                     ƒ Number(){ [native code] }
+HTMLAnchorElement  / HTMLCollection     dom
+jQuery dom     // function(e,t){return new c.fn.init(e,t)}
+class   // Returns function XXX()
+*/
+
+    // @notice 不要用 AaLib.Type 判断是否 undefined；用 typeof(n) === "undefined" 更适合
+    static of(v, ...args) {
+        if (len(args) > 0) {
+            if (typeof v !== "object" || v === null) {  // typeof null is object
+                return atype.null
+            }
+            let k = args[0]
+            if (!v.hasOwnProperty(k)) {
+                return atype.undefined
+            }
+            v = v[k]
+        }
+        if (v === null) {
+            return atype.null
+        }
+        if (Array.isArray(v)) {
+            return atype.array
+        }
+        let t = typeof v
+        if ([atype.boolean, atype.function, atype.number, atype.string, atype.undefined].includes(t)) {
+            return t
+        }
+
+        // Safari replace 总是出幺蛾子！！！
+        let typ = v.constructor.toString().toLowerCase()
+        typ = typ.replace(/.*function\s+([a-z]+)\s*\(\)\s*{\s*\[[^\]]+]\s*}.*/, "$1")
+        typ = typ.trim()
+        if (typ.length > 9) {
+            // 使用 new Cls()
+            if (typ.indexOf("_classcallcheck") > 0) {
+                return atype.class
+            }
+            if (typ.substring(0, 4) === "html" || $(v).length > 0) {
+                typ = atype.dom
+            }
+        }
+        return typ === "object" ? atype.struct : typ
+    }
 
     static toStringCallable(v) {
         if (v && typeof v.toString === 'function') {
@@ -229,209 +453,6 @@ class atype {
         }
         return typeof v === "object" ? null : void 0
     }
-
-    // 缩短类型为1个字符
-    static aliasOf(t) {
-        if (typeof t === "undefined") {
-            return atype.alias.undefined
-        }
-        if (t === null) {
-            return atype.alias.null
-        }
-        if (typeof t !== "string") {
-            t = atype.of(t)
-        }
-        return atype.alias[t] ? atype.alias[t] : atype.alias.undefined
-    }
-
-    /*
-
-"array", "boolean", "date", "dom", "function", null, "number", "struct", "string", "undefined", "regexp" "class"
-/[a-z]/.constructor
-"John".constructor                // Returns function String(){[native code]}
-(3.14).constructor                // Returns function Number(){[native code]}
-false.constructor                 // Returns function Boolean(){[native code]}
-[1,2,3,4].constructor             // Returns function Array(){[native code]}
-{name:'John',age:34}.constructor  // Returns function Object(){[native code]}
-new Date().constructor            // Returns function Date(){[native code]}
-function () {}.constructor        // Returns function Function(){[native code]}
-NaN.constructor                     ƒ Number(){ [native code] }
-HTMLAnchorElement  / HTMLCollection     dom
-jQuery dom     // function(e,t){return new c.fn.init(e,t)}
-class   // Returns function XXX()
- */
-
-    // @notice 不要用 AaLib.Type 判断是否 undefined；用 typeof(n) === "undefined" 更适合
-    static of(v, ...args) {
-        if (len(args) > 0) {
-            if (typeof v !== "object" || v === null) {  // typeof null is object
-                return atype.null
-            }
-            let k = args[0]
-            if (!v.hasOwnProperty(k)) {
-                return atype.undefined
-            }
-            v = v[k]
-        }
-        if (v === null) {
-            return atype.null
-        }
-        if (Array.isArray(v)) {
-            return atype.array
-        }
-        let t = typeof v
-        if ([atype.boolean, atype.function, atype.number, atype.string, atype.undefined].includes(t)) {
-            return t
-        }
-
-        // Safari replace 总是出幺蛾子！！！
-        let typ = v.constructor.toString().toLowerCase()
-        typ = typ.replace(/.*function\s+([a-z]+)\s*\(\)\s*{\s*\[[^\]]+]\s*}.*/, "$1")
-        typ = typ.trim()
-        if (typ.length > 9) {
-            // 使用 new Cls()
-            if (typ.indexOf("_classcallcheck") > 0) {
-                return atype.class
-            }
-            if (typ.substring(0, 4) === "html" || $(v).length > 0) {
-                typ = atype.dom
-            }
-        }
-        return typ === "object" ? atype.struct : typ
-    }
-
-    // 对象 a={}   !a 为 false。。  a =={} 也是 false
-    static isEmpty(...args) {
-        let v = defval(...args)
-        if (v === null) {// 不要用 AaLib.Type 判断是否 undefined
-            return true
-        }
-
-        switch (atype.of(v)) {
-            case atype.array:
-                return v.length === 0
-            case atype.bigint:
-                return v <= 0
-            case atype.boolean:
-                return !v
-            case atype.class:
-                return false
-            case atype.date:
-            case atype.dom:
-            case atype.function:
-                return false
-            case atype.null:
-                return true
-            case atype.number:
-                return v <= 0
-            case atype.struct:
-                v = Object.keys(v)
-                return v.length === 0
-            case atype.string:
-                return v === ""
-        }
-        return !v
-    }
-
-    static notEmpty(...args) {
-        return !atype.isEmpty(...args)
-    }
-
-    /**
-     * 必须是 > 0的数字，注意 bigint
-     * @param {vv_vk_defaultV} args
-     * @return {boolean|boolean}
-     */
-    static isRealId(...args) {
-        let v = defval(...args)
-        return v === null ? false : (uint64(v) !== 0n)
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static notRealId(...args) {
-        return !atype.isRealId(...args)
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isArray(...args) {
-        return Array.isArray(defval(...args))
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isBoolean(...args) {
-        return typeof defval(...args) === "boolean"
-    }
-
-    static isBigInt(...args) {
-        return typeof defval(...args) === 'bigint'
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     * @note 仅为 {} 结构体；不要用 typeof arr === "object" 判定是否是结构体，因为 typeof [] 也是 object。而 AaType.Of([]) 为array, AaType.Of({}) 为 object
-     */
-    static isStruct(...args) {
-        return atype.of(...args) === "struct"
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isDate(...args) {
-        return atype.of(...args) === "date"
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isDom(...args) {
-        return atype.of(...args) === "dom"
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isFunction(...args) {
-        return typeof defval(...args) === "function"
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isNumber(...args) {
-        return typeof defval(...args) === "number"
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isString(...args) {
-        return typeof defval(...args) === "string"
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isRegexp(...args) {
-        return atype.of(...args) === "regexp"
-    }
-
 
 }
 
@@ -579,6 +600,9 @@ function string(...args) {
         return '' + v.valueOf()
     }
 
+    if (typeof v === 'function') {
+        v = v()
+    }
 
     return '' + v
 }

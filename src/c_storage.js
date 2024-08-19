@@ -514,28 +514,47 @@ class AaStorageEngine {
 
         let expireTo = number(match[3])
         switch (type.toLowerCase()) {
-            case atype.aliasOf(null):
-                value = (value === "null") ? null : undefined
+            case atype.alias._serializable:
+                let arr = value.split('::')
+                let className = arr[0]
+                value = arr.slice(1).join('::')
+                try {
+                    value = AaHack.class(className).serialize(value)
+                } catch (err) {
+                    this.removeItem(key)
+                    return {value: null, persistent, expired: true}
+                }
                 break
-            case atype.aliasOf('number'):
-                value = int32(value)
-                break;
-            case atype.aliasOf('boolean'):
-                value = bool(value)
-                break;
-            case atype.aliasOf('array'):
-            case atype.aliasOf('struct'):
+            case atype.alias.array:
+            case atype.alias.struct:
                 try {
                     value = JSON.parse(value)
                 } catch (error) {
                     log.error(`storage parse ${value} failed: ${error}`)
                 }
-                break;
-            case atype.aliasOf('date'):
+                break
+            case atype.alias.bigint:
+                value = BigInt(value)
+                break
+            case atype.alias.boolean:
+                value = bool(value)
+                break
+            case atype.alias.null:
+                value = (value === "null") ? null : undefined
+                break
+            case atype.alias.number:
+                value = int54(value)
+                break
+            case atype.alias.date:
                 value = new Date(value)
-                break;
+                break
+            case atype.alias.regexp:
+                value = new RegExp(value)
+                break
+            case atype.alias.string:
+                break
         }
-        if (expireTo > 0 && Date.now() - expireTo >= 0) {
+        if (typeof value === 'undefined' || (expireTo > 0 && Date.now() - expireTo >= 0)) {
             this.removeItem(key)
             return {value: null, persistent, expired: true}
         }
@@ -549,26 +568,37 @@ class AaStorageEngine {
      */
     static encodeValue(value, options) {
         let ok = true;
-        const type = atype.of(value)
-        switch (type) {
-            case 'number':
-                value += ''
-                break;
-            case 'boolean':
-                value = booln(value)
-                break;
-            case 'array':
-            case 'object':
-            case 'struct':
-                value = strings.json(value)
-                break;
-            case 'date':
-                break;
-            case 'function':
-            case 'undefined':
-                ok = false
-                break;
+        let typeAlias
+
+        if (atype.isSerializable(value)) {
+            typeAlias = atype.alias._serializable
+            const className = value.constructor.name
+            value = value.serialize()
+            value = className + '::' + value
+        } else {
+            const type = atype.of(value)
+            typeAlias = atype.aliasOf(type)
+            switch (type) {
+                case atype.number:
+                    break
+                case atype.boolean:
+                    value = booln(value)
+                    break;
+                case atype.array:
+                case atype.class:
+                case atype.struct:
+                    value = strings.json(value)
+                    break;
+                case atype.date:
+                    value = value.valueOf()
+                    break;
+                case atype.function:
+                case atype.undefined:
+                    ok = false
+                    break;
+            }
         }
+
         if (!ok) {
             return value
         }
@@ -579,13 +609,13 @@ class AaStorageEngine {
         } else if (expires instanceof Date) {
             expires = expires.valueOf()
         }
-        let st = atype.aliasOf(type)
+
         if (bool(persistent)) {
-            st = st.toUpperCase()
+            typeAlias = typeAlias.toUpperCase()
         }
         // 没必要通过计算本年差来缩短expires（这样最多缩短1位长度）；缩短为秒也最多缩短3位长度
         // base64数字会变得更长，直接存毫秒，用存储空间换CPU计算时间
-        value = value + ' |' + st + string(expires)
+        value = value + ' |' + typeAlias + string(expires)
         return value
     }
 }

@@ -1,5 +1,5 @@
 //@TODO
-class AaVideoSrc {
+class AaVideoSrc  extends AaSrc{
     name = 'aa-video-src'
 
     provider
@@ -13,11 +13,28 @@ class AaVideoSrc {
     height
     duration
     allowed
+    /**
+     * @override
+     * @type {string|void}
+     */
     jsonkey
 
-
+    constructor() {
+        super()
+    }
     // aaFetch 层会处理该数据
     toJSON() {
         return this.path
+    }
+    serialize() {
+
+    }
+    /**
+     * @param {StringN} str
+     * @return {AaVideoSrc}
+     * @note compatible with this.serialize()
+     */
+    static unserialize(str) {
+
     }
 }

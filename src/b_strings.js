@@ -31,6 +31,7 @@ class strings {
         }
         return ss;
     }
+
     /**
      * Slice string by length in utf-8 format
      * @param {StringN} s
@@ -55,6 +56,9 @@ class strings {
     }
 
     static countLen(s, lentype = "utf8") {
+        if (!s) {
+            return 0
+        }
         return lentype === "utf8" ? Math.ceil(strings.utf8Len(s) / 3) : string(s).length
     }
 
@@ -67,6 +71,7 @@ class strings {
     static escapeReg(source) {
         return source.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
     }
+
     /**
      * Check is Zh-CN (simplified chinese)
      * @param {string} s
@@ -75,8 +80,6 @@ class strings {
     static isZhCN(s) {
         return /[^\u4e00-\u9fa5]/.test(s)
     }
-
-
 
 
     /**
@@ -161,6 +164,7 @@ class strings {
         }
         return l;
     }
+
     /**
      * Convert punctuation marks from Chinese to English
      * @param {string} s
@@ -238,9 +242,6 @@ class strings {
     }
 
 
-
-
-
     /**
      * Shuffle a string
      * @param {string} s
@@ -250,9 +251,29 @@ class strings {
     }
 
     /**
+     * Split and trim segments
+     * @param {string|null|void} s
+     * @param {string} [separator]
+     * @return {string[]}
+     */
+    static split(s, separator = ',') {
+        if (!s) {
+            return []
+        }
+        let arr = []
+        s.split(separator).map(v => {
+            v = v.trim()
+            if (v) {
+                arr.push(v)
+            }
+        })
+        return arr
+    }
+
+    /**
      *  Parse JSON string or object more fault-tolerant
      * @param {(jsonstr|struct|array|null)} o
-     * @return {(*[]|{}|null)}
+     * @return {(*[]|struct|null)}
      * @constructor
      */
     static unjson(o) {

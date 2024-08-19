@@ -6,18 +6,14 @@ class AaArchive {
     #options
 
     /**
-     *
+     * @param {Class|function|string|*} tableName
      * @param {AaCache} db
      * @param {AaCachePattern} [pattern]
      * @param {StorageOptions} [options]
-     * @param {string} [tableName]
      */
-    constructor(db, pattern, options, tableName) {
+    constructor(tableName, db, pattern, options) {
         this.db = db
-        if (!tableName) {
-            tableName = AaArchive.createTableName()
-        }
-        this.tableName = tableName
+        this.tableName = AaArchive.createTableName(tableName)
         this.#pattern = pattern
         this.#options = options
     }
@@ -38,10 +34,18 @@ class AaArchive {
         this.db.save(this.tableName, state, this.#pattern, this.#options)
     }
 
-    static createTableName() {
-        const selfName = this.constructor.name
-        const parentName = Object.getPrototypeOf(this.constructor).name
+    /**
+     * @param {Class|function|string|*} tableName
+     * @return {string}
+     */
+    static createTableName(tableName) {
+        if (typeof tableName === 'string') {
+            return tableName
+        }
+        let selfName = tableName.name ? tableName.name : tableName.constructor.name
+        const parentName = Object.getPrototypeOf(tableName.constructor).name
         const path = location.pathname.replace(/[\/\\]/g, '_')
-        return `${selfName}_${parentName}${path}`
+        selfName = !selfName || selfName === 'Function' ? '' : selfName + '_'
+        return `${selfName}${parentName}${path}`
     }
 }

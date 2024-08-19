@@ -251,10 +251,11 @@ class AaURI {
         }
         let search = newQueries.toQueryString((key, value) => {
             if (key !== aparam.Redirect) {
-                return false
+                return {key, value, ok: true}
             }
             value = AaURI.decode(value)
-            return baseUrl.slice(-len(value)) === value
+            const ok = baseUrl.slice(-len(value)) !== value
+            return {key, value, ok}
         })
         if (search) {
             search = '?' + search
@@ -379,6 +380,20 @@ class AaURI {
         return encodeURIComponent(AaURI.decode(s))
     }
 
+    static addOrigin(s) {
+        if (s.indexOf('://') > 0) {
+            return s
+        }
+        if (s.indexOf('//') === 0) {
+            return location.protocol + s
+        }
+        if (s.indexOf('/') === 0) {
+            return location.origin + s
+        }
+        let pathname = paths.join(new paths(location.pathname).dir, s)
+        return location.origin + pathname
+    }
+
     /**
      * replace parameters in url string
      * @param {string|AaURI} s
@@ -423,6 +438,17 @@ class AaURI {
             return
         }
         console.info(`[debug] location.href='${url}'`)
+    }
+
+    static join(base, ...args) {
+        let pathname = paths.join(...args)  // 会替换 // 为 /
+        if (!pathname || pathname[0] !== '/') {
+            pathname = '/' + pathname
+        }
+        if (base.slice(-1) === '/') {
+            base = base.slice(0, -1)
+        }
+        return base + pathname
     }
 
     /**
