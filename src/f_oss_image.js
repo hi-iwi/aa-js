@@ -29,37 +29,6 @@ class AaImgSrc extends AaSrc {
     /** @type {File} for upload */
     #multipleFile
 
-    constructor() {
-        super()
-    }
-
-    isValid() {
-        return this.path && this.cropPattern && this.resizePattern
-    }
-
-
-    setThumbnail(thumbnail) {
-        this.#thumbnail = thumbnail
-    }
-
-    getThumbnail(width, height, real = false) {
-        if (this.#thumbnail) {
-            return this.#thumbnail
-        }
-        if (real || !this.isValid()) {
-            return void ""
-        }
-        return this.crop(width, height).url
-    }
-
-    setMultipleFile(file) {
-        this.#multipleFile = file
-    }
-
-    getMultipleFile(file) {
-        return this.#multipleFile
-    }
-
     /**
      * @override
      * @return {{path, filetype, size, provider, allowed, jsonkey, origin, width, crop_pattern, resize_pattern, height}}
@@ -80,6 +49,32 @@ class AaImgSrc extends AaSrc {
         }
     }
 
+    getMultipleFile(file) {
+        return this.#multipleFile
+    }
+
+    getThumbnail(width, height, real = false) {
+        if (this.#thumbnail) {
+            return this.#thumbnail
+        }
+        if (real || !this.isValid()) {
+            return void ""
+        }
+        return this.crop(width, height).url
+    }
+
+    isValid() {
+        return this.path && this.cropPattern && this.resizePattern
+    }
+
+    setMultipleFile(file) {
+        this.#multipleFile = file
+    }
+
+    setThumbnail(thumbnail) {
+        this.#thumbnail = thumbnail
+    }
+
 
     /**
      * @param {ImgSrcStruct|AaImgSrc|string|*} [data]
@@ -87,6 +82,7 @@ class AaImgSrc extends AaSrc {
      * @param {File} [multipleFile]
      * @note 由于 construct 返回null是无效的，这里对无效的直接返回null
      */
+
     constructor(data, thumbnail, multipleFile) {
         super()
         map.overwrite(this, data, key => {
@@ -100,8 +96,7 @@ class AaImgSrc extends AaSrc {
         this.#thumbnail = thumbnail
         this.#multipleFile = multipleFile
     }
-
-
+    
     /**
      * Get Ratio of width/height
      * @return {Decimal}
