@@ -96,7 +96,7 @@ class AaImgSrc extends AaSrc {
         this.#thumbnail = thumbnail
         this.#multipleFile = multipleFile
     }
-    
+
     /**
      * Get Ratio of width/height
      * @return {Decimal}

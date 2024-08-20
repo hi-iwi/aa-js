@@ -38,18 +38,14 @@ function xrun(method, ...args) {
  *  等同于  (vk ? (vv[vk] ? vv[vk] : defaultV) : vv )，尚未习惯的，可以使用这种常规写法
  */
 function defval(vv, vk, defaultV) {
-    if (typeof vv === "undefined" || typeof defaultV === "undefined") {
-        defaultV = null
-    }
-    if (!vk && vk !== 0) {
-        return typeof vv === "undefined" || vv === null || vv === "" ? defaultV : vv
-    }
-
-    if (typeof vv !== "object" || vv === null || !vv.hasOwnProperty(vk)) {
+    defaultV = typeof defaultV === 'undefined' ? null : defaultV
+    if (typeof vv === 'undefined' || typeof vv === null) {
         return defaultV
     }
-    vv = vv[vk]
-    return typeof vv === "undefined" || vv === null || vv === "" ? defaultV : vv
+    if (typeof vk === 'undefined') {
+        return vv
+    }
+    return typeof vv[vk] === 'undefined' ? defaultV : vv[vk]
 }
 
 /**
@@ -367,7 +363,7 @@ class   // Returns function XXX()
 
     // @notice 不要用 AaLib.Type 判断是否 undefined；用 typeof(n) === "undefined" 更适合
     static of(v, ...args) {
-        if (len(args) > 0) {
+        if (args.length > 0) {
             if (typeof v !== "object" || v === null) {  // typeof null is object
                 return atype.null
             }

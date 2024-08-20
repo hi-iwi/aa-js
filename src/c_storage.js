@@ -208,6 +208,9 @@ class AaStorageEngine {
     /** @type {number} */
     defaultExpiresIn
 
+    expiresDiffKey = `aa${AaStorageEngine.DefaultSeparator}storage${AaStorageEngine.DefaultSeparator}expdiff`
+    expiresUnit = time.Minute
+
     // 这个不要设为私有，否则外面使用会 attempted to get private field on non-instance
     #storage
     #persistentNames = []
@@ -271,6 +274,42 @@ class AaStorageEngine {
         this.defaultExpiresIn = int54(defaultExpiresIn);
     }
 
+    /**
+     * Clear all data except persistent data from this storage
+     * @param {boolean} force
+     */
+    clear(force = false) {
+        this.clearExcept(void [], force)
+    }
+
+
+    /**
+     * Clear all data except persistent data and ignores data from this storage
+     * @param {string[]} [ignores]
+     * @param {boolean} force
+     */
+    clearExcept(ignores, force = false) {
+        panic.arrayErrorType(ignores, 'string', OPTIONAL)
+        let keepData = ignores ? [...ignores] : []
+        if (!force) {
+            const pers = this.getPersistentValues()
+            keepData = pers ? keepData.concat(Object.keys(pers)) : keepData
+        }
+
+        if (len(keepData) === 0) {
+            this.#storage.clear()
+            return
+        }
+
+        this.forEach((key, _) => {
+            if (!keepData.includes(key)) {
+                log.print(this.instanceName, "DELETE", key, keepData[key])
+                this.#storage.removeItem(key)
+            }
+        })
+    }
+
+
     cleanExpired() {
         if (!this.#encapsulate) {
             return
@@ -290,39 +329,167 @@ class AaStorageEngine {
         }
     }
 
+    convertExpires(expires) {
+        if (expires instanceof Date) {
+            expires = expires.valueOf() - Date.now()
+        }
+        if (typeof expires !== 'number') {
+            return ''
+        }
+        expires /= this.expiresUnit
+        this.#getOrSetExpireDiff()
+        return String(expires)
+    }
+
+
     /**
-     * @param {string[]} persistentNames
+     *
+     * @param {string} key
+     * @param value
+     * @return {{expired: boolean, persistent: boolean, value}}   [value, expired]
      */
-    setPersistentNames(persistentNames) {
-        panic.arrayErrorType(persistentNames, 'string', OPTIONAL)
-        this.#persistentNames = persistentNames ? persistentNames : []
+    decodeValue(key, value) {
+        let expired = false
+        let persistent = false
+        if (!this.#encapsulate || typeof value !== "string") {
+            return {value, persistent, expired}
+        }
+        let match = value.match(/^(.*)\s\|([a-zA-Z])(\d*)$/)
+        if (!match) {
+            this.removeItem(key)  // 异常数据，清除为妙
+            return {value: null, persistent, expired}
+        }
+        value = match[1]
+        let type = match[2]
+        persistent = type >= 'A' && type <= 'Z'
+
+        let isExpired = this.isExpired(number(match[3]))
+        switch (type.toLowerCase()) {
+            case atype.alias._serializable:
+                let arr = value.split('::')
+                let className = arr[0]
+                value = arr.slice(1).join('::')
+                try {
+                    value = AaHack.class(className).serialize(value)
+                } catch (err) {
+                    this.removeItem(key)
+                    return {value: null, persistent, expired: true}
+                }
+                break
+            case atype.alias.array:
+            case atype.alias.struct:
+                try {
+                    value = JSON.parse(value)
+                } catch (error) {
+                    log.error(`storage parse ${value} failed: ${error}`)
+                }
+                break
+            case atype.alias.bigint:
+                value = BigInt(value)
+                break
+            case atype.alias.boolean:
+                value = bool(value)
+                break
+            case atype.alias.null:
+                value = (value === "null") ? null : undefined
+                break
+            case atype.alias.number:
+                value = int54(value)
+                break
+            case atype.alias.date:
+                value = new Date(value)
+                break
+            case atype.alias.regexp:
+                value = new RegExp(value)
+                break
+            case atype.alias.string:
+                break
+        }
+        if (typeof value === 'undefined' || isExpired) {
+            this.removeItem(key)
+            return {value: null, persistent, expired: true}
+        }
+        return {value, persistent, expired}
     }
 
+    /**
+     * @param {any} value
+     * @param {StorageOptions} [options]
+     * @return {*}
+     */
+    encodeValue(value, options) {
+        let ok = true;
+        let typeAlias
 
-    getPersistentValues() {
-        let items = {}
-        // 这里是是获取raw数据
-        this.forEach((key, value) => {
-            if (array(aparam, 'PersistentNames').includes(key)) {
-                items[key] = value
-                return
+        if (atype.isSerializable(value)) {
+            typeAlias = atype.alias._serializable
+            const className = value.constructor.name
+            value = value.serialize()
+            value = className + '::' + value
+        } else {
+            const type = atype.of(value)
+            typeAlias = atype.aliasOf(type)
+            switch (type) {
+                case atype.number:
+                    break
+                case atype.boolean:
+                    value = booln(value)
+                    break;
+                case atype.array:
+                case atype.class:
+                case atype.struct:
+                    value = strings.json(value)
+                    break;
+                case atype.date:
+                    value = value.valueOf()
+                    break;
+                case atype.function:
+                case atype.undefined:
+                    ok = false
+                    break;
             }
-            if (this.#persistentNames.includes(key)) {
-                items[key] = value
-                return
-            }
-            if (typeof value === 'undefined') {
-                return
-            }
-            const {persistent, expired} = this.decodeValue(key, value)
-            if (persistent && !expired) {
-                items[key] = value
-            }
-        }, true)
+        }
 
-        return len(items) > 0 ? items : null
+        if (!ok) {
+            return value
+        }
+        const persistent = bool(options, 'persistent')
+        let expires = this.convertExpires(defval(options, 'expires'))
+
+        if (bool(persistent)) {
+            typeAlias = typeAlias.toUpperCase()
+        }
+
+        value = value + ' |' + typeAlias + string(expires)
+        return value
     }
 
+    /**
+     *
+     * @param {string|number} s
+     * @return {boolean}
+     */
+    isExpired(s) {
+        s = Number(s)
+        if (!s) {
+            return false
+        }
+        const diff = this.#getOrSetExpireDiff()
+        const now = Date.now() / this.expiresUnit
+        return diff + s < now
+    }
+
+    #getOrSetExpireDiff() {
+        const key = this.expiresDiffKey
+        // here must use the native getItem method
+        let diff = Number(this.#storage.getItem(key))
+        if (!diff) {
+            // expires for client is not important
+            diff = Math.ceil(Date.now() / this.expiresUnit)
+            this.#storage.setItem(key, diff)
+        }
+        return diff
+    }
 
     /**
      * Iterate storage
@@ -365,39 +532,6 @@ class AaStorageEngine {
         return data
     }
 
-    key(index) {
-        return this.#storage.key(index)
-    }
-
-    /**
-     * Set Item
-     * @param {string} key
-     * @param {any} value
-     * @param {StorageOptions} [options]
-     */
-    setItem(key, value, options) {
-
-        if (this.defaultExpiresIn > 0) {
-            options = map.setNotExist(options, 'expires', this.defaultExpiresIn)
-        }
-        if (this.#encapsulate) {
-            value = AaStorageEngine.encodeValue(value, options)
-        }
-        const args = this.#withOptions && options ? [key, value, options] : [key, value]
-        this.#storage.setItem(...args)
-    }
-
-    /**
-     * Set items in key:value pairs
-     * @param {struct} items
-     * @param {StorageOptions} [options]
-     */
-    setItems(items, options) {
-        for (let [key, value] of Object.entries(items)) {
-            this.setItem(key, value, options)
-        }
-    }
-
     /**
      * Get item, returns null on not exists
      * @param key
@@ -421,6 +555,71 @@ class AaStorageEngine {
             }
         })
         return items.length === 0 ? null : items
+    }
+
+    getPersistentValues() {
+        let items = {}
+        // 这里是是获取raw数据
+        this.forEach((key, value) => {
+            if (array(aparam, 'PersistentNames').includes(key)) {
+                items[key] = value
+                return
+            }
+            if (this.#persistentNames.includes(key)) {
+                items[key] = value
+                return
+            }
+            if (typeof value === 'undefined') {
+                return
+            }
+            const {persistent, expired} = this.decodeValue(key, value)
+            if (persistent && !expired) {
+                items[key] = value
+            }
+        }, true)
+
+        return len(items) > 0 ? items : null
+    }
+
+    key(index) {
+        return this.#storage.key(index)
+    }
+
+    /**
+     * Set Item
+     * @param {string} key
+     * @param {any} value
+     * @param {StorageOptions} [options]
+     */
+    setItem(key, value, options) {
+
+        if (this.defaultExpiresIn > 0) {
+            options = map.setNotExist(options, 'expires', this.defaultExpiresIn)
+        }
+        if (this.#encapsulate) {
+            value = this.encodeValue(value, options)
+        }
+        const args = this.#withOptions && options ? [key, value, options] : [key, value]
+        this.#storage.setItem(...args)
+    }
+
+    /**
+     * Set items in key:value pairs
+     * @param {struct} items
+     * @param {StorageOptions} [options]
+     */
+    setItems(items, options) {
+        for (let [key, value] of Object.entries(items)) {
+            this.setItem(key, value, options)
+        }
+    }
+
+    /**
+     * @param {string[]} persistentNames
+     */
+    setPersistentNames(persistentNames) {
+        panic.arrayErrorType(persistentNames, 'string', OPTIONAL)
+        this.#persistentNames = persistentNames ? persistentNames : []
     }
 
     /**
@@ -457,167 +656,7 @@ class AaStorageEngine {
         })
     }
 
-    /**
-     * Clear all data except persistent data and ignores data from this storage
-     * @param {string[]} [ignores]
-     * @param {boolean} force
-     */
-    clearExcept(ignores, force = false) {
-        panic.arrayErrorType(ignores, 'string', OPTIONAL)
-        let keepData = ignores ? [...ignores] : []
-        if (!force) {
-            const pers = this.getPersistentValues()
-            keepData = pers ? keepData.concat(Object.keys(pers)) : keepData
-        }
 
-        if (len(keepData) === 0) {
-            this.#storage.clear()
-            return
-        }
-
-        this.forEach((key, _) => {
-            if (!keepData.includes(key)) {
-                log.print(this.instanceName, "DELETE", key, keepData[key])
-                this.#storage.removeItem(key)
-            }
-        })
-    }
-
-    /**
-     * Clear all data except persistent data from this storage
-     * @param {boolean} force
-     */
-    clear(force = false) {
-        this.clearExcept(void [], force)
-    }
-
-    /**
-     *
-     * @param {string} key
-     * @param value
-     * @return {{expired: boolean, persistent: boolean, value}}   [value, expired]
-     */
-    decodeValue(key, value) {
-        let expired = false
-        let persistent = false
-        if (!this.#encapsulate || typeof value !== "string") {
-            return {value, persistent, expired}
-        }
-        let match = value.match(/^(.*)\s\|([a-zA-Z])(\d*)$/)
-        if (!match) {
-            this.removeItem(key)  // 异常数据，清除为妙
-            return {value: null, persistent, expired}
-        }
-        value = match[1]
-        let type = match[2]
-        persistent = type >= 'A' && type <= 'Z'
-
-        let expireTo = number(match[3])
-        switch (type.toLowerCase()) {
-            case atype.alias._serializable:
-                let arr = value.split('::')
-                let className = arr[0]
-                value = arr.slice(1).join('::')
-                try {
-                    value = AaHack.class(className).serialize(value)
-                } catch (err) {
-                    this.removeItem(key)
-                    return {value: null, persistent, expired: true}
-                }
-                break
-            case atype.alias.array:
-            case atype.alias.struct:
-                try {
-                    value = JSON.parse(value)
-                } catch (error) {
-                    log.error(`storage parse ${value} failed: ${error}`)
-                }
-                break
-            case atype.alias.bigint:
-                value = BigInt(value)
-                break
-            case atype.alias.boolean:
-                value = bool(value)
-                break
-            case atype.alias.null:
-                value = (value === "null") ? null : undefined
-                break
-            case atype.alias.number:
-                value = int54(value)
-                break
-            case atype.alias.date:
-                value = new Date(value)
-                break
-            case atype.alias.regexp:
-                value = new RegExp(value)
-                break
-            case atype.alias.string:
-                break
-        }
-        if (typeof value === 'undefined' || (expireTo > 0 && Date.now() - expireTo >= 0)) {
-            this.removeItem(key)
-            return {value: null, persistent, expired: true}
-        }
-        return {value, persistent, expired}
-    }
-
-    /**
-     * @param {any} value
-     * @param {StorageOptions} [options]
-     * @return {*}
-     */
-    static encodeValue(value, options) {
-        let ok = true;
-        let typeAlias
-
-        if (atype.isSerializable(value)) {
-            typeAlias = atype.alias._serializable
-            const className = value.constructor.name
-            value = value.serialize()
-            value = className + '::' + value
-        } else {
-            const type = atype.of(value)
-            typeAlias = atype.aliasOf(type)
-            switch (type) {
-                case atype.number:
-                    break
-                case atype.boolean:
-                    value = booln(value)
-                    break;
-                case atype.array:
-                case atype.class:
-                case atype.struct:
-                    value = strings.json(value)
-                    break;
-                case atype.date:
-                    value = value.valueOf()
-                    break;
-                case atype.function:
-                case atype.undefined:
-                    ok = false
-                    break;
-            }
-        }
-
-        if (!ok) {
-            return value
-        }
-        const persistent = bool(options, 'persistent')
-        let expires = defval(options, 'expires')
-        if (typeof expires === "number") {
-            expires = Date.now() + expires
-        } else if (expires instanceof Date) {
-            expires = expires.valueOf()
-        }
-
-        if (bool(persistent)) {
-            typeAlias = typeAlias.toUpperCase()
-        }
-        // 没必要通过计算本年差来缩短expires（这样最多缩短1位长度）；缩短为秒也最多缩短3位长度
-        // base64数字会变得更长，直接存毫秒，用存储空间换CPU计算时间
-        value = value + ' |' + typeAlias + string(expires)
-        return value
-    }
 }
 
 
