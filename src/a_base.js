@@ -8,6 +8,7 @@
  * @typedef {((a:any, b:any)=>number)|boolean} SortMethod
  * @typedef {string|number} StringN
  * @typedef {number|string} NumberX
+ * @typedef {number} TimeUnit
  * @typedef {number} UnixTime     unix time in seconds
  * @typedef {number} UnixTimeMillisecond unix time in milliseconds
  * @typedef {number} Timeout
@@ -29,7 +30,6 @@ const OPTIONAL = false
 const REQUIRED = !OPTIONAL
 const INCR = 'INCR'
 const DECR = 'DECR'
-
 
 
 /**

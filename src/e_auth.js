@@ -1,6 +1,6 @@
 /**
  * @import aparam, AaStorageFactor, AaRawFetch
- * @typedef {{access_token: string, conflict: boolean|undefined, expires_in: number, refresh_api: string, refresh_token: string, scope: null, secure: boolean|undefined, token_type: string, validate_api: string}} TokenData
+ * @typedef {{access_token: string, conflict?: boolean, expires_in?: number, refresh_api?: string, refresh_token?: string, refresh_ttl?:number, scope?: null, secure?: boolean, state?:string, token_type: string, validate_api?: string}} TokenData
  */
 
 
@@ -21,7 +21,7 @@ class AaAuth {
 
     /** @type {TokenData|null} */
     #token
-    /** @type {number} local authed at in seconds*/
+    /** @type {number} local authed at in milliseconds */
     #tokenAuthAt = 0
     #validateTried = false
 
@@ -166,7 +166,10 @@ class AaAuth {
                 'code'      : refreshToken,
             }
         }).then(data => {
-            this.setToken(data)
+            const ok = this.setToken(data)
+            if (!ok) {
+                throw new TypeError(`save token failed`)
+            }
             this.#validateTried = true
             this.#sessionSetItem('checked', true)
             return this.#token
@@ -187,54 +190,54 @@ class AaAuth {
         this.#tryStoreCookie(aparam.Logout, 0, -time.Day)
     }
 
-    setFields(fields) {
-        this.#fields = fields
-        this.#localSetItem("fields", fields)
-    }
 
     /**
      * Set token and fields
      * @param token
-     * @param fields
+     * @param [fields]
+     * @return {boolean}
      */
     setToken(token, fields) {
         this.removeLogout()
-        this.#tokenAuthAt = Math.floor(new Date().valueOf() / time.Second)
+        this.#tokenAuthAt = Date.now()
 
         token = this.#validateToken(token)
         if (!token || !token.isValid()) {
-            console.error(`auth: set invalid token`, token)
-            return
+            log.error(`auth: set invalid token`, token)
+            return false
         }
 
         if (bool(token, "conflict")) {
             alert("授权登录绑定过其他账号，已切换至授权登录的账号。")
         }
 
-
+        this.#fields = fields
         this.#token = token
 
         // 清空其他缓存
         this.#storage.clearAll()
 
-        const expiresIn = token['expires_in']
-        this.#tryStoreCookie("access_token", token['access_token'], expiresIn * time.Second)
-        this.#tryStoreCookie("token_type", token['token_type'], expiresIn * time.Second)
+
+        let expires = token['expires_in'] * time.Second
+        this.#tryStoreCookie("access_token", token['access_token'], expires)
+        this.#tryStoreCookie("token_type", token['token_type'], expires)
 
 
-        // refresh token 不应该放到cookie里面
-        this.#localSetItem("conflict", token['conflict'])
-        this.#localSetItem("expires_in", expiresIn)
-        this.#localSetItem("refresh_api", token['refresh_api'])
-        this.#localSetItem("refresh_token", token['refresh_token'])
-        this.#localSetItem("scope", token['scope'])
-        this.#localSetItem("secure", token['secure'])
-        this.#localSetItem("validate_api", token['validate_api'])
+        // refresh token 不应该放到cookie里面，而且存储时间应该更久
+        // state 用于透传，不用存储；expires_in/ refresh_ttl 可以获取，不用存储
+        let rtokenExpires = token['refresh_ttl'] * time.Second
+        this.#localSetItem("state", token['state'], rtokenExpires)
+        this.#localSetItem("scope", token['scope'], rtokenExpires)
 
-        this.#localSetItem("localAuthAt_", this.#tokenAuthAt)
+        this.#localSetItem("conflict", token['conflict'], rtokenExpires)
+        this.#localSetItem("refresh_api", token['refresh_api'], rtokenExpires)
+        this.#localSetItem("refresh_token", token['refresh_token'], rtokenExpires)
+        this.#localSetItem("secure", token['secure'], rtokenExpires)
+        this.#localSetItem("validate_api", token['validate_api'], rtokenExpires)
+
+        this.#localSetItem("fields", fields, rtokenExpires)
         this.#sessionSetItem('checked', true)
-
-        this.setFields(fields)
+        return true
     }
 
 
@@ -326,17 +329,21 @@ class AaAuth {
         if (token) {
             return token
         }
-        this.#tokenAuthAt = this.readStorage("localAuthAt_")
+        const a = this.#storage.local.getTTL("access_token", time.Second)
+        const r = this.#storage.local.getTTL("refresh_token", time.Second)
 
         token = this.#validateToken({
-            "access_token" : this.readStorage("access_token"),
+            "access_token": a.value,
+            "expires_in"  : a.ttl,
+            "scope"       : this.readStorage("scope"),
+            "state"       : this.readStorage("state"),
+            "token_type"  : this.readStorage("token_type"),
+
             "conflict"     : this.readStorage("conflict"),
-            "expires_in"   : this.readStorage("expires_in"),
             "refresh_api"  : this.readStorage("refresh_api"),
-            "refresh_token": this.readStorage("refresh_token"),
-            "scope"        : this.readStorage("scope"),
+            "refresh_token": r.value,
+            "refresh_ttl"  : r.ttl,
             "secure"       : this.readStorage("secure"),
-            "token_type"   : this.readStorage("token_type"),
             "validate_api" : this.readStorage("validate_api"),
         })
         this.#token = token // 避免改动
@@ -351,8 +358,8 @@ class AaAuth {
         return AaAuth.#removeItem(this.#storage.local, key)
     }
 
-    #localSetItem(key, value) {
-        return AaAuth.#saveItem(this.#storage.local, key, value)
+    #localSetItem(key, value, expiresIn) {
+        return AaAuth.#saveItem(this.#storage.local, key, value, {expires: expiresIn})
     }
 
     #sessionGetItem(key) {
@@ -379,8 +386,13 @@ class AaAuth {
     }
 
 
+    /**
+     * @param token
+     * @return {{access_token, refresh_token: string, refresh_api: string, validate_api: string, scope: ({[key:string]:any}|null), isValid: ()=> boolean, state: string, token_type, refresh_ttl: number, secure: (void|boolean), expires_in: number, conflict: (void|boolean)}|null}
+     * @note 有可能access_token已过期，而refresh_token还未过期，因此需要 .isValid()判断
+     */
     #validateToken(token) {
-        const isAccessTokenInvalid = !token['access_token'] || !token['expires_in'] || !token['token_type']
+        const isAccessTokenInvalid = !token['access_token'] || !token['token_type']
         const isRefreshTokenInvalid = !token['refresh_api'] || !token['refresh_token']
 
         // access_token 可能过期清除了；此时可以通过 refresh token 更新
@@ -388,29 +400,42 @@ class AaAuth {
             return null
         }
         const itself = this
+
+        let expiresIn = int32(token, 'expires_in', 2 * time.Hour)
+        let rtokenTTL = int32(token, 'refresh_ttl', 7 * time.Day)
         return {
-            "access_token" : token["access_token"],
-            "conflict"     : token.hasOwnProperty('conflict') ? bool(token["conflict"]) : void false,
-            "expires_in"   : int54(token['expires_in']),
+            // 标准参数
+            "access_token": token["access_token"],
+            "expires_in"  : expiresIn,
+            "scope"       : token.hasOwnProperty('scope') ? token["secure"] : null,
+            "state"       : string(token, "state"),
+            "token_type"  : token["token_type"],
+
+            // 非标准参数
+            "conflict"     : typeof token['conflict'] === 'undefined' ? void false : bool(token["conflict"]),
             "refresh_api"  : string(token, "refresh_api"),  // 非必要
             "refresh_token": string(token, "refresh_token"),// 非必要
-            "scope"        : token.hasOwnProperty('scope') ? token["secure"] : null,
-            "secure"       : token.hasOwnProperty('secure') ? bool(token["secure"]) : void false,
-            "token_type"   : token["token_type"],
+            "refresh_ttl"  : rtokenTTL,// 非必要
+            "secure"       : typeof token["secure"] === 'undefined' ? void false : bool(token["secure"]),
             "validate_api" : string(token, "validate_api"),// 非必要
             isValid        : function () {
-                if (!this['access_token'] || !this['expires_in'] || !this['token_type']) {
-                    return false
-                }
-                const expires = (itself.#tokenAuthAt + this['expires_in']) * time.Second
+                const expires = this['expires_in'] * time.Second + itself.#tokenAuthAt
                 return expires > Date.now()
             },
         }
     }
 
-    static #saveItem(engine, key, value) {
+    /**
+     *
+     * @param {AaStorageEngine} engine
+     * @param {string} key
+     * @param {any} value
+     * @param {StorageOptions} [options]
+     * @return {void|*}
+     */
+    static #saveItem(engine, key, value, options) {
         const keyname = AaAuth.#storageKeyName(engine, key)
-        return engine.setItem(keyname, value)
+        return engine.setItem(...xargs(keyname, value, options))
     }
 
     /**

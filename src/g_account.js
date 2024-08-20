@@ -52,15 +52,20 @@ class AaAccount {
     /**
      *
      * @param {LoginResponseData} data
+     * @return {boolean}
      */
     save(data) {
-        this.#auth.setToken(data['token'], data['fields'])
-        this.saveProfile(data['profile'])
+        let ok = this.#auth.setToken(data['token'], data['fields'])
+        if(!ok){
+            return false
+        }
+        return this.saveProfile(data['profile'])
     }
 
     saveProfile(profile) {
         this.#profile = profile
         this.#db.save(AaAccount.TableName, profile)
+        return true
     }
 
     drop() {

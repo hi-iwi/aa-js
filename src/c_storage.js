@@ -208,8 +208,8 @@ class AaStorageEngine {
     /** @type {number} */
     defaultExpiresIn
 
-    expiresDiffKey = `aa${AaStorageEngine.DefaultSeparator}storage${AaStorageEngine.DefaultSeparator}expdiff`
-    expiresUnit = time.Minute
+    ttlDiffKey = `aa${AaStorageEngine.DefaultSeparator}storage${AaStorageEngine.DefaultSeparator}ttld`
+    ttlUnit = time.Minute
 
     // 这个不要设为私有，否则外面使用会 attempted to get private field on non-instance
     #storage
@@ -322,10 +322,8 @@ class AaStorageEngine {
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i]
             let value = this.#storage.getItem(key)
-            const {expired} = this.decodeValue(key, value)
-            if (expired) {
-                this.removeItem(key)
-            }
+            this.decodeValue(key, value)  // will remove expired data
+
         }
     }
 
@@ -336,7 +334,7 @@ class AaStorageEngine {
         if (typeof expires !== 'number') {
             return ''
         }
-        expires /= this.expiresUnit
+        expires /= this.ttlUnit
         this.#getOrSetExpireDiff()
         return String(expires)
     }
@@ -346,24 +344,25 @@ class AaStorageEngine {
      *
      * @param {string} key
      * @param value
-     * @return {{expired: boolean, persistent: boolean, value}}   [value, expired]
+     * @return {{ttl: (number|null), persistent: boolean, value}}   [value, expired]
+     *  ttl(Time to live): returns the remaining time (in this.ttlUnit) to live of a key that has a timeout
      */
     decodeValue(key, value) {
-        let expired = false
+        let ttl = null
         let persistent = false
         if (!this.#encapsulate || typeof value !== "string") {
-            return {value, persistent, expired}
+            return {value, persistent, ttl}
         }
         let match = value.match(/^(.*)\s\|([a-zA-Z])(\d*)$/)
         if (!match) {
             this.removeItem(key)  // 异常数据，清除为妙
-            return {value: null, persistent, expired}
+            return {value: null, persistent, ttl}
         }
         value = match[1]
         let type = match[2]
         persistent = type >= 'A' && type <= 'Z'
 
-        let isExpired = this.isExpired(number(match[3]))
+        ttl = this.#ttl(number(match[3]))
         switch (type.toLowerCase()) {
             case atype.alias._serializable:
                 let arr = value.split('::')
@@ -373,7 +372,7 @@ class AaStorageEngine {
                     value = AaHack.class(className).serialize(value)
                 } catch (err) {
                     this.removeItem(key)
-                    return {value: null, persistent, expired: true}
+                    return {value: null, persistent, ttl}
                 }
                 break
             case atype.alias.array:
@@ -405,12 +404,13 @@ class AaStorageEngine {
             case atype.alias.string:
                 break
         }
-        if (typeof value === 'undefined' || isExpired) {
+        if (typeof value === 'undefined' || (ttl !== null && ttl < 0)) {
             this.removeItem(key)
-            return {value: null, persistent, expired: true}
+            value = null
         }
-        return {value, persistent, expired}
+        return {value, persistent, ttl}
     }
+
 
     /**
      * @param {any} value
@@ -464,32 +464,6 @@ class AaStorageEngine {
         return value
     }
 
-    /**
-     *
-     * @param {string|number} s
-     * @return {boolean}
-     */
-    isExpired(s) {
-        s = Number(s)
-        if (!s) {
-            return false
-        }
-        const diff = this.#getOrSetExpireDiff()
-        const now = Date.now() / this.expiresUnit
-        return diff + s < now
-    }
-
-    #getOrSetExpireDiff() {
-        const key = this.expiresDiffKey
-        // here must use the native getItem method
-        let diff = Number(this.#storage.getItem(key))
-        if (!diff) {
-            // expires for client is not important
-            diff = Math.ceil(Date.now() / this.expiresUnit)
-            this.#storage.setItem(key, diff)
-        }
-        return diff
-    }
 
     /**
      * Iterate storage
@@ -534,7 +508,7 @@ class AaStorageEngine {
 
     /**
      * Get item, returns null on not exists
-     * @param key
+     * @param {string} key
      * @return {null|*}
      */
     getItem(key) {
@@ -542,6 +516,7 @@ class AaStorageEngine {
         const {value} = this.decodeValue(key, raw)  // decodeValue will remove expired key
         return value
     }
+
 
     /**
      * Get items matched with key
@@ -572,13 +547,29 @@ class AaStorageEngine {
             if (typeof value === 'undefined') {
                 return
             }
-            const {persistent, expired} = this.decodeValue(key, value)
-            if (persistent && !expired) {
+            const {persistent, ttl} = this.decodeValue(key, value)
+            if (persistent && (ttl === null || ttl > 0)) {
                 items[key] = value
             }
         }, true)
 
         return len(items) > 0 ? items : null
+    }
+
+    /**
+     * Get item with ttl
+     * @param {string} key
+     * @param {TimeUnit} unit
+     * @return {{ttl: (number|null), persistent: boolean, value}}
+     *   ttl(Time to live): returns the remaining time (in this.ttlUnit) to live of a key that has a timeout
+     */
+    getTTL(key, unit = this.ttlUnit) {
+        let raw = this.#storage.getItem(key)
+        let {ttl, persistent, value} = this.decodeValue(key, raw)  // decodeValue will remove expired key
+        if (ttl && unit && unit !== this.ttlUnit) {
+            ttl = Math.floor(ttl * this.ttlUnit / unit)
+        }
+        return {ttl, persistent, value}
     }
 
     key(index) {
@@ -656,6 +647,32 @@ class AaStorageEngine {
         })
     }
 
+    #getOrSetExpireDiff() {
+        const key = this.ttlDiffKey
+        // here must use the native getItem method
+        let diff = Number(this.#storage.getItem(key))
+        if (!diff) {
+            // expires for client is not important
+            diff = Math.ceil(Date.now() / this.ttlUnit)
+            this.#storage.setItem(key, diff)
+        }
+        return diff
+    }
+
+    /**
+     *
+     * @param {string|number} s
+     * @return {number|null}
+     */
+    #ttl(s) {
+        s = Number(s)
+        if (!s) {
+            return null
+        }
+        const diff = this.#getOrSetExpireDiff()
+        const now = Date.now() / this.ttlUnit
+        return diff + s - now
+    }
 
 }
 

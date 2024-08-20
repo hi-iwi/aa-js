@@ -517,11 +517,15 @@ class AaDateValidator {
 
 class time {
     name = 'aa-time'
-
+    /** @type {TimeUnit} */
     static Millisecond = 1
+    /** @type {TimeUnit} */
     static Second = 1000 * time.Millisecond
+    /** @type {TimeUnit} */
     static Minute = 60 * time.Second
+    /** @type {TimeUnit} */
     static Hour = 60 * time.Minute
+    /** @type {TimeUnit} */
     static Day = 24 * time.Hour
 
 
