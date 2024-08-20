@@ -39,10 +39,10 @@ function xrun(method, ...args) {
  */
 function defval(vv, vk, defaultV) {
     defaultV = typeof defaultV === 'undefined' ? null : defaultV
-    if (typeof vv === 'undefined' || typeof vv === null) {
+    if (typeof vv === 'undefined' || vv === null) {
         return defaultV
     }
-    if (typeof vk === 'undefined') {
+    if (!vk && vk !== 0) {
         return vv
     }
     return typeof vv[vk] === 'undefined' ? defaultV : vv[vk]

@@ -120,14 +120,11 @@ class AaEditor {
 
 
     /**
-     * @param {HTMLElement|string} dom    id: #ID, class: .className
+     * @param {DOM|string} selector    id: #ID, class: .className
      * @param  {{[key:string]:SrcComposer}} [srcComposers]
      */
-    decodeSelector(dom, srcComposers) {
-        if (typeof dom === "string") {
-            dom = document.querySelector(dom)
-        }
-        return this.decodeContent(document.querySelector(dom), null, srcComposers)
+    decodeSelector(selector, srcComposers) {
+        return this.decodeContent(AaDOM.querySelector(selector), null, srcComposers)
     }
 
     /**

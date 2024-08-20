@@ -51,7 +51,7 @@ class paths {
 
     /**
      * Clean a path to get the shortest path name equivalent to path by purely lexical processing.
-     * @param path
+     * @param {string} path
      * @example
      *  .clean("/../a/c/")  ===>  /a/c
      *  .clean("a/b/c/..")  ===> a/b
