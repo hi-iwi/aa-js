@@ -4,13 +4,19 @@
 
 //  react state  数字 001231 === 1231 == 001231.000  这些数值都没有变化，state就不会触发
 
-// to uint64
-BigInt.prototype.isZero = function () {
-    return this === BigInt(0)
-}
-BigInt.prototype.is = function (value) {
-    return this === BigInt(typeof value === 'undefined' ? 0 : value)
-}
+/**
+ * BigInt 可以直接跟number比较，但是   BigInt(0) === 0  ===> false
+ *   !BigInt(0) === true;   !BigInt(1) === false
+ */
+// BigInt.prototype.eq = function (value) {
+//     return this === BigInt(typeof value === 'undefined' ? 0 : value)
+// }
+// BigInt.prototype.gt = function (value) {
+//     return this > BigInt(typeof value === 'undefined' ? 0 : value)
+// }
+// BigInt.prototype.lt = function (value) {
+//     return this < BigInt(typeof value === 'undefined' ? 0 : value)
+// }
 
 /**
  * exclude undefined parameters at the tail
@@ -244,71 +250,8 @@ class atype {
      * @param {vv_vk_defaultV} args
      * @return {boolean}
      */
-    static notRealId(...args) {
-        return !atype.isRealId(...args)
-    }
-
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isArray(...args) {
-        return Array.isArray(defval(...args))
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isBoolean(...args) {
-        return typeof defval(...args) === "boolean"
-    }
-
-    static isBigInt(...args) {
-        return typeof defval(...args) === 'bigint'
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isDate(...args) {
-        return atype.of(...args) === "date"
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
     static isDom(...args) {
         return atype.of(...args) === "dom"
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isFunction(...args) {
-        return typeof defval(...args) === "function"
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isNumber(...args) {
-        return typeof defval(...args) === "number"
-    }
-
-    /**
-     * 必须是 > 0的数字，注意 bigint
-     * @param {vv_vk_defaultV} args
-     * @return {boolean|boolean}
-     */
-    static isRealId(...args) {
-        let v = defval(...args)
-        return v === null ? false : (uint64(v) !== 0n)
     }
 
     /**
@@ -335,22 +278,6 @@ class atype {
         return atype.of(...args) === "struct"
     }
 
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isString(...args) {
-        return typeof defval(...args) === "string"
-    }
-
-    /**
-     * @param {vv_vk_defaultV} args
-     * @return {boolean}
-     */
-    static isRegexp(...args) {
-        return atype.of(...args) === "regexp"
-    }
 
     /*
 
