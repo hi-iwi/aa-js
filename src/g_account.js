@@ -2,6 +2,8 @@
  * @import AaAuth
  * @typedef {struct} LoginResponseData
  * @typedef {struct} Profile
+ * @typedef {struct} Vuser
+ * @typedef {'main'|'selected'|{vtype:number}} VuserCondition
  */
 
 class AaAccount {
@@ -9,7 +11,12 @@ class AaAccount {
 
     static TableName = 'auth_account'
     static MainVtype = 0
+
+    castVuid = uint64
+    castVtype = uint8
+
     #profile
+    /** @type BigInt */
     #selectedVuid
 
     #lock = new AaLock()
@@ -49,27 +56,64 @@ class AaAccount {
 
     }
 
-    /**
-     *
-     * @param {LoginResponseData} data
-     * @return {boolean}
-     */
-    save(data) {
-        let ok = this.#auth.setToken(data['token'], data['fields'])
-        if (!ok) {
-            return false
-        }
-        return this.saveProfile(data['profile'])
-    }
-
-    saveProfile(profile) {
-        this.#profile = profile
-        this.#db.save(AaAccount.TableName, profile)
-        return true
-    }
 
     drop() {
         this.#db.drop(AaAccount.TableName)
+    }
+
+    /**
+     * @param {Vuser[]|null|void} vusers
+     * @param {number} vtype
+     * @return {Vuser|null}
+     */
+    findByVtype(vusers, vtype) {
+        if (!vusers) {
+            return null
+        }
+        for (let i = 0; i < vusers.length; i++) {
+            let vuser = vusers[i]
+            if (this.castVtype(vuser['vtype']) === this.castVtype(vtype)) {
+                return vuser
+            }
+        }
+        return null
+    }
+
+    /**
+     * @param {Vuser[]|null|void} vusers
+     * @param {BigInt} vuid
+     * @return {Vuser|null}
+     */
+    findVuser(vusers, vuid) {
+        if (!vusers) {
+            return null
+        }
+        for (let i = 0; i < vusers.length; i++) {
+            let vuser = vusers[i]
+            if (this.castVuid(vuser['vuid']) === this.castVuid(vuid)) {
+                return vuser
+            }
+        }
+        return null
+    }
+
+    /**
+     * @param profile
+     * @return {Profile|null}
+     */
+    formatProfile(profile) {
+        if (!profile) {
+            return null
+        }
+        profile['vuser']['vuid'] = this.castVuid(profile['vuser']['vuid'])
+        profile['vuser']['vtype'] = this.castVtype(profile['vuser']['vtype'])
+        if (profile['doppes']) {
+            for (let i = 0; i < profile['doppes'].length; i++) {
+                profile['doppes'][i]['vuid'] = this.castVuid(profile['doppes'][i]['vuid'])
+                profile['doppes'][i]['vtype'] = this.castVtype(profile['doppes'][i]['vtype'])
+            }
+        }
+        return profile
     }
 
     /**
@@ -87,21 +131,6 @@ class AaAccount {
         }
         profile = this.formatProfile(profile)
         this.#profile = profile
-        return profile
-    }
-
-    formatProfile(profile) {
-        if (!profile) {
-            return null
-        }
-        profile['vuser']['vuid'] = string(profile['vuser']['vuid'])
-        profile['vuser']['vtype'] = number(profile['vuser']['vtype'])
-        if (profile['doppes']) {
-            for (let i = 0; i < profile['doppes'].length; i++) {
-                profile['doppes'][i]['vuid'] = string(profile['doppes'][i]['vuid'])
-                profile['doppes'][i]['vtype'] = number(profile['doppes'][i]['vtype'])
-            }
-        }
         return profile
     }
 
@@ -144,6 +173,36 @@ class AaAccount {
     }
 
     /**
+     * Last selected vuser, default is main vuser
+     * @return {Promise<Vuser>}
+     */
+    getSelectedVuser() {
+        let vuid = this.#selectedVuid
+        if (!vuid) {
+            vuid = this.#readSelectedVuid()
+        }
+        if (!vuid) {
+            return this.mainVuser()
+        }
+        return this.getVuser(vuid)
+    }
+
+    /**
+     * Get vuser
+     * @param {BigInt} vuid
+     * @return {Promise<Vuser>}
+     */
+    getVuser(vuid) {
+        return this.getVusers().then(vusers => {
+            const vuser = this.findVuser(vusers, vuid)
+            if (vuser) {
+                return vuser
+            }
+            throw new TypeError(`not found vuser ${vuid}`)
+        })
+    }
+
+    /**
      * Get vusers
      * @return {Promise<Vuser[]>}
      */
@@ -158,106 +217,11 @@ class AaAccount {
 
 
     /**
-     * Get vuser with vtype
-     * @param {NumberX} vtype
-     * @return {Promise<Vuser>}
-     */
-    searchVuser(vtype) {
-        return this.getVusers().then(vusers => {
-            const vuser = this.findByVtype(vusers, vtype)
-            if (vuser) {
-                return vuser
-            }
-            throw new TypeError(`not found vuser with vtype: ${vtype}`)
-        })
-    }
-
-    /**
      * Get main vuser
      * @return {Promise<Vuser>}
      */
     mainVuser() {
         return this.searchVuser(AaAccount.MainVtype)
-    }
-
-
-    /**
-     * Get vuser
-     * @param {string} vuid
-     * @return {Promise<Vuser>}
-     */
-    getVuser(vuid) {
-        return this.getVusers().then(vusers => {
-            for (let i = 0; i < vusers.length; i++) {
-                let vuser = vusers[i]
-                if (vuser['vuid'] === string(vuid)) {
-                    return vuser
-                }
-            }
-            throw new TypeError(`not found vuser ${vuid}`)
-        })
-    }
-
-    findByVtype(vusers, vtype) {
-        vtype = number(vtype)
-        for (let i = 0; i < vusers.length; i++) {
-            let vuser = vusers[i]
-            if (vuser['vtype'] === vtype) {
-                return vuser
-            }
-        }
-        return null
-    }
-
-    findVuser(vusers, vuid) {
-        for (let i = 0; i < vusers.length; i++) {
-            let vuser = vusers[i]
-            if (string(vuser['vtype']) === string(vuid)) {
-                return vuser
-            }
-        }
-        return null
-    }
-
-    setSelectedVuid(vuid) {
-        this.#selectedVuid = vuid
-        this.#db.save(AaAccount.TableName, {'selected_vuid_': vuid})
-    }
-
-    #readSelectedVuid() {
-        return this.#db.find(AaAccount.TableName, 'selected_vuid_')
-    }
-
-    preloadSelectedVuser() {
-
-        let profile = this.getCachedProfile()
-        if (!profile) {
-            return null
-        }
-        let vuid = this.#selectedVuid
-        if (!vuid || vuid === '0') {
-            vuid = this.#readSelectedVuid()
-        }
-        if (!vuid) {
-            return profile['vuser']
-        }
-        return this.findByVtype(profile['doppes'],)
-
-    }
-
-    /**
-     * Last selected vuser, default is main vuser
-     * @return {Promise<Vuser>}
-     */
-    getSelectedVuser() {
-        let vuid = this.#selectedVuid
-        if (!vuid || vuid === '0') {
-            vuid = this.#readSelectedVuid()
-        }
-        if (!vuid) {
-            return this.mainVuser()
-        }
-        return this.getVuser(vuid)
     }
 
     /**
@@ -270,6 +234,7 @@ class AaAccount {
         if (!profile) {
             return profile
         }
+        vuser['vuid'] = this.castVuid(vuser['vuid'])
         const vuid = vuser['vuid']
         if (profile['vuser']['vuid'] === vuid) {
             profile['vuser'] = vuser
@@ -285,5 +250,128 @@ class AaAccount {
 
         this.saveProfile(profile)
         return profile
+    }
+
+    /**
+     * @param {VuserCondition} condition
+     * @return {Vuser|null}
+     */
+    preload(condition) {
+        if (condition === 'selected') {
+            return this.preloadSelectedVuser()
+        }
+        if (condition === 'main') {
+            return this.preloadMainVuser()
+        }
+        if (condition.vtype) {
+            return this.preloadByVtype(condition.vtype)
+        }
+        return null
+    }
+
+    /**
+     * @return {Vuser|null}
+     */
+    preloadByVtype(vtype) {
+        let profile = this.getCachedProfile()
+        if (!profile) {
+            return null
+        }
+        vtype = this.castVtype(vtype)
+        if (vtype === AaAccount.MainVtype) {
+            return profile['vuser']
+        }
+        return this.findByVtype(profile['doppes'], vtype)
+    }
+
+    /**
+     * @return {Vuser|null}
+     */
+    preloadMainVuser() {
+        return this.preloadByVtype(AaAccount.MainVtype)
+    }
+
+    /**
+     * @return {Vuser|null}
+     */
+    preloadSelectedVuser() {
+        let profile = this.getCachedProfile()
+        if (!profile) {
+            return null
+        }
+        let vuid = this.#selectedVuid
+        if (!vuid) {
+            vuid = this.#readSelectedVuid()
+        }
+        const main = profile['vuser']
+        if (!vuid || main['vuid'] === vuid) {
+            return profile['vuser']
+        }
+        return this.findVuser(profile['doppes'], vuid)
+    }
+
+    /**
+     *
+     * @param {LoginResponseData} data
+     * @return {boolean}
+     */
+    save(data) {
+        let ok = this.#auth.setToken(data['token'], data['fields'])
+        if (!ok) {
+            return false
+        }
+        return this.saveProfile(data['profile'])
+    }
+
+    saveProfile(profile) {
+        this.#profile = profile
+        this.#db.save(AaAccount.TableName, profile)
+        return true
+    }
+
+    /**
+     * @param {VuserCondition} condition
+     * @return {Promise<Vuser>}
+     */
+    vuser(condition) {
+        if (condition === 'selected') {
+            return aa.account.getSelectedVuser()
+        }
+        if (condition === 'main') {
+            return aa.account.mainVuser()
+        }
+        if (condition.vtype) {
+            return aa.account.searchVuser(condition.vtype)
+        }
+        return APromiseReject("no matched vuser: " + string(condition))
+    }
+
+    /**
+     * Get vuser with vtype
+     * @param {NumberX} vtype
+     * @return {Promise<Vuser>}
+     */
+    searchVuser(vtype) {
+        vtype = this.castVtype(vtype)
+        return this.getVusers().then(vusers => {
+            const vuser = this.findByVtype(vusers, vtype)
+            if (vuser) {
+                return vuser
+            }
+            throw new TypeError(`not found vuser with vtype: ${vtype}`)
+        })
+    }
+
+    /**
+     * @param {BigInt} vuid
+     */
+    setSelectedVuid(vuid) {
+        this.#selectedVuid = this.castVuid(vuid)
+        this.#db.save(AaAccount.TableName, {'selected_vuid_': vuid})
+    }
+
+
+    #readSelectedVuid() {
+        return this.#db.find(AaAccount.TableName, 'selected_vuid_')
     }
 }

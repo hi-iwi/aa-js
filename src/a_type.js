@@ -4,19 +4,6 @@
 
 //  react state  数字 001231 === 1231 == 001231.000  这些数值都没有变化，state就不会触发
 
-/**
- * BigInt 可以直接跟number比较，但是   BigInt(0) === 0  ===> false
- *   !BigInt(0) === true;   !BigInt(1) === false
- */
-// BigInt.prototype.eq = function (value) {
-//     return this === BigInt(typeof value === 'undefined' ? 0 : value)
-// }
-// BigInt.prototype.gt = function (value) {
-//     return this > BigInt(typeof value === 'undefined' ? 0 : value)
-// }
-// BigInt.prototype.lt = function (value) {
-//     return this < BigInt(typeof value === 'undefined' ? 0 : value)
-// }
 
 /**
  * exclude undefined parameters at the tail
@@ -534,7 +521,10 @@ function string(...args) {
     if (typeof v === 'function') {
         v = v()
     }
-
+    if (typeof v === 'object') {
+        let s = strings.json(v)
+        return s ? s : v
+    }
     return '' + v
 }
 
@@ -612,11 +602,17 @@ function int8(...args) {
 /**
  * @param {vv_vk_defaultV} [args]
  * @return {bigint} bigint 可以跟number比较，但是不可以直接计算
+ * @note BigInt 可以直接跟number比较，但是
+ *      BigInt(0) === 0  ===> false
+ *      BigInt(0) > 0    ===> false
+ *      BigInt(0) < 0    ===> false
+ *      BitInt(0) === 0n ===> true
+ *   !BigInt(0) === true;   !BigInt(1) === false
  */
 function uint64(...args) {
     let v = defval(...args)
-    v = v === null ? 0n : BigInt(v)
-    return _inRange(v, 0, void 0, 'uint64')
+    v = !v ? 0n : BigInt(v)
+    return v
 }
 
 /**
