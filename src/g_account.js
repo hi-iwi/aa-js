@@ -73,7 +73,6 @@ class AaAccount {
     }
 
     /**
-     *
      * @return {Profile|null}
      */
     getCachedProfile() {
@@ -157,6 +156,7 @@ class AaAccount {
         })
     }
 
+
     /**
      * Get vuser with vtype
      * @param {NumberX} vtype
@@ -164,12 +164,9 @@ class AaAccount {
      */
     searchVuser(vtype) {
         return this.getVusers().then(vusers => {
-            vtype = number(vtype)
-            for (let i = 0; i < vusers.length; i++) {
-                let vuser = vusers[i]
-                if (vuser['vtype'] === vtype) {
-                    return vuser
-                }
+            const vuser = this.findByVtype(vusers, vtype)
+            if (vuser) {
+                return vuser
             }
             throw new TypeError(`not found vuser with vtype: ${vtype}`)
         })
@@ -201,6 +198,27 @@ class AaAccount {
         })
     }
 
+    findByVtype(vusers, vtype) {
+        vtype = number(vtype)
+        for (let i = 0; i < vusers.length; i++) {
+            let vuser = vusers[i]
+            if (vuser['vtype'] === vtype) {
+                return vuser
+            }
+        }
+        return null
+    }
+
+    findVuser(vusers, vuid) {
+        for (let i = 0; i < vusers.length; i++) {
+            let vuser = vusers[i]
+            if (string(vuser['vtype']) === string(vuid)) {
+                return vuser
+            }
+        }
+        return null
+    }
+
     setSelectedVuid(vuid) {
         this.#selectedVuid = vuid
         this.#db.save(AaAccount.TableName, {'selected_vuid_': vuid})
@@ -210,6 +228,22 @@ class AaAccount {
         return this.#db.find(AaAccount.TableName, 'selected_vuid_')
     }
 
+    preloadSelectedVuser() {
+
+        let profile = this.getCachedProfile()
+        if (!profile) {
+            return null
+        }
+        let vuid = this.#selectedVuid
+        if (!vuid || vuid === '0') {
+            vuid = this.#readSelectedVuid()
+        }
+        if (!vuid) {
+            return profile['vuser']
+        }
+        return this.findByVtype(profile['doppes'],)
+
+    }
 
     /**
      * Last selected vuser, default is main vuser
