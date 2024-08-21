@@ -116,6 +116,46 @@ class AaAccount {
         return profile
     }
 
+
+    /**
+     * @param {VuserCondition} condition
+     * @return {Vuser|null}
+     */
+    getCachedVuser(condition) {
+        if (condition === 'selected') {
+            return this.getCachedSelectedVuser()
+        }
+        if (condition === 'main') {
+            return this.getCachedMainVuser()
+        }
+        if (condition.vtype) {
+            return this.getCachedByVtype(condition.vtype)
+        }
+        return null
+    }
+
+    /**
+     * @return {Vuser|null}
+     */
+    getCachedByVtype(vtype) {
+        let profile = this.getCachedProfile()
+        if (!profile) {
+            return null
+        }
+        vtype = this.castVtype(vtype)
+        if (vtype === AaAccount.MainVtype) {
+            return profile['vuser']
+        }
+        return this.findByVtype(profile['doppes'], vtype)
+    }
+
+    /**
+     * @return {Vuser|null}
+     */
+    getCachedMainVuser() {
+        return this.getCachedByVtype(AaAccount.MainVtype)
+    }
+
     /**
      * @return {Profile|null}
      */
@@ -132,6 +172,25 @@ class AaAccount {
         profile = this.formatProfile(profile)
         this.#profile = profile
         return profile
+    }
+
+    /**
+     * @return {Vuser|null}
+     */
+    getCachedSelectedVuser() {
+        let profile = this.getCachedProfile()
+        if (!profile) {
+            return null
+        }
+        let vuid = this.#selectedVuid
+        if (!vuid) {
+            vuid = this.#readSelectedVuid()
+        }
+        const main = profile['vuser']
+        if (!vuid || main['vuid'] === vuid) {
+            return profile['vuser']
+        }
+        return this.findVuser(profile['doppes'], vuid)
     }
 
     /**
@@ -252,63 +311,6 @@ class AaAccount {
         return profile
     }
 
-    /**
-     * @param {VuserCondition} condition
-     * @return {Vuser|null}
-     */
-    preload(condition) {
-        if (condition === 'selected') {
-            return this.preloadSelectedVuser()
-        }
-        if (condition === 'main') {
-            return this.preloadMainVuser()
-        }
-        if (condition.vtype) {
-            return this.preloadByVtype(condition.vtype)
-        }
-        return null
-    }
-
-    /**
-     * @return {Vuser|null}
-     */
-    preloadByVtype(vtype) {
-        let profile = this.getCachedProfile()
-        if (!profile) {
-            return null
-        }
-        vtype = this.castVtype(vtype)
-        if (vtype === AaAccount.MainVtype) {
-            return profile['vuser']
-        }
-        return this.findByVtype(profile['doppes'], vtype)
-    }
-
-    /**
-     * @return {Vuser|null}
-     */
-    preloadMainVuser() {
-        return this.preloadByVtype(AaAccount.MainVtype)
-    }
-
-    /**
-     * @return {Vuser|null}
-     */
-    preloadSelectedVuser() {
-        let profile = this.getCachedProfile()
-        if (!profile) {
-            return null
-        }
-        let vuid = this.#selectedVuid
-        if (!vuid) {
-            vuid = this.#readSelectedVuid()
-        }
-        const main = profile['vuser']
-        if (!vuid || main['vuid'] === vuid) {
-            return profile['vuser']
-        }
-        return this.findVuser(profile['doppes'], vuid)
-    }
 
     /**
      *

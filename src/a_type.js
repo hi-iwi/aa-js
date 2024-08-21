@@ -601,7 +601,10 @@ function int8(...args) {
 
 /**
  * @param {vv_vk_defaultV} [args]
- * @return {bigint} bigint 可以跟number比较，但是不可以直接计算
+ * @return {string} bigint 可以跟number比较，但是不可以直接计算
+ * 是否使用BigInt:
+ *  pros: BigInt无法直接在React及JSON.stringify()中使用，必须要先 .toString()
+ *  cons: BigInt 比较大小更方便
  * @note BigInt 可以直接跟number比较，但是
  *      BigInt(0) === 0  ===> false
  *      BigInt(0) > 0    ===> false
@@ -611,7 +614,7 @@ function int8(...args) {
  */
 function uint64(...args) {
     let v = defval(...args)
-    v = !v ? 0n : BigInt(v)
+    v = !v ? "0" : string(v)
     return v
 }
 

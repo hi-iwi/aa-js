@@ -30,6 +30,7 @@ const OPTIONAL = false
 const REQUIRED = !OPTIONAL
 const INCR = 'INCR'
 const DECR = 'DECR'
+const U0 = uint64(0)
 
 
 /**

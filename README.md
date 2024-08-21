@@ -35,7 +35,7 @@ A Javascript SDK of AaGo
 | uint16()   | number           | RangeError | integer in range [0, 65535]                                          |
 | uint24()   | number           | RangeError | integer in range [0, 16777215]                                       |
 | uint32()   | number           | RangeError | integer in range [0, 4294967295]                                     |
-| uint64()   | bigint           | RangeError |                                                                      |
+| uint64()   | string           | RangeError |                                                                      |
 | money()    | Money            |            | alias to new Money()                                                 |
 | number()   | number           |            |                                                                      |
 | percent()  | Percent          |            | alias to new Percent()                                               |
@@ -56,6 +56,7 @@ A Javascript SDK of AaGo
 | MIN            | string     | a global parameter to indicate passed a MIN value                        |
 | OPTIONAL       | boolean    | a global parameter to indicate passed a optional value                   |
 | REQUIRED       | boolean    | equal to !OPTIONAL                                                       |
+| U0             | string     | U0                                                                |
 | -------------  | ---------- | ------------------------------------------------------------------------ |
 | AaFileTypeEnum |            |                                                                          |
 |                |            |                                                                          |
