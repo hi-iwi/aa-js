@@ -217,18 +217,17 @@ class AaAuth {
         // 清空其他缓存
         this.#storage.clearAll()
 
-
         let expires = token['expires_in'] * time.Second
         this.#tryStoreCookie("access_token", token['access_token'], expires)
         this.#tryStoreCookie("token_type", token['token_type'], expires)
 
-
         // refresh token 不应该放到cookie里面，而且存储时间应该更久
-        // state 用于透传，不用存储；expires_in/ refresh_ttl 可以获取，不用存储
         let rtokenExpires = token['refresh_ttl'] * time.Second
+        // cookie 不能获取过期时间，所以存储一下
+        this.#localSetItem("expires_in", token['expires_in'], rtokenExpires)
         this.#localSetItem("state", token['state'], rtokenExpires)
         this.#localSetItem("scope", token['scope'], rtokenExpires)
-
+        // state 用于透传，不用存储；expires_in/ refresh_ttl 可以获取，不用存储
         this.#localSetItem("conflict", token['conflict'], rtokenExpires)
         this.#localSetItem("refresh_api", token['refresh_api'], rtokenExpires)
         this.#localSetItem("refresh_token", token['refresh_token'], rtokenExpires)
@@ -329,12 +328,10 @@ class AaAuth {
         if (token) {
             return token
         }
-        const a = this.#storage.local.getTTL("access_token", time.Second)
-        const r = this.#storage.local.getTTL("refresh_token", time.Second)
-
+        const r = this.#localGetTTL("refresh_token", time.Second)
         token = this.#validateToken({
-            "access_token": a.value,
-            "expires_in"  : a.ttl,
+            "access_token": this.readStorage("access_token"),
+            "expires_in"  : this.readStorage("expires_in"),
             "scope"       : this.readStorage("scope"),
             "state"       : this.readStorage("state"),
             "token_type"  : this.readStorage("token_type"),
@@ -347,11 +344,34 @@ class AaAuth {
             "validate_api" : this.readStorage("validate_api"),
         })
         this.#token = token // 避免改动
+
         return token
+    }
+
+    #getTokenAuthAt() {
+        if (this.#tokenAuthAt) {
+            return this.#tokenAuthAt
+        }
+        const now = Date.now()
+        const {value, ttl} = this.#storage.local.getTTL("expires_in", time.Millisecond)
+        if (!ttl || !value) {
+            this.#tokenAuthAt = now
+        } else {
+            this.#tokenAuthAt = now - (value * time.Second) + ttl
+        }
+        return this.#tokenAuthAt
     }
 
     #localGetItem(key) {
         return AaAuth.#readItem(this.#storage.local, key)
+    }
+
+    #localGetTTL(key) {
+        const engine = this.#storage.local
+        const keyname = AaAuth.#storageKeyName(engine, key)
+        return engine.getTTL(keyname)
+
+
     }
 
     #localRemoveItem(key) {
@@ -394,7 +414,6 @@ class AaAuth {
     #validateToken(token) {
         const isAccessTokenInvalid = !token['access_token'] || !token['token_type']
         const isRefreshTokenInvalid = !token['refresh_api'] || !token['refresh_token']
-
         // access_token 可能过期清除了；此时可以通过 refresh token 更新
         if (isAccessTokenInvalid && isRefreshTokenInvalid) {
             return null
@@ -419,7 +438,7 @@ class AaAuth {
             "secure"       : typeof token["secure"] === 'undefined' ? void false : bool(token["secure"]),
             "validate_api" : string(token, "validate_api"),// 非必要
             isValid        : function () {
-                const expires = this['expires_in'] * time.Second + itself.#tokenAuthAt
+                const expires = this['expires_in'] * time.Second + itself.#getTokenAuthAt()
                 return expires > Date.now()
             },
         }

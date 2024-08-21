@@ -56,7 +56,7 @@ class AaAccount {
      */
     save(data) {
         let ok = this.#auth.setToken(data['token'], data['fields'])
-        if(!ok){
+        if (!ok) {
             return false
         }
         return this.saveProfile(data['profile'])
