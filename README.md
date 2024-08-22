@@ -12,6 +12,13 @@ A Javascript SDK of AaGo
 
 ## global variables
 
+### prototype
+
+| type   | prototype | description  |
+|--------|-----------|--------------|
+| number | is(b:any) | a==number(b) |
+| string | is(b:any) | a==string(b) |
+
 ### type caster functions
 
 | name       | results          | throw      | description                                                          |
@@ -56,7 +63,7 @@ A Javascript SDK of AaGo
 | MIN            | string     | a global parameter to indicate passed a MIN value                        |
 | OPTIONAL       | boolean    | a global parameter to indicate passed a optional value                   |
 | REQUIRED       | boolean    | equal to !OPTIONAL                                                       |
-| U0             | string     | U0                                                                |
+| U0             | string     | U0                                                                       |
 | -------------  | ---------- | ------------------------------------------------------------------------ |
 | AaFileTypeEnum |            |                                                                          |
 |                |            |                                                                          |

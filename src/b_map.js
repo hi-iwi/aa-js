@@ -124,12 +124,12 @@ class map {
      * Join object keys and values
      * @param {string} [kvSeparator]
      * @param {string} [separator]
-     * @param {(key:StringN, value:any)=>boolean} [assert]
+     * @param {(key:StringN, value:any)=>{key:string,value:any, ok:boolean}} [hook]
      * @param {SortMethod} [sort]
      * @return {string}
      */
-    join(kvSeparator = '=', separator = '&', assert = null, sort = true) {
-        return map.join(this, kvSeparator, separator, assert, sort)
+    join(kvSeparator = '=', separator = '&', hook = null, sort = true) {
+        return map.join(this, kvSeparator, separator, hook, sort)
     }
 
     keys() {
@@ -170,15 +170,14 @@ class map {
     toQueryString(hook, sort = true) {
         return this.join('=', '&', (key, value) => {
             if (hook) {
-                let {k, v, ok} = hook(key, value)
-                if (!ok) {
-                    return {k, v, ok}
+                const hr = hook(key, value)
+                if (!hr.ok) {
+                    return hr
                 }
-                key = k
-                value = v
+                key = hr.key
+                value = hr.value
             }
 
-            value = string(value)
             if (value === '') {
                 return {key, value, ok: false}
             }
@@ -307,17 +306,19 @@ class map {
      * Compare property values of two struct
      * @param {struct} a
      * @param {struct} b
-     * @param {string[]} keys
+     * @param {string|string[]} keys
      * @return {boolean}
      */
-    static compareProps(a, b, keys) {
-        if (!keys) {
-            return map.compare(a, b)
-        }
+    static compareProps(a, b, ...keys) {
         if (!a || !b) {
             return false
         }
-        for (let k = 0; k < keys.length; k++) {
+        if (keys.length === 0) {
+            return map.compare(a, b)
+        }
+        keys = keys.length === 1 && Array.isArray(keys[0]) ? keys[0] : keys
+        for (let i = 0; i < keys.length; i++) {
+            let k = keys[i]
             if (a[k] !== b[k]) {
                 return false
             }
@@ -328,14 +329,12 @@ class map {
     /**
      * Whether object contains all of these elements
      * @param {struct} obj
-     * @param {string|array} params
+     * @param {string|string[]} keys
      */
-    static containAll(obj, ...params) {
-        if (params.length === 1 && Array.isArray(params)) {
-            params = params[0]
-        }
-        for (let i = 0; i < params.length; i++) {
-            if (!obj.hasOwnProperty(params[i])) {
+    static containAll(obj, ...keys) {
+        keys = keys.length === 1 && Array.isArray(keys[0]) ? keys[0] : keys
+        for (let i = 0; i < keys.length; i++) {
+            if (!obj.hasOwnProperty(keys[i])) {
                 return false
             }
         }
@@ -575,12 +574,12 @@ class map {
         let s = ''
         map.forEach(iterable, (key, value) => {
             if (hook) {
-                const {k, v, ok} = hook(key, value)
-                if (!ok) {
+                const hr = hook(key, value)
+                if (!hr.ok) {
                     return
                 }
-                key = k
-                value = v
+                key = hr.key
+                value = hr.value
             }
             value = string(value)
             s += separator + key + kvSeparator + value

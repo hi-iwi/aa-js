@@ -6,7 +6,7 @@
 class AaRawFetch {
     name = 'aa-raw-fetch'
 
-    /** @type {AaStorageFactor} 这个不要设为私有，否则外面使用会 attempted to get private field on non-instance */
+    /** @type {AaStorageFactor} */
     #storage
 
 

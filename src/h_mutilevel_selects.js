@@ -119,7 +119,7 @@ class AaMultiLevelSelects {
                 for (let k = 0; k < i; k++) {
                     for (let n = 0; n < opts[k].length; n++) {
                         tt = opts[k][n].text
-                        if (v === opts[k][n].value && string(t) !== string(tt)) {
+                        if (v === opts[k][n].value && !t.is(tt)) {
                             console.error("AaSelect: conflict\n    " + strings.json(opts[k][n]) + "\n    " + strings.json(opts[i][j]))
                         }
                     }
@@ -185,19 +185,19 @@ class AaMultiLevelSelects {
                 const sj = opts[j]
                 if (!pid || pid === '0') {
                     // 空value，就选择第一个
-                    if (!value || value === '0' || string(value) === string(sj.value)) {
+                    if (!value || value === '0' || value.is(sj.value)) {
                         pid = sj.pid
                         chain.unshift(sj)
                         break
                     }
                 } else {
                     // 判定是否前置
-                    if (string(value) === string(sj.value)) {
+                    if (value.is(sj.value)) {
                         pid = sj.pid
                         chain = [sj]  // 重置 chain
                         break
                     }
-                    if (string(sj.value) === string(pid)) {
+                    if (sj.value.is(pid)) {
                         pid = sj.pid
                         chain.unshift(sj)
                         break

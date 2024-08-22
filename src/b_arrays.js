@@ -18,6 +18,49 @@ class arrays {
     }
 
     /**
+     * Concat items with same properties
+     * @param {struct[]} a
+     * @param {struct[]} b
+     * @param {string|string[]} [keys]
+     * @return {struct[]}
+     */
+    static concatItems(a, b, ...keys) {
+        if (len(a) === 0) {
+            return b
+        }
+        if (len(b) === 0) {
+            return a
+        }
+
+        if (len(keys) === 0) {
+            return a.concat(b)
+        }
+        keys = keys.length === 1 && Array.isArray(keys[0]) ? keys[0] : keys
+        let c = []
+        // 去掉 a 不符合条件的数据
+        a.map(item => {
+            if (item && map.containAll(item, keys)) {
+                c.push(item)
+            }
+        })
+
+        b.map(item => {
+            if (!item || !map.containAll(item, keys)) {
+                return
+            }
+            for (let i = 0; i < a.length; i++) {
+                if (map.compareProps(a[i], item, keys)) {
+
+
+                    return
+                }
+            }
+            c.push(item)
+        })
+        return c
+    }
+
+    /**
      * Is the array contains this item
      * @param {(StringN|RegExp|boolean)[]} arr
      * @param {StringN|boolean} item
