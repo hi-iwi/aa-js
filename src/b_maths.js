@@ -49,51 +49,20 @@ class maths {
         return [parseFloat((bytes / Math.pow(k, i)).toFixed(dm)), sizes[i]]
     }
 
-
-    /**
-     * Get the closest width matches to settings
-     * @param {ResponsiveSize} maxHeight
-     * @param {ResponsiveSize} [wrapperHeight]
-     * @return {number}
-     */
-    static maxHeight(maxHeight, wrapperHeight) {
-        let value = maxHeight
-        // @example {320:"5rem", 640:1080, 1280: 2048}
-        if (atype.isStruct(maxHeight)) {
-            value = maths.closestSetting(maxHeight, '<=', value)
-        }
-        return maths.pixel(value ? value : wrapperHeight)
-    }
-
-    /**
-     * Get the closest width matches to settings
-     * @param {ResponsiveSize} value
-     * @param {ResponsiveSize} [wrapperWidth]
-     * @return {number}
-     */
-    static pixelRelative(value, wrapperWidth) {
-        wrapperWidth = !wrapperWidth ? AaEnv.maxWidth() : maths.pixel(wrapperWidth)
-
-        // @example {320:"5rem", 640:1080, 1280: 2048}
-        if (typeof value === 'object') {
-            return maths.closestSetting(value, '<=', wrapperWidth)
-        }
-
-        // @example 20%  .5%
-        if (typeof value === "string" && /^[\d.]+%$/.test(value)) {
-            return Math.floor(wrapperWidth * parseFloat(value) / 100)
-        }
-        return maths.pixel(value ? value : wrapperWidth)
-    }
-
     /**
      * Convert responsive size to pixel, now support rem only.
      * @param {ResponsiveSize} vv
      * @param {string} [vk]
      * @param {ResponsiveSize} [defaultV]
+     * @param {ResponsiveSize} [relativeBase]
      * @return {number}
+     * @example
+     *  maths.pixel(100) = maths.pixel("100 PX") = maths.pixel("100px")   ===> 100
+     *  maths.pixel("1rem")   ===> rem to pixel
+     *  maths.pixel({767:"1rem", 768:"2rem"}) = maths.pixel({767:"1rem", 768:"2rem"}, void '', void 0, AaEnv.maxWidth())
+     *  maths.pixel("20%") = maths.pixel("20%", void '', void 0, AaEnv.maxWidth())
      */
-    static pixel(vv, vk, defaultV) {
+    static pixel(vv, vk, defaultV, relativeBase) {
         vv = defval(...arguments)
         if (!vv) {
             return 0
@@ -101,13 +70,26 @@ class maths {
         if (typeof vv === "number") {
             return Math.floor(vv)
         }
-        vv = string(vv).replace(/\s/g, '').toLowerCase()
+
+        const isSettings = typeof value === 'object'       // @example {320:"5rem", 640:1080, 1280: 2048}
+        let isRelative = false  // @example 20%  .5%
+
+        if (typeof vv === 'string') {
+            vv = string(vv).replace(/\s/g, '').toLowerCase()
+            isRelative = /^[\d.]+%$/.test(value)
+        }
+
+        if (isSettings || isRelative) {
+            relativeBase = !relativeBase ? AaEnv.maxWidth() : maths.pixel(relativeBase)
+            return isSettings ? maths.closestSetting(value, '<=', relativeBase) : Math.floor(relativeBase * parseFloat(value) / 100)
+        }
+
         if (vv.indexOf("rem") > -1) {
             // 计算1rem对应px
             const rem = parseFloat(window.getComputedStyle(document.documentElement)["fontSize"])  // 1rem 对应像素
             return Math.floor(number(vv.replace("rem", '')) * rem)
         }
-        return Math.floor(number(vv))
+        return Math.floor(number(vv.replace("px", "")))
     }
 
     /**
