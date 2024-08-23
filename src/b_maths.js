@@ -71,17 +71,17 @@ class maths {
             return Math.floor(vv)
         }
 
-        const isSettings = typeof value === 'object'       // @example {320:"5rem", 640:1080, 1280: 2048}
+        const isSettings = typeof vv === 'object'       // @example {320:"5rem", 640:1080, 1280: 2048}
         let isRelative = false  // @example 20%  .5%
 
         if (typeof vv === 'string') {
             vv = string(vv).replace(/\s/g, '').toLowerCase()
-            isRelative = /^[\d.]+%$/.test(value)
+            isRelative = /^[\d.]+%$/.test(vv)
         }
 
         if (isSettings || isRelative) {
             relativeBase = !relativeBase ? AaEnv.maxWidth() : maths.pixel(relativeBase)
-            return isSettings ? maths.closestSetting(value, '<=', relativeBase) : Math.floor(relativeBase * parseFloat(value) / 100)
+            return isSettings ? maths.closestSetting(vv, '<=', relativeBase) : Math.floor(relativeBase * parseFloat(vv) / 100)
         }
 
         if (vv.indexOf("rem") > -1) {
