@@ -134,7 +134,7 @@ class AaURI {
         let method = ''
         const arr = url.split(' ')
         if (arr.length > 1) {
-            method = arr[1]
+            method = arr[0]
             url = arr.slice(1).join(' ')
         }
 
@@ -183,6 +183,7 @@ class AaURI {
      */
     constructor(url = window.location.href, params, hash) {
         this.init(url, params, hash)
+
     }
 
     #replaceBackPathParams(s) {
@@ -229,7 +230,7 @@ class AaURI {
      * @return {{baseUrl: string, search: string, ok: ok, queries: map, href: string, hash: string}}
      */
     parse() {
-        if (!this.#protocol || !this.#hostname || !this.#port || !this.#pathname || !this.searchParams) {
+        if (!this.#protocol || !this.#hostname ||  !this.#pathname || !this.searchParams) {
             return {
                 ok     : false,
                 url    : '',
@@ -255,8 +256,6 @@ class AaURI {
             }
             value = AaURI.decode(value)
             const ok = baseUrl.slice(-len(value)) !== value
-
-
             return {key, value, ok}
         })
         if (search) {

@@ -70,7 +70,6 @@ class AaRawFetch {
 
     addGlobalHeaders(headers) {
         this.#headers = {...this.#headers, ...headers}
-        loge(this.#headers)
     }
 
 
@@ -93,7 +92,7 @@ class AaRawFetch {
         if (isDataAllQueryString || ["GET", "HEAD", "OPTION", "DELETE"].includes(method)) {
             const p = new AaURI(url, data).parse()
             if (!p.ok) {
-                throw new SyntaxError(`miss parameter(s) in url: ${method} ${url} ${strings.json(data)}`)
+                throw new SyntaxError(`lookup miss url parameter in url: ${method} ${url} ${strings.json(data)}`)
             }
             return [p.href, null]
         }
@@ -101,7 +100,7 @@ class AaRawFetch {
         let queries, ok;
         [url, queries, ok] = AaURI.lookup(url, data)
         if (!ok) {
-            throw new SyntaxError(`miss parameter(s) in url: ${method} ${url} ${strings.json(data)}`)
+            throw new SyntaxError(`lookup miss url parameter in url: ${method} ${url} ${strings.json(data)}`)
         }
 
         if (len(queries) === 0) {
