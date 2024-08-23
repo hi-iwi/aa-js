@@ -120,6 +120,33 @@ class AaDOM {
     }
 
     /**
+     * Prevent the event's all default actions, include propagation's and parents' actions
+     * @param {Event|void|null} event
+     */
+    static preventEvent(event) {
+        if (!event) {
+            return
+        }
+        if (typeof event.stopPropagation === "function") {
+            event.stopPropagation()   // 阻止parent事件间的冒泡
+        }
+        if (event.hasOwnProperty('nativeEvent') && event.nativeEvent.stopImmediatePropagation) {
+            event.nativeEvent.stopImmediatePropagation()   // 阻止同级冒泡事件
+        }
+
+
+        // const isTouch = string(e.type).substring(0, 5) === "touch"
+        // if (isTouch) {
+        //     return
+        // }
+        if (typeof event.preventDefault === "function") {
+            // 禁止如 a / form onSubmit 和 jQuery 添加 onClick 等操作
+            // 如果是 onTouchStart 执行了此，则会阻止后续  onTouchEnd/onClick
+            event.preventDefault()
+        }
+    }
+
+    /**
      * @param {Node|string} selector
      * @return {DOM|null}
      */

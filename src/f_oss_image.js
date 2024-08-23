@@ -191,8 +191,8 @@ class AaImgSrc extends AaSrc {
      * @return {[number,number]}
      */
     #allowedSize(width, height = 0) {
-        width = Math.ceil(width * window.devicePixelRatio)
-        height = Math.ceil(height * window.devicePixelRatio)
+        width = Math.ceil(number(width) * AaEnv.devicePixelRatio())
+        height = Math.ceil(number(height) * AaEnv.devicePixelRatio())
 
         if (this.width && width > this.width) {
             width = this.width

@@ -5,6 +5,9 @@
 class AaEnv {
     name = 'aa-environment'
 
+    static devicePixelRatio() {
+        return number(window, "devicePixelRatio", 1)
+    }
 
     // same as $(document).height()
     static documentHeight() {

@@ -1,7 +1,7 @@
 /**
  * Special Mathematics
  * @import atype
- * @typedef  {string|NumberX} ResponsiveSize
+ * @typedef  {string|NumberX|{[key:NumberX]:ResponsiveSize}} ResponsiveSize
  */
 
 class maths {
@@ -52,59 +52,50 @@ class maths {
 
     /**
      * Get the closest width matches to settings
-     * @param {ResponsiveSize|struct} settings
-     * @param {ResponsiveSize} [maxHeight]
+     * @param {ResponsiveSize} maxHeight
+     * @param {ResponsiveSize} [wrapperHeight]
      * @return {number}
      */
-    static maxHeight(settings, maxHeight) {
-        let value = 0
+    static maxHeight(maxHeight, wrapperHeight) {
+        let value = maxHeight
         // @example {320:"5rem", 640:1080, 1280: 2048}
-        if (atype.isStruct(settings)) {
-            value = maths.closestSetting(settings, '<=', value)
+        if (atype.isStruct(maxHeight)) {
+            value = maths.closestSetting(maxHeight, '<=', value)
         }
-        if (!value) {
-            value = maxHeight
-        }
-        return maths.pixel(value)
+        return maths.pixel(value ? value : wrapperHeight)
     }
 
     /**
      * Get the closest width matches to settings
-     * @param {ResponsiveSize|struct} settings
-     * @param {ResponsiveSize} [maxWidth]
+     * @param {ResponsiveSize} value
+     * @param {ResponsiveSize} [wrapperWidth]
      * @return {number}
      */
-    static maxWidth(settings, maxWidth) {
-        if (!maxWidth) {
-            maxWidth = AaEnv.maxWidth()
-        }
-        let value = 0
+    static pixelRelative(value, wrapperWidth) {
+        wrapperWidth = !wrapperWidth ? AaEnv.maxWidth() : maths.pixel(wrapperWidth)
 
         // @example {320:"5rem", 640:1080, 1280: 2048}
-        if (atype.isStruct(settings)) {
-            value = maths.closestSetting(settings, '<=', value)
+        if (typeof value === 'object') {
+            return maths.closestSetting(value, '<=', wrapperWidth)
         }
-        if (!value) {
-            value = maxWidth
+
+        // @example 20%  .5%
+        if (typeof value === "string" && /^[\d.]+%$/.test(value)) {
+            return Math.floor(wrapperWidth * parseFloat(value) / 100)
         }
-        // @example 20%
-        if (typeof value === "string" && value.indexOf('%') > 0) {
-            value = value.replace(/\s/g, '')
-            return Math.floor(maxWidth * parseFloat(value) / 100)
-        }
-        return maths.pixel(value)
+        return maths.pixel(value ? value : wrapperWidth)
     }
 
     /**
      * Convert responsive size to pixel, now support rem only.
-     * @param {ResponsiveSize|struct} vv
+     * @param {ResponsiveSize} vv
      * @param {string} [vk]
-     * @param {ResponsiveSize|struct} [defaultV]
+     * @param {ResponsiveSize} [defaultV]
      * @return {number}
      */
     static pixel(vv, vk, defaultV) {
         vv = defval(...arguments)
-        if (vv === null) {
+        if (!vv) {
             return 0
         }
         if (typeof vv === "number") {
@@ -114,9 +105,9 @@ class maths {
         if (vv.indexOf("rem") > -1) {
             // 计算1rem对应px
             const rem = parseFloat(window.getComputedStyle(document.documentElement)["fontSize"])  // 1rem 对应像素
-            return Math.floor(float32(vv.replace("rem", '')) * rem)
+            return Math.floor(number(vv.replace("rem", '')) * rem)
         }
-        return Math.floor(float32(vv))
+        return Math.floor(number(vv))
     }
 
     /**
