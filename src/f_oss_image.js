@@ -325,7 +325,6 @@ class AaImgSrc extends AaSrc {
         }
     }
 
-
     /**
      * @param {string} [url]
      * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
@@ -342,5 +341,4 @@ class AaImgSrc extends AaSrc {
             url           : string(url),
         }
     }
-
 }

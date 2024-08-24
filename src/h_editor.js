@@ -100,12 +100,14 @@ class AaEditor {
     decodeImgPath(node, composer) {
         const src = node.getAttribute('src')
         const path = node.dataset.path
+
         if ((!src && !path) || typeof composer !== "function") {
             return
         }
 
         /** @type {AaImgSrc} */
         const imgsrc = composer(path ? path : src)
+
         if (!imgsrc) {
             return
         }

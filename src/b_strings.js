@@ -65,12 +65,14 @@ class strings {
     // 转义 reg exp
     /**
      * Escape RegExp source
-     * @param {string} source
+     * @param {string} pattern
      * @return {string}
      */
-    static escapeReg(source) {
-        return source.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+    static escapeReg(pattern) {
+        return pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
     }
+
+
 
     /**
      * Check is Zh-CN (simplified chinese)
@@ -221,7 +223,18 @@ class strings {
         }
         return result;
     }
-
+    /**
+     * New RegExp with escaped regexp pattern
+     * @param {RegExp|string} pattern
+     * @param {string} [flags]
+     * @return {RegExp}
+     */
+    static regexp(pattern, flags){
+        if(typeof pattern ==='string'){
+            pattern = strings.escapeReg(pattern)
+        }
+        return new RegExp(pattern,flags)
+    }
     /**
      * Replaces the last matched text in a string, using a regular expression or search string.
      * @param {string} str
