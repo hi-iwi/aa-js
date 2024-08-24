@@ -87,7 +87,7 @@ class AaFetch {
         return response.then(data => data).catch(err => {
             err = aerror(err)
             if (this.enableRedirect && err.isRetryWith()) {
-                window.location.href = err.message // 特殊跳转
+                location.href = err.message // 特殊跳转
                 return
             }
             if (err.isUnauthorized()) {

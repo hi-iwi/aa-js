@@ -1,7 +1,7 @@
 /**
  * @typedef {string} ImageBase64
- * @typedef {{path: string, filetype: number, size: number, provider: number, allowed: (number[][]|null), origin: string, width: number, crop_pattern: string, resize_pattern: string, height: number,thumbnail?: string,  multiple_file?: string}} ImgSrcStruct
- * @typedef {{width: number, url: string, height: number, ratio: Decimal, originalWidth: number, originalHeight: number}} ImgResizedData
+ * @typedef {{path:string, filetype:number, size:number, provider:number, allowed:(number[][]|null), origin:string, width:number, crop_pattern:string, resize_pattern:string, height:number, thumbnail?:string, multiple_file?:string}} ImgSrcStruct
+ * @typedef {{height:number, width:number, ratio:Decimal, realHeight:number, realWidth:number, originalHeight:number, originalWidth:number, url:string}} ImgResizedData
  */
 class AaImgSrc extends AaSrc {
     name = 'aa-img-src'
@@ -102,7 +102,7 @@ class AaImgSrc extends AaSrc {
      * @return {Decimal}
      */
     ratio() {
-        return Decimal.div(this.width, this.height)
+        return this.height ? Decimal.div(this.width, this.height) : decimal(0)
     }
 
     /**
@@ -115,18 +115,14 @@ class AaImgSrc extends AaSrc {
         if (!this.isValid()) {
             throw new TypeError(`invalid AaImgSrc`)
         }
-        [width, height] = this.#allowedSize(width, height)
-        const pattern = string(this.cropPattern)
-        const url = pattern.replace(/\${WIDTH}/g, string(width)).replace(/\${HEIGHT}/g, string(height))
-        const ratio = Decimal.div(width, height)
-        return {
-            width         : width,
-            height        : height,
-            ratio         : ratio,
-            url           : url,
-            originalWidth : this.width,
-            originalHeight: this.height,
+        let r = this.#allowedSize(width, height)
+        if (!r.width || !r.height) {
+            log.error(`invalid crop size: ${width} * ${height}`)
         }
+        r.originalHeight = this.height
+        r.originalWidth = this.width
+        r.url = string(this.cropPattern).replace(/\${WIDTH}/g, string(width)).replace(/\${HEIGHT}/g, string(height))
+        return r
     }
 
     /**
@@ -139,26 +135,38 @@ class AaImgSrc extends AaSrc {
         if (!this.isValid()) {
             throw new TypeError(`invalid AaImgSrc`)
         }
-        if (!maxWidth || maxWidth === MAX) {
-            maxWidth = AaEnv.maxWidth()
-        }
-        let [width, height] = this.#allowedSize(maxWidth)
-        const ratio = Decimal.div(width, height)
-        if (maxHeight > 0 && height > maxHeight) {
-            height = maxHeight
-            width = ratio.beDivided(maxWidth).toReal()
+
+        maxWidth = maxWidth === MAX || (!maxWidth && !maxHeight) ? AaEnv.maxWidth() : maths.pixel(maxWidth)
+        maxHeight = maths.pixel(maxHeight)
+
+        let rat = this.height > 0 ? this.width / this.height : 0
+        if (rat) {
+            if (maxWidth > this.width) {
+                maxWidth = this.width
+                if (!maxHeight || maxHeight >= this.height) {
+                    maxHeight = this.height
+                } else {
+                    maxWidth = Math.ceil(maxHeight * rat)
+                }
+            } else if (maxHeight > this.height) {
+                maxHeight = this.height
+                if (!maxWidth || maxWidth >= this.width) {
+                    maxWidth = this.width
+                } else {
+                    maxHeight = Math.ceil(maxWidth / rat)
+                }
+            }
         }
 
-        const pattern = string(this.resizePattern)
-        const url = pattern.replace(/\${MAXWIDTH}/g, maxWidth)
-        return {
-            width         : width,
-            height        : height,
-            ratio         : ratio,
-            url           : url,
-            originalWidth : this.width,
-            originalHeight: this.height,
+
+        let r = this.#allowedSize(maxWidth, maxHeight)
+        if (!r.width) {
+            log.error(`invalid resize size: ${maxWidth} * ${maxHeight}`)
         }
+        r.originalHeight = this.height
+        r.originalWidth = this.width
+        r.url = string(this.resizePattern).replace(/\${MAXWIDTH}/g, maxWidth)
+        return r
     }
 
     /**
@@ -174,57 +182,93 @@ class AaImgSrc extends AaSrc {
         }
         const ratio = Decimal.div(this.width, this.height)
         return {
-            width         : this.width,
             height        : this.height,
+            width         : this.width,
+            realHeight    : this.height,
+            realWidth     : this.width,
             ratio         : ratio,
-            url           : this.origin,
-            originalWidth : this.width,
             originalHeight: this.height,
+            originalWidth : this.width,
+            url           : this.origin,
         }
     }
 
+    /**
+     * @param width
+     * @param height
+     * @param realWidth
+     * @param realHeight
+     * @return {{width:number, height:number,ratio:Decimal, realWidth:number, realHeight:number}}
+     */
+    #fillAllowedSize(width, height, realWidth, realHeight) {
+        if (width > 0 && height > 0 && realWidth > 0 && realHeight > 0) {
+            let ratio = Decimal.div(realHeight, realWidth)
+            return {width, height, ratio, realWidth, realHeight,}
+        }
+
+        let ratio = this.ratio()
+        if (ratio.value === 0 && realHeight) {
+            ratio = Decimal.div(realWidth, realHeight)
+        }
+        if (ratio.value === 0 && height) {
+            ratio = Decimal.div(width, height)
+        }
+        if (ratio.value === 0) {
+            log.error(`invalid image size ${width} ${height}`)
+            return {width, height, ratio, realWidth, realHeight}
+        }
+
+        ratio.rounder = Math.ceil
+        if (width === 0) {
+            width = ratio.multiply(height).toCeil()
+        } else if (height === 0) {
+            height = ratio.beDivided(width).toCeil()
+        }
+        if (realWidth === 0) {
+            realWidth = ratio.multiply(realHeight).toCeil()
+        } else if (realHeight === 0) {
+            realHeight = ratio.beDivided(realWidth).toCeil()
+        }
+        if (width === 0 || height === 0 || realWidth === 0 || realHeight === 0) {
+            log.error(`invalid image size ${width} ${height}`)
+        }
+        return {width, height, ratio, realWidth, realHeight}
+    }
 
     /**
      * Return the closest size
      * @param {number} width
      * @param {number} [height]
-     * @return {[number,number]}
+     * @return {{width:number, height:number,ratio:Decimal, realWidth:number, realHeight:number}}
      */
     #allowedSize(width, height = 0) {
-        width = Math.ceil(number(width) * AaEnv.devicePixelRatio())
-        height = Math.ceil(number(height) * AaEnv.devicePixelRatio())
+        width = maths.pixel(width)
+        height = maths.pixel(height)
+        let realWidth = Math.ceil(number(width) * AaEnv.devicePixelRatio())
+        let realHeight = Math.ceil(number(height) * AaEnv.devicePixelRatio())
 
-        if (this.width && width > this.width) {
-            width = this.width
+        if (this.width && realWidth > this.width) {
+            realWidth = this.width
         }
-        if (this.height && height > this.height) {
-            height = this.height
+        if (this.height && realHeight > this.height) {
+            realHeight = this.height
         }
 
         const allowed = this.allowed
         if (len(allowed) === 0) {
-            if (width > 0 && height > 0) {
-                return [width, height]
-            }
-            const ratio = this.width > 0 ? (this.height / this.width) : 0
-            if (width === 0) {
-                width = ratio === 0 ? height : Math.ceil(height / ratio)
-            } else if (height === 0) {
-                height = ratio === 0 ? width : Math.ceil(ratio * width)
-            }
-            return [width, height]
+            return this.#fillAllowedSize(width, height, realWidth, realHeight)
         }
         let matched = false
         let maxWidth = 0
         let maxHeight = 0
-        let w = width
-        let h = height
+        let w = realWidth
+        let h = realHeight
 
         for (let i = 0; i < allowed.length; i++) {
-            const allowedWidth = Number(allowed[i][0])
-            const allowedHeight = Number(allowed[i][1])
-            if ((allowedWidth === width && allowedHeight === height) || (allowedWidth === width && height === 0) || (allowedHeight === height && width === 0)) {
-                return [allowedWidth, allowedHeight]
+            const allowedWidth = maths.pixel(allowed[i][0])
+            const allowedHeight = maths.pixel(allowed[i][1])
+            if ((allowedWidth === realWidth && allowedHeight === realHeight) || (allowedWidth === realWidth && realHeight === 0) || (allowedHeight === realHeight && realWidth === 0)) {
+                return this.#fillAllowedSize(width, height, allowedWidth, allowedHeight)
             }
 
             if (!matched) {
@@ -240,14 +284,13 @@ class AaImgSrc extends AaSrc {
                 }
             } else {
                 // 后面的都跟第一次匹配的比，找到最小匹配
-                if (allowedWidth >= width && allowedWidth <= w && allowedHeight >= height && allowedHeight <= h) {
+                if (allowedWidth >= realWidth && allowedWidth <= w && allowedHeight >= realHeight && allowedHeight <= h) {
                     w = allowedWidth
                     h = allowedHeight
                 }
             }
         }
-
-        return matched ? [w, h] : [maxWidth, maxHeight]
+        return matched ? this.#fillAllowedSize(width, height, w, h) : this.#fillAllowedSize(width, height, maxWidth, maxHeight)
     }
 
     /**
@@ -284,16 +327,19 @@ class AaImgSrc extends AaSrc {
 
 
     /**
+     * @param {string} [url]
      * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
      */
-    static zeroResizedData() {
+    static zeroResizedData(url) {
         return {
-            width         : 0,
             height        : 0,
+            width         : 0,
+            realHeight    : 0,
+            realWidth     : 0,
             ratio         : decimal(0),
-            url           : "",
-            originalWidth : 0,
             originalHeight: 0,
+            originalWidth : 0,
+            url           : string(url),
         }
     }
 

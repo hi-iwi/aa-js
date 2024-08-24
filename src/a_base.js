@@ -73,7 +73,7 @@ var _aaDebug = new (class {
 
     constructor() {
         // check query string
-        const match = window.location.search.match(new RegExp("[?&]" + aparam.Debug + "=(\\w+)", 'i'))
+        const match = location.search.match(new RegExp("[?&]" + aparam.Debug + "=(\\w+)", 'i'))
         if (match) {
             this.init(match[1], true)
             return
@@ -87,7 +87,7 @@ var _aaDebug = new (class {
     }
 
     isLocalhost() {
-        const h = window.location.hostname.toLowerCase()
+        const h = location.hostname.toLowerCase()
         if (['localhost', '127.0.0.1', '::1'].includes(h)) {
             return true
         }

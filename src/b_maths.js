@@ -26,7 +26,7 @@ class maths {
 
         const key = mathn.closest(keys, symbol, value)
         if (typeof key !== "undefined") {
-            return settings[key]
+            return maths.pixel(settings[key])
         }
 
         return void 0

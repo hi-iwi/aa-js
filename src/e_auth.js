@@ -9,6 +9,8 @@ class AaAuth {
 
     static NoTokenError = new AError(AErrorEnum.Unauthorized, 'no token')
 
+    /** @type ()=>string */
+    cookieDomainHandler
     tx = new AaLock()
     /** @type {AaStorageFactor}   不要设为私有，要不外面使用会 attempted to get private field on non-instance */
     #storage
@@ -295,8 +297,11 @@ class AaAuth {
 
 
     #cookieOptions(expires) {
-        const hostname = window.location.hostname
-        const domain = /^([\d.]+|[^.]+)$/.test(hostname) ? hostname : hostname.replace(/^[^.]+/ig, '')
+        const hostname = location.hostname
+        let domain = this.cookieDomainHandler ? this.cookieDomainHandler() : false
+        if (!domain) {
+            domain = /^([\d.]+|[^.]+)$/.test(hostname) ? hostname : "." + hostname
+        }
         return {
             domain : domain,
             path   : '/',

@@ -140,9 +140,9 @@ class AaURI {
 
         if (url.substring(0, 1) === '/') {
             if (url.substring(1, 2) === '/') {
-                url = window.location.protocol + url
+                url = location.protocol + url
             } else {
-                url = window.location.origin + url
+                url = location.origin + url
             }
         }
 
@@ -181,7 +181,7 @@ class AaURI {
      * @param {struct|map|URLSearchParams|*} [params]
      * @param {string} [hash]
      */
-    constructor(url = window.location.href, params, hash) {
+    constructor(url = location.href, params, hash) {
         this.init(url, params, hash)
 
     }
@@ -230,7 +230,7 @@ class AaURI {
      * @return {{baseUrl: string, search: string, ok: ok, queries: map, href: string, hash: string}}
      */
     parse() {
-        if (!this.#protocol || !this.#hostname ||  !this.#pathname || !this.searchParams) {
+        if (!this.#protocol || !this.#hostname || !this.searchParams) {
             return {
                 ok     : false,
                 url    : '',
@@ -435,7 +435,7 @@ class AaURI {
 
     static go(url) {
         if (!sessionStorage || !sessionStorage.getItem(aparam.DebugUrl)) {
-            window.location.href = url
+            location.href = url
             return
         }
         console.info(`[debug] location.href='${url}'`)

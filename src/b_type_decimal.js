@@ -213,7 +213,6 @@ class Decimal {
             return this
         }
 
-
         // money / [decimal] ==> money, decimal / [decimal] ==> decimal
         if (this.group === 'decimal') {
             let newN = n.clone()
@@ -229,15 +228,6 @@ class Decimal {
         }
 
         throw new TypeError(`${this.name} div ${n.name} is not allowed`)
-    }
-
-    /**
-     *
-     * @param {number} n
-     * @return {Decimal}
-     */
-    beDividedUnitsX(n) {
-        return this.beDivided(n * this.units)
     }
 
     // 精度
@@ -352,9 +342,21 @@ class Decimal {
         return `${this.toReal()} (${this.type}:${this.group} ${this.value})`
     }
 
+    toCeil() {
+        return Math.ceil(this.toReal())
+    }
+
+    toFloor() {
+        return Math.floor(this.toReal())
+    }
+
     // 实数值
     toReal() {
         return this.value / this.units
+    }
+
+    toRound() {
+        return Math.round(this.toReal())
     }
 
     valueOf() {

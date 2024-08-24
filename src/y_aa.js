@@ -134,7 +134,7 @@ class Aa {
      * @param {string} [hash]
      * @return {AaURI}
      */
-    url(url = window.location.href, params, hash) {
+    url(url = location.href, params, hash) {
         return new AaURI(...arguments)
     }
 
