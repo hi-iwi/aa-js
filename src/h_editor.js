@@ -107,7 +107,6 @@ class AaEditor {
 
         /** @type {AaImgSrc} */
         const imgsrc = composer(path ? path : src)
-
         if (!imgsrc) {
             return
         }

@@ -11,61 +11,83 @@ class paths {
     /** @property {string} the href.origin, e.g. https://luexu.com */
     origin
 
+    #parseBasename(base) {
+        let b = base.split('.')
+        if (b.length === 1) {
+            return {
+                ext     : '',
+                filename: base,
+            }
+
+        }
+        return {
+            ext     : b[b.length - 1],
+            filename: b.slice(0, b.length - 1).join('.')
+        }
+    }
+
     /**
      * @param {string} path
      */
     init(path) {
-        if (!path || path === '.') {
-            return ''
-        }
+        path = string(path)
         let origin = ''
-        let match = path.match(/^\w+:\/\/[^\/]+\/?/)
-        if (match) {
-            origin = strings.trimEnd(match[0], '/')
-            path = path.substring(origin.length)
-        }
 
-        // Replace multiple slashes with a single slash.      e.g. "a//b/c" ===> "a/b/c
-        path = path.replace(/\/+/g, '/')
-        // Eliminate each . path name element (the current directory).
-        // e.g. "/a/../b/./c/././d" ===>  "/a/../b/c/d"
-        let reg = /\/\.(\/|$)/g
-        while (reg.test(path)) {
-            path = path.replace(reg, '/')   // 可以加g：
-        }
+        let arr = path.split("://")
+        if (arr.length > 1 && /^\w+$/.test(arr[0])) {
+            origin = arr[0] + "://"
+            path = arr.slice(1).join('')
+            arr = path.split('/')
+            origin += arr[0]
+            arr = arr.slice(1)
+            path = arr.length > 0 ? '/' + arr.join('/') : ''
 
-        // Eliminate each inner .. path name element (the parent directory) along with the non-.. element that precedes it.
-        //    e.g. "a/b/c/.." ===> "a/b"
-        reg = /[^\/]+\/\.\.(\/|$)/
-        while (reg.test(path)) {
-            path = path.replace(reg, '')    // 不要加 g： ../../../
-        }
-        path = path.replace(/^\/..\//g, '/')  // root 的 /../  属于特殊情况，直接返回 /
-        // Eliminate .. elements that begin a rooted path: that is, replace "/.." by "/" at the beginning of a path.
-        if (path !== '/') {
-            path = strings.trimEnd(path, '/')
-        }
-
-        this.origin = origin
-        if (!path || path === '/') {
-            this.dir = ''
-            this.base = path
-            this.ext = ''
-            this.filename = ''
-            return
-        }
-        const a = path.split('/')
-        this.dir = a.slice(0, a.length - 1).join('/') || '/'
-        this.base = a[a.length - 1] || '/'
-
-        let b = this.base.split('.')
-        if (b.length === 1) {
-            this.ext = ''
-            this.filename = this.base
         } else {
-            this.ext = b[b.length - 1]
-            this.filename = b.slice(0, b.length - 1).join('.')
+            arr = path.split('/')
         }
+
+
+        let isDir = path.slice(-1) === '/'
+        let dir = ''
+        let base = ''
+        if (arr.length > 0) {
+            let ignore = 0
+            for (let i = arr.length - 1; i > -1; i--) {
+                let s = arr[i]
+                if (!s || s === '.') {
+                    continue
+                }
+                if (s === "..") {
+                    ignore++
+                    continue
+                }
+                if (ignore > 0) {
+                    ignore--
+                    continue
+                }
+
+                if (!isDir && base === '') {
+                    base = s
+                } else {
+                    dir = s + '/' + dir
+                }
+            }
+
+            dir = strings.trimEnd(dir, '/')
+            if (path.substring(0, 1) === '/') {
+                dir = '/' + dir
+            } else if (ignore > 0) {
+                dir = '../'.repeat(ignore) + dir
+            }
+
+        }
+        const {ext, filename} = this.#parseBasename(base)
+
+        this.base = base
+        this.dir = dir
+        this.ext = ext
+        this.filename = filename
+        this.origin = origin
     }
 
     /**
@@ -86,7 +108,8 @@ class paths {
     }
 
     toString() {
-        return this.origin + paths.join(this.dir, this.base)
+        let path = this.dir ? this.dir + '/' + this.base : this.base
+        return this.origin + path
     }
 
     /**
@@ -95,7 +118,7 @@ class paths {
      * @example
      *  .clean("/../a/c/")  ===>  /a/c
      *  .clean("a/b/c/..")  ===> a/b
-     *  .clean("./a/b/c/..")  ===> ./a/b
+     *  .clean("./a/b/c/..")  ===> a/b
      *  .clean("/./a/b/c/..")  ===> /a/b
      *  .clean("/../a//b/c/d/e/../../../f/.//./g/.//.///./../.././i/./../.")  ===> /a/b
      *  .clean("../a//b/c/d/e/../../../f/.//./g/.//.///./../.././i/./../.")  ===> ../a/b
@@ -106,23 +129,30 @@ class paths {
 
     /**
      *
-     * @param {string} base
-     * @param {Stringable} args
+     * @param {Stringable} base
+     * @param {string} args
      * @example
      *  join("a/b","../../../xyz")  ===>  ../xyz
      *  join("https://luexu.com", "/") ===> https://luexu.com
-     *
+     *  join("", "//test/file")  ===> test/file
+     *  join("/", "//test/file") ===> /test/file
      */
     static join(base, ...args) {
-        panic.arrayErrorType(args, ['string', 'number'], OPTIONAL)
-        base = strings.trimStart('/')
+        base = !base || base === '/' ? base : strings.trimEnd(base, '/')
         args.map(arg => {
-            if (!arg || arg === '/') {
-                return CONTINUE
-            }
-            base += '/' + arg
+            const arr = arg.split('/')
+            arr.map(a => {
+                if (!a) {
+                    return CONTINUE
+                }
+                if (base && base !== '/') {
+                    base += '/'
+                }
+                base += a
+            })
         })
         return base
     }
+
 }
 

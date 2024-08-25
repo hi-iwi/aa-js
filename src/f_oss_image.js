@@ -122,8 +122,8 @@ class AaImgSrc extends AaSrc {
         r.originalHeight = this.height
         r.originalWidth = this.width
         r.url = strings.replaceAll(this.cropPattern, {
-            "${WIDTH}": width,
-            "${HEIGHT}":height,
+            "${WIDTH}" : width,
+            "${HEIGHT}": height,
         })
         return r
     }
@@ -168,7 +168,7 @@ class AaImgSrc extends AaSrc {
         }
         r.originalHeight = this.height
         r.originalWidth = this.width
-        r.url = strings.replaceAll(this.resizePattern, "${MAXWIDTH}",maxWidth)
+        r.url = strings.replaceAll(this.resizePattern, "${MAXWIDTH}", maxWidth)
         return r
     }
 
