@@ -126,7 +126,7 @@ class AaEditor {
      * @param  {{[key:string]:SrcComposer}} [srcComposers]
      */
     decodeSelector(selector, srcComposers) {
-        return this.decodeContent(AaDOM.querySelector(selector), null, srcComposers)
+        return this.decodeContent(AaDOM.querySelector(selector), selector, srcComposers)
     }
 
     /**
