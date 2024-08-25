@@ -98,15 +98,15 @@ class arrays {
         if (start < end) {
             for (let i = start; i < end; i += step) {
                 const r = callback(i)
-                if (r === BREAK_SIGNAL) {
-                    return BREAK_SIGNAL
+                if (r === BREAK) {
+                    return BREAK
                 }
             }
         }
         for (let i = start; i > end; i -= step) {
             const r = callback(i)
-            if (r === BREAK_SIGNAL) {
-                return BREAK_SIGNAL
+            if (r === BREAK) {
+                return BREAK
             }
         }
     }

@@ -109,10 +109,10 @@ class AaScrollEvent {
         //@param {Event} event
         this.#events.forEach((event, name) => {
             if (event.pause) {
-                return
+                return CONTINUE
             }
             if (event.condition && event.condition(scrollTop, prevScrollTop, isAuto)) {
-                return
+                return CONTINUE
             }
             event.trigger(scrollTop, prevScrollTop, isAuto)
         })

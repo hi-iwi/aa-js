@@ -106,13 +106,23 @@ class paths {
 
     /**
      *
+     * @param {string} base
      * @param {StringN} args
-     * @example join("a/b","../../../xyz")  ===>  ../xyz
+     * @example
+     *  join("a/b","../../../xyz")  ===>  ../xyz
+     *  join("https://luexu.com", "/") ===> https://luexu.com
+     *
      */
-    static join(...args) {
+    static join(base, ...args) {
         panic.arrayErrorType(args, ['string', 'number'], OPTIONAL)
-        let path = args.join('/')
-        return paths.clean(path)
+        base = base.replace(/^\/$/, '')
+        args.map(arg => {
+            if (!arg || arg === '/') {
+                return CONTINUE
+            }
+            base += '/' + arg
+        })
+        return base
     }
 }
 

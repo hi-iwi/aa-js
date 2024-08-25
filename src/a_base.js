@@ -25,7 +25,8 @@
 const nif = () => void 0   // a nil function  ==>  Go语言都定义 any = interface{}，这里定义要给 nif 是有必要的
 const MAX = 'MAX'
 const MIN = 'MIN'
-const BREAK_SIGNAL = '-.../.-././.-/-.-/..--.-/.../../--./-./.-/.-..' // a signal from callback function to break forEach((value,key)) iterator
+const BREAK = '-.../.-././.-/-.-' // a signal from callback function to break forEach((value,key)) iterator
+const CONTINUE = void '' // return CONTINUE is not important, but better for people to read
 const OPTIONAL = false
 const REQUIRED = !OPTIONAL
 const INCR = 'INCR'

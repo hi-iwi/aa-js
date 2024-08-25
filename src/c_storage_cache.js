@@ -83,31 +83,30 @@ class AaCache {
             // 这个要放在最前面，抵消默认忽视下划线结尾的临时变量规则
             if (key === is || (is instanceof RegExp && is.test(key))) {
                 this.#storageEngine.setItem(keyname, value, options)
-                return
+                return CONTINUE
             }
             if (Array.isArray(is)) {
                 for (let i = 0; i < is.length; i++) {
                     if (key === is[i] || (is[i] instanceof RegExp && is[i].test(key))) {
                         this.#storageEngine.setItem(keyname, value, options)
-                        return
+                        return CONTINUE
                     }
                 }
             }
 
-
             // 以_结尾的表示临时数据，不用缓存
             // 避免客户端缓存state，直接将 _onPaste_, xxx_ok_ 的元素 加进来
             if (key.slice(-1) === '_') {
-                return
+                return CONTINUE
             }
             if (key === not || (not instanceof RegExp && not.test(key))) {
-                return
+                return CONTINUE
             }
 
             if (Array.isArray(not)) {
                 for (let i = 0; i < not.length; i++) {
                     if (key === not[i] || (not[i] instanceof RegExp && not[i].test(key))) {
-                        return
+                        return CONTINUE
                     }
                 }
             }

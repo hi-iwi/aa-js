@@ -293,7 +293,7 @@ class map {
             map.forEach(target, (k, v) => {
                 if (!map.compare(v, src[k])) {
                     result = false
-                    return BREAK_SIGNAL
+                    return BREAK
                 }
             })
             return result
@@ -439,7 +439,7 @@ class map {
                 let results = []
                 for (const [key, value] of iterator) {
                     const result = callback(key, value)
-                    if (result === BREAK_SIGNAL) {
+                    if (result === BREAK) {
                         break
                     }
                     if (!resultsOK && typeof result !== 'undefined') {
@@ -476,7 +476,7 @@ class map {
             const key = keys[i]
             const value = typeof iterable.get === 'function' ? iterable.get(key) : iterable[key]
             const result = callback(key, value)
-            if (result === BREAK_SIGNAL) {
+            if (result === BREAK) {
                 break
             }
             if (!resultsOK && typeof result !== 'undefined') {
@@ -522,7 +522,7 @@ class map {
             // "base_url" ===> baseUrl  or  baseURL
             if (k2.toLowerCase() === key.toLowerCase()) {
                 key = k2
-                return BREAK_SIGNAL
+                return BREAK
             }
         })
         return key
@@ -576,7 +576,7 @@ class map {
             if (hook) {
                 const hr = hook(key, value)
                 if (!hr.ok) {
-                    return
+                    return CONTINUE
                 }
                 key = hr.key
                 value = hr.value
@@ -643,11 +643,11 @@ class map {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
             if (k === '_fields_' || !target.hasOwnProperty(k)) {
-                return
+                return CONTINUE
             }
             // filter by target._fields_
             if (fields && !fields.includes(k) && !fields.includes(k)) {
-                return
+                return CONTINUE
             }
 
             if (typeof v === "undefined") {
@@ -755,7 +755,7 @@ class map {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
             if (typeof v === "undefined" || !target.hasOwnProperty(k)) {
-                return
+                return  CONTINUE
             }
             let t = target[k]
             // type consistency, except undefined/null (unknown type)

@@ -315,7 +315,7 @@ class AaMultiLevelSelects {
         const end = incr === INCR ? this.len : -1
         arrays.range(start, end, 1, i => {
             const r = callable(this.nth(i), i)
-            if (r === BREAK_SIGNAL) {
+            if (r === BREAK) {
                 return r
             }
             result.push(r)
@@ -340,7 +340,7 @@ class AaMultiLevelSelects {
                 const end = optionsIncr === INCR ? options.length : -1
                 return arrays.range(start, end, 1, j => {
                     const r = callable(options[j], i, j)
-                    if (r === BREAK_SIGNAL) {
+                    if (r === BREAK) {
                         return r
                     }
                     result.push(r)
@@ -354,7 +354,7 @@ class AaMultiLevelSelects {
         const options = this.nth(selectIndex)
         for (let j = 0; j < options.length; j++) {
             const r = callable(options[j], selectIndex, j)
-            if (r === BREAK_SIGNAL) {
+            if (r === BREAK) {
                 break
             }
             result.push(r)

@@ -77,7 +77,7 @@ class AaCookieStorage {
                 value = valueHandler(value)
             }
             const r = callback(key, value)
-            if (r === BREAK_SIGNAL) {
+            if (r === BREAK) {
                 break
             }
             result.push(r)
@@ -302,7 +302,7 @@ class AaStorageEngine {
 
         this.forEach((key, _) => {
             if (!keepData.includes(key)) {
-                log.print(this.instanceName, "DELETE", key, keepData[key])
+                log.debug(this.instanceName, "DELETE", key, keepData[key])
                 this.#storage.removeItem(key)
             }
         })
@@ -483,7 +483,7 @@ class AaStorageEngine {
             let key = keys[i]
             let value = raw ? this.#storage.getItem(key) : this.getItem(key)
             const r = callback(key, value)
-            if (r === BREAK_SIGNAL) {
+            if (r === BREAK) {
                 break
             }
             result.push(r)
@@ -537,14 +537,14 @@ class AaStorageEngine {
         this.forEach((key, value) => {
             if (array(aparam, 'PersistentNames').includes(key)) {
                 items[key] = value
-                return
+                return CONTINUE
             }
             if (this.#persistentNames.includes(key)) {
                 items[key] = value
-                return
+                return CONTINUE
             }
             if (typeof value === 'undefined') {
-                return
+                return CONTINUE
             }
             const {persistent, ttl} = this.decodeValue(key, value)
             if (persistent && (ttl === null || ttl > 0)) {
