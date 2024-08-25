@@ -55,8 +55,8 @@ class AaEditor {
 
     /**
      *
-     * @param {string|Node} content
-     * @param {DOM|null} [appendTo]
+     * @param {string|DOM} content
+     * @param {DOM|string|null} [appendTo]
      * @param {{[key:string]:SrcComposer}|null} [srcComposers]
      * @param {(node:DOM)=>(DOM|null)} [hook]
      * @return {HTMLElement|null}
