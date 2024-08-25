@@ -26,7 +26,7 @@ const nif = () => void 0   // a nil function  ==>  Go语言都定义 any = inter
 const MAX = 'MAX'
 const MIN = 'MIN'
 const BREAK = '-.../.-././.-/-.-' // a signal from callback function to break forEach((value,key)) iterator
-const CONTINUE = void '' // return CONTINUE is not important, but better for people to read
+const CONTINUE = void '' // return CONTINUE in a loop is not important, but better for people to read
 const OPTIONAL = false
 const REQUIRED = !OPTIONAL
 const INCR = 'INCR'

@@ -52,21 +52,22 @@ A Javascript SDK of AaGo
 
 ### constants
 
-| name           | type       | description                                                              |
-|----------------|------------|--------------------------------------------------------------------------|
-| aparam         | struct     | Keep-names of URL parameters                                             |
-| AErrorEnum     |            |                                                                          |
-| BREAK   | boolean    | a signal from callback function to break forEach((value,key)) iterator   |
-| nif            | function   | nil function, a function does nothing                                    |
-| nip            | Promise    | nil Promise, a promise does nothing                                      |
-| MAX            | string     | a global parameter to indicate passed a MAX value                        |
-| MIN            | string     | a global parameter to indicate passed a MIN value                        |
-| OPTIONAL       | boolean    | a global parameter to indicate passed a optional value                   |
-| REQUIRED       | boolean    | equal to !OPTIONAL                                                       |
-| U0             | string     | U0                                                                       |
-| -------------  | ---------- | ------------------------------------------------------------------------ |
-| AaFileTypeEnum |            |                                                                          |
-|                |            |                                                                          |
+| name           | type       | description                                                               |
+|----------------|------------|---------------------------------------------------------------------------|
+| aparam         | struct     | Keep-names of URL parameters                                              |
+| AErrorEnum     |            |                                                                           |
+| BREAK          | string     | a signal from callback function to break forEach((value,key)) iterator    |
+| CONTINUE       | void       | return CONTINUE in a loop is not important, but better for people to read |
+| nif            | function   | nil function, a function does nothing                                     |
+| nip            | Promise    | nil Promise, a promise does nothing                                       |
+| MAX            | string     | a global parameter to indicate passed a MAX value                         |
+| MIN            | string     | a global parameter to indicate passed a MIN value                         |
+| OPTIONAL       | boolean    | a global parameter to indicate passed a optional value                    |
+| REQUIRED       | boolean    | equal to !OPTIONAL                                                        |
+| U0             | string     | U0                                                                        |
+| -------------  | ---------- | ------------------------------------------------------------------------  |
+| AaFileTypeEnum |            |                                                                           |
+|                |            |                                                                           |
 
 ### global functions
 
