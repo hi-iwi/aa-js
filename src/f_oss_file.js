@@ -29,7 +29,7 @@ class AaFileSrc  extends AaSrc{
 
     }
     /**
-     * @param {StringN} str
+     * @param {Stringable} str
      * @return {AaFileSrc}
      * @note compatible with this.serialize()
      */

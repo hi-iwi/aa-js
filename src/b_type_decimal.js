@@ -51,7 +51,7 @@ class Decimal {
 
     /**
      * @param {struct|NumberX} [vv]
-     * @param {StringN} [vk]
+     * @param {Stringable} [vk]
      * @param {NumberX} [defaultV]
      */
     constructor(vv, vk, defaultV) {
@@ -404,7 +404,7 @@ class Decimal {
      */
     static mantissaOk(s, scale = 0, trimScale = false) {
         if (trimScale || scale === 0) {
-            s = s.replace(/0+$/g, '')
+            s = strings.trimEnd(s, '0')
         } else if (len(s) < scale) {
             s = s.padEnd(scale, '0')
         }
@@ -417,7 +417,7 @@ class Decimal {
     }
 
     /**
-     * @param {StringN} str
+     * @param {Stringable} str
      * @return {AaImgSrc|null}
      * @note compatible with this.serialize()
      */
@@ -428,7 +428,7 @@ class Decimal {
 
 /**
  * @param {struct|NumberX|Decimal} [vv]
- * @param {StringN} [vk]
+ * @param {Stringable} [vk]
  * @param {NumberX|Decimal} [defaultV]
  * @return {Decimal}
  */

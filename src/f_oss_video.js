@@ -30,7 +30,7 @@ class AaVideoSrc  extends AaSrc{
 
     }
     /**
-     * @param {StringN} str
+     * @param {Stringable} str
      * @return {AaVideoSrc}
      * @note compatible with this.serialize()
      */

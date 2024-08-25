@@ -29,7 +29,7 @@ class Percent extends Decimal {
 
     /**
      * @param {struct|NumberX} [vv]
-     * @param {StringN} [vk]
+     * @param {Stringable} [vk]
      * @param {NumberX} [defaultV]
      */
     constructor(vv, vk, defaultV) {
@@ -40,7 +40,7 @@ class Percent extends Decimal {
 /**
  * New a {Percent} instance
  * @param {struct|Percent|NumberX} vv
- * @param {StringN} [vk]
+ * @param {Stringable} [vk]
  * @param {Percent|NumberX} [defaultV]
  */
 function percent(vv, vk, defaultV) {

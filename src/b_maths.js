@@ -75,7 +75,7 @@ class maths {
         let isRelative = false  // @example 20%  .5%
 
         if (typeof vv === 'string') {
-            vv = string(vv).replace(/\s/g, '').toLowerCase()
+            vv = strings.replaceAll(vv, ' ', '').toLowerCase()
             isRelative = /^[\d.]+%$/.test(vv)
         }
 
@@ -87,9 +87,9 @@ class maths {
         if (vv.indexOf("rem") > -1) {
             // 计算1rem对应px
             const rem = parseFloat(window.getComputedStyle(document.documentElement)["fontSize"])  // 1rem 对应像素
-            return Math.floor(number(vv.replace("rem", '')) * rem)
+            return Math.floor(Number(strings.trimEnd(vv, "rem")) * rem)
         }
-        return Math.floor(number(vv.replace("px", "")))
+        return Math.floor(Number(strings.trimEnd(vv, "px")))
     }
 
     /**

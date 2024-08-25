@@ -37,7 +37,7 @@ class map {
 
     /**
      *
-     * @return {Generator<StringN|any[], void, *>}
+     * @return {Generator<Stringable|any[], void, *>}
      */
     * [Symbol.iterator]() {
         for (let [key, value] of this.entries()) {
@@ -55,7 +55,7 @@ class map {
 
     /**
      * Delete a key in this map
-     * @param {StringN} key
+     * @param {Stringable} key
      */
     delete(key) {
         delete this.props[key]
@@ -87,7 +87,7 @@ class map {
 
     /**
      * Get from map
-     * @param {StringN} key
+     * @param {Stringable} key
      * @param {(value:any)=>any} [cast]
      * @return {*}
      */
@@ -98,7 +98,7 @@ class map {
 
     /**
      * Get or set
-     * @param {StringN} key
+     * @param {Stringable} key
      * @param defaultValue
      * @param allowUndefined
      * @return {*}
@@ -112,7 +112,7 @@ class map {
 
     /**
      * Check map has property key, and its value is not undefined
-     * @param {StringN} key
+     * @param {Stringable} key
      * @param allowUndefined
      * @return {boolean}
      */
@@ -124,7 +124,7 @@ class map {
      * Join object keys and values
      * @param {string} [kvSeparator]
      * @param {string} [separator]
-     * @param {(key:StringN, value:any)=>{key:string,value:any, ok:boolean}} [hook]
+     * @param {(key:Stringable, value:any)=>{key:string,value:any, ok:boolean}} [hook]
      * @param {SortMethod} [sort]
      * @return {string}
      */
@@ -138,7 +138,7 @@ class map {
 
     /**
      * Set an item
-     * @param {StringN} key
+     * @param {Stringable} key
      * @param value
      */
     set(key, value) {
@@ -163,7 +163,7 @@ class map {
 
     /**
      *
-     * @param {(key:StringN, value:any)=>{key:string,value:any, ok:boolean}} [hook]
+     * @param {(key:Stringable, value:any)=>{key:string,value:any, ok:boolean}} [hook]
      * @param {((a:any, b:any)=>number)|boolean} [sort]
      * @return {string}
      */
@@ -490,7 +490,7 @@ class map {
     /**
      * Get value from a struct
      * @param {struct|*} obj
-     * @param {StringN} key
+     * @param {Stringable} key
      * @return {*}
      */
     static get(obj, key) {
@@ -500,9 +500,9 @@ class map {
     /**l
      *
      * @param  {Class|struct} target
-     * @param  {StringN} key
+     * @param  {Stringable} key
      * @param {(v:any)=>any} [convertor]
-     * @return {StringN}
+     * @return {Stringable}
      */
     static handleKeyname(target, key, convertor) {
         if (convertor && convertor !== nif) {
@@ -564,7 +564,7 @@ class map {
      * @param {iterable} iterable
      * @param {string} [kvSeparator]
      * @param {string} [separator]
-     * @param {(key:StringN, value:any)=>{key:string,value:any, ok:boolean}} [hook]
+     * @param {(key:Stringable, value:any)=>{key:string,value:any, ok:boolean}} [hook]
      * @param {SortMethod} [sort]
      * @return {string}
      */
@@ -689,7 +689,7 @@ class map {
     /**
      * Set item into a struct
      * @param {struct|*} obj
-     * @param {StringN} key
+     * @param {Stringable} key
      * @param value
      * @return {{[p: string]: *}|*}
      */

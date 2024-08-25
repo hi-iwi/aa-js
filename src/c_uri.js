@@ -203,7 +203,7 @@ class AaURI {
 
     /**
      *
-     * @param {(key:StringN,value:any)=>boolean} filter
+     * @param {(key:Stringable,value:any)=>boolean} filter
      * @return {AaURI}
      */
     filter(filter) {
@@ -425,7 +425,7 @@ class AaURI {
             if (typeof v === 'undefined' || v === '' || v === null) {
                 throw new TypeError(`url path param ${m} is not defined`)
             }
-            s = s.replace(new RegExp(m, 'g'), v)
+            s = strings.replaceAll(s, m, v)
             newQueries.delete(k)
 
         }

@@ -888,7 +888,7 @@ class time {
             const padZero = u[0]
             const v = String(u[1])
             if (k === "Z") {
-                s = s.replace(/Z/g, v)  // 整体
+                s = strings.replaceAll(s, 'Z', v)
                 continue
             }
 
@@ -1015,7 +1015,7 @@ class time {
     }
 
     /**
-     * @param {StringN} str
+     * @param {Stringable} str
      * @return {time}
      * @note compatible with this.serialize()
      */
@@ -1392,7 +1392,7 @@ class TimeDiff {
 /**
  * New a {time} in `YYYY-MM-DD` pattern
  * @param {struct|NumberX|string} [vv]
- * @param {StringN} [vk]
+ * @param {Stringable} [vk]
  * @param {time|Date|NumberX|string} [defaultV]
  * @return {time}
  */
@@ -1405,7 +1405,7 @@ function date(vv, vk, defaultV) {
 /**
  * New a {time} in `YYYY-MM-DD HH:II:SS` pattern
  * @param {struct|NumberX|string} [vv]
- * @param {StringN} [vk]
+ * @param {Stringable} [vk]
  * @param {time|Date|NumberX|string} [defaultV]
  * @return {time}
  */

@@ -34,7 +34,7 @@ class AaCache {
         if (key.indexOf(prefix) !== 0) {
             return key
         }
-        key = key.replace(prefix, '')
+        key = strings.trimStart(key, prefix, 1)
         const sub = this.#storageEngine.subSeparator
         let keys = key.split(sub)
         if (keys.length === 1) {

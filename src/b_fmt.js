@@ -14,7 +14,7 @@ class fmt {
      */
     static capitalizeEachWord(s, handleCases = false) {
         if (handleCases) {
-            s = fmt.toSnakeCase(s).replace(/_/g, ' ')
+            s = strings.replaceAll(fmt.toSnakeCase(s), '_', ' ')
         }
         s = s.replace(/(^|[\s_-])([a-z])/g, function (x, y, z) {
             return y + z.toUpperCase()
@@ -125,13 +125,13 @@ class fmt {
             rst += units[i % 6]
             hanzi = rst + hanzi
         })
-        suffix.forEach(item => (hanzi = hanzi.replace(new RegExp('零' + item, 'g'), '零')))
+        suffix.forEach(item => (hanzi = strings.replaceAll(hanzi, '零' + item, '零')))
         for (let i = units.length - 1; i >= 0; --i) {
             let val = units[i]
             hanzi = hanzi.replace(new RegExp('(零+)' + val, 'g'), (match, $1) => ($1.length === 4 ? '' : val))
         }
         hanzi = hanzi.replace(/零+/g, '零')
-        hanzi = hanzi.replace(/个/g, '')
+        hanzi = strings.replaceAll(hanzi, "个", '')
         hanzi = hanzi.replace(/^一十/, '十')
         return hanzi
     }
@@ -151,7 +151,7 @@ class fmt {
      */
     static toSentenceCase(s, handleCases = false) {
         if (handleCases) {
-            s = fmt.toSnakeCase(s).replace(/_/g, ' ')
+            s = strings.replaceAll(fmt.toSnakeCase(s), '_', ' ')
         }
         return !s ? "" : s[0].toUpperCase() + s.substring(1)
     }
@@ -161,12 +161,12 @@ class fmt {
      * @param {string} s
      */
     static toSnakeCase(s) {
-        s = s.replace(/-/g, '_')  // kebab-case
+        s = strings.replaceAll(s, '-','_')  // kebab-case
         let isPascal = s && (s[0] >= 'A' && s[0] <= 'Z')
 
         s = s.replace(/_?([A-Z]+)/g, function (x, y) {
             return "_" + y.toLowerCase()
         })
-        return isPascal ? s.replace(/^_/, "") : s
+        return isPascal ? strings.trimStart(s, '_', 1) : s
     }
 }

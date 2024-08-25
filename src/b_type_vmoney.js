@@ -21,7 +21,7 @@ class VMoney extends Money {
     rounder = VMoney.Rounder   // 取整方式 ceil -> round up;  floor -> round down
     /**
      * @param {struct|NumberX} [vv]
-     * @param {StringN} [vk]
+     * @param {Stringable} [vk]
      * @param {NumberX} [defaultV]
      */
     constructor(vv, vk, defaultV) {
@@ -32,7 +32,7 @@ class VMoney extends Money {
 /**
  * New a {VMoney} instance
  * @param {struct|NumberX|VMoney} vv
- * @param {StringN} [vk]
+ * @param {Stringable} [vk]
  * @param {NumberX|VMoney} [defaultV]
  */
 function vmoney(vv, vk, defaultV) {

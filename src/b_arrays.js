@@ -62,8 +62,8 @@ class arrays {
 
     /**
      * Is the array contains this item
-     * @param {(StringN|RegExp|boolean)[]} arr
-     * @param {StringN|boolean} item
+     * @param {(Stringable|RegExp|boolean)[]} arr
+     * @param {Stringable|boolean} item
      * @return {boolean}
      */
     static contains(arr, item) {

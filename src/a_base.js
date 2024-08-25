@@ -6,7 +6,7 @@
  * @typedef {array|struct|map|URLSearchParams|*} iterable
  * @typedef {(value:any, key:string)=>*} IteratorCallback
  * @typedef {((a:any, b:any)=>number)|boolean} SortMethod
- * @typedef {string|number} StringN
+ * @typedef {string|number|function} Stringable
  * @typedef {number|string} NumberX
  * @typedef {number} TimeUnit
  * @typedef {number} UnixTime     unix time in seconds
@@ -127,7 +127,7 @@ var _aaDebug = new (class {
         if (!localStorage) {
             return
         }
-        const value = atype.aliasOf(this.value).toUpperCase() + ":" + this.value  // N:1, add N: make this storage persistent
+        const value = this.value + " |" + atype.aliasOf(this.value).toUpperCase()   // add |N to make this storage persistent
         localStorage.setItem(this.#storageKeyname, value)
     }
 
@@ -136,7 +136,7 @@ var _aaDebug = new (class {
             return
         }
         const sk = localStorage.getItem(this.#storageKeyname)
-        const value = sk ? Number(sk.replace('N:', '')) : 0
+        const value = sk ? Number(sk.replace(/^\d/g, '')) : 0
         const ok = isNaN(value) || ![0, 1, 2].includes(value)
         return [value, ok]
     }

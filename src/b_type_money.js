@@ -38,7 +38,7 @@ class Money extends Decimal {
 
     /**
      * @param {struct|NumberX} [vv]
-     * @param {StringN} [vk]
+     * @param {Stringable} [vk]
      * @param {NumberX} [defaultV]
      */
     constructor(vv, vk, defaultV) {
@@ -139,7 +139,7 @@ class Money extends Decimal {
 /**
  * New a {Money} instance
  * @param {struct|Money|NumberX} [vv]
- * @param {StringN} [vk]
+ * @param {Stringable} [vk]
  * @param {Money|NumberX} [defaultV]
  * @return {Money}
  */

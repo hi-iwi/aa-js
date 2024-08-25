@@ -11,7 +11,7 @@ class strings {
 
     /**
      * Slice string by length in placeholder format
-     * @param {StringN} s
+     * @param {Stringable} s
      * @param {number} length
      * @return {string}
      */
@@ -34,7 +34,7 @@ class strings {
 
     /**
      * Slice string by length in utf-8 format
-     * @param {StringN} s
+     * @param {Stringable} s
      * @param {number} length
      * @return {string}
      */
@@ -71,7 +71,6 @@ class strings {
     static escapeReg(pattern) {
         return pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
     }
-
 
 
     /**
@@ -154,7 +153,7 @@ class strings {
 
     /**
      * Get placeholder length of give string
-     * @param {StringN} s
+     * @param {Stringable} s
      * @return {number}
      */
     static placeLen(s) {
@@ -223,35 +222,80 @@ class strings {
         }
         return result;
     }
+
     /**
      * New RegExp with escaped regexp pattern
      * @param {RegExp|string} pattern
      * @param {string} [flags]
      * @return {RegExp}
      */
-    static regexp(pattern, flags){
-        if(typeof pattern ==='string'){
+    static regexp(pattern, flags) {
+        if (typeof pattern === 'string') {
             pattern = strings.escapeReg(pattern)
         }
-        return new RegExp(pattern,flags)
+        return new RegExp(pattern, flags)
     }
+
     /**
-     * Replaces the last matched text in a string, using a regular expression or search string.
-     * @param {string} str
-     * @param {string|RegExp} pattern
-     * @param {string} replacement
-     * @return {string|*}
+     * Replace all matched text in a string
+     * @param {Stringable} s
+     * @param {string|{[key:string]:(string|number)}|(string|number)[][]|(string|number)[]} oldCut
+     * @param {string} [newCut]
+     * @return {string}
+     * @example
+     *  replaceAll("I'm Aario. Hi, Aario!", "Aario", "Tom")  ==> I'm Tom. Hi Tom!
+     *  replaceAll("I'm Aario. Hi, Aario!", {
+     *      "Aario": "Tom",
+     *      "Hi": "Hello",
+     *  })  ====>  I'm Tom. Hello Tom!
+     *  replaceAll("I'm Aario. Hi, Aario!", [["Aario", "Tom"]])
      */
-    static replaceLast(str, pattern, replacement) {
-        const match =
-                  typeof pattern === 'string'
-                      ? pattern
-                      : (str.match(new RegExp(pattern.source, 'g')) || []).slice(-1)[0];
-        if (!match) return str;
-        const last = str.lastIndexOf(match);
-        return last !== -1
-            ? `${str.slice(0, last)}${replacement}${str.slice(last + match.length)}`
-            : str;
+    static replaceAll(s, oldCut, newCut) {
+        let cuts = []  // keep replace sequence
+        if (Array.isArray(oldCut)) {
+            cuts = oldCut.length > 0 && Array.isArray(oldCut[0]) ? oldCut : [oldCut]
+        } else if (typeof oldCut === 'object') {
+            for (const [a, b] of Object.entries(oldCut)) {
+                cuts.push([a, b])
+            }
+        } else {
+            cuts.push([oldCut, newCut])
+        }
+
+        s = string(s)
+        cuts.map(cut=>{
+            s = s.split(cut[0]).join(String(cut[1]))
+        })
+
+        return s
+    }
+
+    /**
+     * Replaces the first matched text in a string
+     * @param {Stringable} s
+     * @param {string} oldCut
+     * @param {string} newCut
+     * @return {string}
+     * @example replaceFirst("I'm Aario. Hi, Aario!", "Aario", "Tom")  ==> I'm Tom. Hi Aario!
+     */
+    static replaceFirst(s, oldCut, newCut) {
+        s = string(s)
+        const last = s.indexOf(oldCut);
+        return last < 0 ? s : s.slice(0, last) + newCut + s.slice(last + oldCut.length)
+    }
+
+    /**
+     * Replaces the last matched text in a string
+     * @param {Stringable} s
+     * @param {string} oldCut
+     * @param {string} newCut
+     * @return {string}
+     * @example replaceLast("I'm Aario. Hi, Aario!", "Aario", "Tom")  ==> I'm Aario. Hi Tom!
+     */
+    static replaceLast(s, oldCut, newCut) {
+        s = string(s)
+        const last = s.lastIndexOf(oldCut);
+        return last < 0 ? s : s.slice(0, last) + newCut + s.slice(last + oldCut.length)
     }
 
 
@@ -284,6 +328,82 @@ class strings {
     }
 
     /**
+     * Repeat `n` times to trim the prefix and suffix `cut` from the string `s`, if n<1, trim unlimited
+     * @param {Stringable} s
+     * @param {string|number} [cut]
+     * @param {number} [n]
+     * @return {string}
+     */
+    static trim(s, cut = ' ', n) {
+        s = strings.trimStart(s, cut, n)
+        return strings.trimEnd(s, cut, n)
+    }
+
+
+    /**
+     * Repeat `n` times to trim the prefix `cut` from the string `s`, if n<1, trim unlimited
+     * @param {Stringable} s
+     * @param {string|number} [cut]
+     * @param {number} [n]
+     * @return {string}
+     */
+    static trimStart(s, cut = ' ', n) {
+        if (typeof cut === 'number' && typeof n === 'undefined') {
+            n = cut
+            cut = ' '
+        }
+        s = string(s)
+        const length = s.length
+        const step = cut.length
+        if (!s || length < step) {
+            return s
+        }
+        if (!n) {
+            n = length
+        }
+        let i = 0
+        let x = s.substring(i, i + step)
+        while (x === cut && i < length && n > 0) {
+            n--
+            i += step
+            x = s.substring(i, i + step)
+        }
+        return i > length - 1 ? '' : s.substring(i)
+    }
+
+    /**
+     * Repeat `n` times to trim the suffix `cut` from the string `s`, if n<1, trim unlimited
+     * @param {Stringable} s
+     * @param {string|number} [cut]
+     * @param {number} [n]
+     * @return {string}
+     */
+    static trimEnd(s, cut = ' ', n) {
+        if (typeof cut === 'number' && typeof n === 'undefined') {
+            n = cut
+            cut = ' '
+        }
+        s = string(s)
+        const length = s.length
+        const step = cut.length
+        if (!s || length < step) {
+            return s
+        }
+        if (!n) {
+            n = length
+        }
+        let i = length
+        let x = s.substring(i - step, i)
+
+        while (x === cut && i > 0 && n > 0) {
+            n--
+            i -= step
+            x = s.substring(i - step, i)
+        }
+        return i < 1 ? '' : s.substring(0, i)
+    }
+
+    /**
      *  Parse JSON string or object more fault-tolerant
      * @param {(jsonstr|struct|array|null)} o
      * @return {(*[]|struct|null)}
@@ -306,7 +426,7 @@ class strings {
 
     /**
      * Get utf8 length of given string
-     * @param {StringN} s
+     * @param {Stringable} s
      * @return {number}
      */
     static utf8Len(s) {

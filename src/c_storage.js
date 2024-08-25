@@ -211,7 +211,7 @@ class AaStorageEngine {
     ttlDiffKey = `aa${AaStorageEngine.DefaultSeparator}storage${AaStorageEngine.DefaultSeparator}ttld`
     ttlUnit = time.Minute
 
-     #storage
+    #storage
     #persistentNames = []
     #withOptions = false
 
@@ -632,9 +632,9 @@ class AaStorageEngine {
         let wild = null
         const sep = this.separator
         const sub = this.subSeparator
-        const source = key.source
+        let source = key.source
         if ((sep !== AaStorageEngine.DefaultSeparator || sub !== AaStorageEngine.DefaultSubSeparator) && source.indexOf(':') > -1) {
-            source.replace(/:/, '[' + strings.escapeReg(`${sep}${sub}`) + ']')
+            source = strings.replaceAll(':', '[' + strings.escapeReg(`${sep}${sub}`) + ']')
             wild = new RegExp(source)
         }
 

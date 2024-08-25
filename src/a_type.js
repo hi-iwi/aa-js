@@ -38,7 +38,7 @@ function xrun(method, ...args) {
 /**
  * Return defined value
  * @param {*} [vv]
- * @param {StringN} [vk]
+ * @param {Stringable} [vk]
  * @param {*} [defaultV]
  * @returns {null|*} return any type except type `undefined`
  * @note Golang 至今未支持三元写法，因此不代表某种习惯就必须要所有人接受。这里规定一种写法并无障碍，并非强制性要求。

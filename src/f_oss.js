@@ -47,7 +47,7 @@ const AaFileTypeEnum = {
      * @return {number}
      */
     parseImage: function (mime) {
-        mime = string(mime).toLowerCase().replace(/^\./, '')
+        mime = strings.trimStart(string(mime).toLowerCase(), '.', 1)
         if (["jpg", "jpeg", "image/jpeg"].includes(mime)) {
             return AaFileTypeEnum.Jpeg
         }
@@ -72,7 +72,7 @@ const AaFileTypeEnum = {
      * @return {number}
      */
     parseAudio: function (mime) {
-        mime = string(mime).toLowerCase().replace(/^\./, '')
+        mime = strings.trimStart(string(mime).toLowerCase(), '.', 1)
         if (["mp3", "audio/mpeg"].includes(mime)) {
             return AaFileTypeEnum.Mp3
         }
@@ -95,7 +95,7 @@ const AaFileTypeEnum = {
      * @return {number}
      */
     parseVideo: function (mime) {
-        mime = string(mime).toLowerCase().replace(/^\./, '')
+        mime = strings.trimStart(string(mime).toLowerCase(), '.', 1)
 
         if (["avi", "video/x-msvideo"].includes(mime)) {
             return AaFileTypeEnum.Avi
@@ -152,7 +152,7 @@ class AaSrc {
     }
 
     /**
-     * @param {StringN} str
+     * @param {Stringable} str
      * @return {AaImgSrc|null}
      * @note compatible with this.serialize()
      */

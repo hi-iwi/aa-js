@@ -21,7 +21,7 @@ class paths {
         let origin = ''
         let match = path.match(/^\w+:\/\/[^\/]+\/?/)
         if (match) {
-            origin = match[0].replace(/\/$/, '')
+            origin = strings.trimEnd(match[0], '/')
             path = path.substring(origin.length)
         }
 
@@ -43,7 +43,7 @@ class paths {
         path = path.replace(/^\/..\//g, '/')  // root 的 /../  属于特殊情况，直接返回 /
         // Eliminate .. elements that begin a rooted path: that is, replace "/.." by "/" at the beginning of a path.
         if (path !== '/') {
-            path = path.replace(/\/$/, '')
+            path = strings.trimEnd(path, '/')
         }
 
         this.origin = origin
@@ -82,7 +82,7 @@ class paths {
     }
 
     toSlash(separator = '\\') {
-        return this.toString().replace(/\//g, separator)
+        return strings.replaceAll(this.toString(), '/', separator)
     }
 
     toString() {
@@ -107,7 +107,7 @@ class paths {
     /**
      *
      * @param {string} base
-     * @param {StringN} args
+     * @param {Stringable} args
      * @example
      *  join("a/b","../../../xyz")  ===>  ../xyz
      *  join("https://luexu.com", "/") ===> https://luexu.com
@@ -115,7 +115,7 @@ class paths {
      */
     static join(base, ...args) {
         panic.arrayErrorType(args, ['string', 'number'], OPTIONAL)
-        base = base.replace(/^\/$/, '')
+        base = strings.trimStart('/')
         args.map(arg => {
             if (!arg || arg === '/') {
                 return CONTINUE

@@ -207,7 +207,11 @@ class AaEditor {
         if (!tag) {
             tag = this.fuzzyTag
         }
-        s = s.replace(/[\r\n]+/g, '<br>')
+        s = s.replaceAll(s, [
+            ["\r\n", "<br>"],
+            ["\r", "<br>"],
+            ["\n", "<br>"],
+        ])
         s = s.replace(/<fuzzy>\s*\d+\s*:\s*(\d+)\s*<\/fuzzy>/ig, (m, l) => tag.repeat(l))
         return s
     }
@@ -273,15 +277,19 @@ class AaEditor {
         s = string(s)
         for (const [k, v] of Object.entries(this.decodeTemplate)) {
             if (s.indexOf(k) > -1) {
-                s = s.replace(new RegExp(k, 'g'), v)
+                s = strings.replaceAll(s, k, v)
             }
         }
         s = s.replace(/&#(\d{1,3});/gi, function (match, numStr) {
             let num = parseInt(numStr, 10); // read num as normal number
             return String.fromCharCode(num);
         });
-        s = s.replace(/\r\n/g, '<br>')  // Win: \r\n
-        s = s.replace(/[\r\n]/g, '<br>')  // Unix: \n;  Mac: \r
+        //  Windows: "\r\n";  Unix: \n;  Mac: \r
+        s = strings.replaceAll(s, [
+            ["\r\n", "<br>"],
+            ["\r", "<br>"],
+            ["\n", "<br>"],
+        ])
         return s
     }
 
@@ -427,7 +435,7 @@ class AaEditor {
     #encodeTextNode(s) {
         for (const [k, v] of Object.entries(this.encodeTemplate)) {
             if (s.indexOf(k) > -1) {
-                s = s.replace(new RegExp(k, 'g'), v)
+                s = strings.replaceAll(s, k, v)
             }
         }
         return s

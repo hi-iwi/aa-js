@@ -121,7 +121,10 @@ class AaImgSrc extends AaSrc {
         }
         r.originalHeight = this.height
         r.originalWidth = this.width
-        r.url = string(this.cropPattern).replace(/\${WIDTH}/g, string(width)).replace(/\${HEIGHT}/g, string(height))
+        r.url = strings.replaceAll(this.cropPattern, {
+            "${WIDTH}": width,
+            "${HEIGHT}":height,
+        })
         return r
     }
 
@@ -165,7 +168,7 @@ class AaImgSrc extends AaSrc {
         }
         r.originalHeight = this.height
         r.originalWidth = this.width
-        r.url = string(this.resizePattern).replace(/\${MAXWIDTH}/g, maxWidth)
+        r.url = strings.replaceAll(this.resizePattern, "${MAXWIDTH}",maxWidth)
         return r
     }
 
@@ -315,9 +318,8 @@ class AaImgSrc extends AaSrc {
             width = parseInt(a[1], 36)
             height = len(a) === 3 ? parseInt(a[2], 36) : width
         }
-
         return {
-            path    : p.toString(),
+            path    : strings.trimStart(p.toString(), '/'),
             filetype: AaFileTypeEnum.parseImage(p.ext),
             size    : size,
             width   : width,
