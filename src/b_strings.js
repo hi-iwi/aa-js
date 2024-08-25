@@ -263,11 +263,25 @@ class strings {
         }
 
         s = string(s)
-        cuts.map(cut=>{
+        cuts.map(cut => {
             s = s.split(cut[0]).join(String(cut[1]))
         })
 
         return s
+    }
+
+
+
+    /**
+     * Replace if the string ends with `oldCut`
+     * @param {Stringable} s
+     * @param {string} oldCut
+     * @param {string} newCut
+     * @return {string}
+     */
+    static replaceEnd(s, oldCut, newCut) {
+        s = string(s)
+        return s.endsWith(oldCut) ? strings.replaceLast(s, oldCut, newCut) : s
     }
 
     /**
@@ -297,7 +311,17 @@ class strings {
         const last = s.lastIndexOf(oldCut);
         return last < 0 ? s : s.slice(0, last) + newCut + s.slice(last + oldCut.length)
     }
-
+    /**
+     * Replace if the string starts with `oldCut`
+     * @param {Stringable} s
+     * @param {string} oldCut
+     * @param {string} newCut
+     * @return {string}
+     */
+    static replaceStart(s, oldCut, newCut) {
+        s = string(s)
+        return s.startsWith(oldCut) ? s.replace(oldCut, newCut) : s
+    }
 
     /**
      * Shuffle a string
@@ -341,37 +365,6 @@ class strings {
 
 
     /**
-     * Repeat `n` times to trim the prefix `cut` from the string `s`, if n<1, trim unlimited
-     * @param {Stringable} s
-     * @param {string|number} [cut]
-     * @param {number} [n]
-     * @return {string}
-     */
-    static trimStart(s, cut = ' ', n) {
-        if (typeof cut === 'number' && typeof n === 'undefined') {
-            n = cut
-            cut = ' '
-        }
-        s = string(s)
-        const length = s.length
-        const step = cut.length
-        if (!s || length < step) {
-            return s
-        }
-        if (!n) {
-            n = length
-        }
-        let i = 0
-        let x = s.substring(i, i + step)
-        while (x === cut && i < length && n > 0) {
-            n--
-            i += step
-            x = s.substring(i, i + step)
-        }
-        return i > length - 1 ? '' : s.substring(i)
-    }
-
-    /**
      * Repeat `n` times to trim the suffix `cut` from the string `s`, if n<1, trim unlimited
      * @param {Stringable} s
      * @param {string|number} [cut]
@@ -401,6 +394,37 @@ class strings {
             x = s.substring(i - step, i)
         }
         return i < 1 ? '' : s.substring(0, i)
+    }
+
+    /**
+     * Repeat `n` times to trim the prefix `cut` from the string `s`, if n<1, trim unlimited
+     * @param {Stringable} s
+     * @param {string|number} [cut]
+     * @param {number} [n]
+     * @return {string}
+     */
+    static trimStart(s, cut = ' ', n) {
+        if (typeof cut === 'number' && typeof n === 'undefined') {
+            n = cut
+            cut = ' '
+        }
+        s = string(s)
+        const length = s.length
+        const step = cut.length
+        if (!s || length < step) {
+            return s
+        }
+        if (!n) {
+            n = length
+        }
+        let i = 0
+        let x = s.substring(i, i + step)
+        while (x === cut && i < length && n > 0) {
+            n--
+            i += step
+            x = s.substring(i, i + step)
+        }
+        return i > length - 1 ? '' : s.substring(i)
     }
 
     /**
