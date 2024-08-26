@@ -34,7 +34,7 @@ class AaCache {
         if (key.indexOf(prefix) !== 0) {
             return key
         }
-        key = strings.trimStart(key, prefix, 1)
+        key = key.trimStart(prefix, 1)
         const sub = this.#storageEngine.subSeparator
         let keys = key.split(sub)
         if (keys.length === 1) {
@@ -49,7 +49,7 @@ class AaCache {
      */
     drop(table) {
         const tableName = this.#formatTableName(table)
-        this.#storageEngine.removeItems(new RegExp("^" + strings.escapeReg(tableName)))
+        this.#storageEngine.removeItems(new RegExp("^" + tableName.toRegSource()))
     }
 
     /**
@@ -126,7 +126,7 @@ class AaCache {
         if (!table) {
             throw new TypeError(`storage cache error: select * from ${table}`)
         }
-        let pattern = this.#formatTableName(table) + strings.escapeReg(this.#storageEngine.subSeparator)
+        let pattern = this.#formatTableName(table) + this.#storageEngine.subSeparator.toRegSource()
         if (len(fields) > 0) {
             pattern += '(' + fields.join('|') + ')$'
         }

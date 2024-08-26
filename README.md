@@ -14,10 +14,12 @@ A Javascript SDK of AaGo
 
 ### prototype
 
-| type   | prototype | description  |
-|--------|-----------|--------------|
-| number | is(b:any) | a==number(b) |
-| string | is(b:any) | a==string(b) |
+| prototype           | description     |
+|---------------------|-----------------|
+| Number.is(b)        | this==number(b) |
+| Number.replaceAll() |                 |
+| String.is(b)        | this==string(b) |
+| String.replaceAll() |                 |
 
 ### type caster functions
 

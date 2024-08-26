@@ -276,7 +276,7 @@ class AaEditor {
         s = string(s)
         for (const [k, v] of Object.entries(this.decodeTemplate)) {
             if (s.indexOf(k) > -1) {
-                s = strings.replaceAll(s, k, v)
+                s = s.replaceAll(k, v)
             }
         }
         s = s.replace(/&#(\d{1,3});/gi, function (match, numStr) {
@@ -284,7 +284,7 @@ class AaEditor {
             return String.fromCharCode(num);
         });
         //  Windows: "\r\n";  Unix: \n;  Mac: \r
-        s = strings.replaceAll(s, [
+        s = s.replaceAll([
             ["\r\n", "<br>"],
             ["\r", "<br>"],
             ["\n", "<br>"],
@@ -434,7 +434,7 @@ class AaEditor {
     #encodeTextNode(s) {
         for (const [k, v] of Object.entries(this.encodeTemplate)) {
             if (s.indexOf(k) > -1) {
-                s = strings.replaceAll(s, k, v)
+                s = s.replaceAll(k, v)
             }
         }
         return s

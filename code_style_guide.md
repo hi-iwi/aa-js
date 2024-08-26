@@ -146,6 +146,7 @@ cookie-name = token
 12. initXXX()
 13. init()
 14. constructor()
+15. static new()
 15. #private methods            ---> 尽量不要使用私有变量!!!
 16. \* [xxx]()   如  *[Symbol.iterator](){yield xxx}
 17. [xxx]()    如  [Symbol.iterator](){return [].values()}

@@ -75,7 +75,7 @@ class maths {
         let isRelative = false  // @example 20%  .5%
 
         if (typeof vv === 'string') {
-            vv = strings.replaceAll(vv, ' ', '').toLowerCase()
+            vv = vv.replaceAll(' ', '').toLowerCase()
             isRelative = /^[\d.]+%$/.test(vv)
         }
 
@@ -87,9 +87,9 @@ class maths {
         if (vv.indexOf("rem") > -1) {
             // 计算1rem对应px
             const rem = parseFloat(window.getComputedStyle(document.documentElement)["fontSize"])  // 1rem 对应像素
-            return Math.floor(Number(strings.trimEnd(vv, "rem")) * rem)
+            return Math.floor(Number(vv.trimEnd("rem")) * rem)
         }
-        return Math.floor(Number(strings.trimEnd(vv, "px")))
+        return Math.floor(Number(vv.trimEnd("px")))
     }
 
     /**
@@ -100,7 +100,7 @@ class maths {
      * @returns {string}
      */
     static thousands(num, n = 3, separator = ',') {
-        num = String(num)
+        num = string(num)
         if (!n || !separator || num.length <= n) {
             return num
         }

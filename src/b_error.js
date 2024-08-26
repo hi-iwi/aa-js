@@ -379,7 +379,8 @@ class AError extends Error {
     log(pattern) {
         let msg = this.toString()
         if (pattern) {
-            msg = string(pattern).indexOf('%ERROR') > -1 ? strings.replaceAll(pattern, '%ERROR', msg) : `${pattern} ${msg}`
+            pattern = string(pattern)
+            msg = pattern.indexOf('%ERROR') > -1 ? pattern.replaceAll('%ERROR', msg) : `${pattern} ${msg}`
         }
         log.error(msg)
     }

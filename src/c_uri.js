@@ -425,7 +425,7 @@ class AaURI {
             if (typeof v === 'undefined' || v === '' || v === null) {
                 throw new TypeError(`url path param ${m} is not defined`)
             }
-            s = strings.replaceAll(s, m, v)
+            s = s.replaceAll(m, v)
             newQueries.delete(k)
 
         }
@@ -441,15 +441,31 @@ class AaURI {
         console.info(`[debug] location.href='${url}'`)
     }
 
+    /**
+     * Join url paths
+     * @param {string} base
+     * @param {string|number} args
+     * @return {*}
+     */
     static join(base, ...args) {
-        let pathname = paths.join(...args)  // 会替换 // 为 /
-        if (!pathname || pathname[0] !== '/') {
-            pathname = '/' + pathname
+        if (base.substring(0, 2) === "//") {
+            base = location.protocol + base
         }
-        if (base.slice(-1) === '/') {
-            base = base.slice(0, -1)
+        if (base.indexOf("://") < 0) {
+            base = location.origin + '/' + base
         }
-        return base + pathname
+        if (args.length === 0) {
+            return base
+        }
+        let path = paths.join(...args)
+        const a = base.slice(-1)
+        const b = path.slice(0, 1)
+        if (a === '/' && b === '/') {
+            base = base.trimEnd('/')
+        } else if (a !== '/' && b !== '/') {
+            path = '/' + path
+        }
+        return base + path
     }
 
     /**
@@ -458,6 +474,7 @@ class AaURI {
      * @param {string} [title]
      * @param {string} url
      * @doc https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState
+     * @TODO
      */
     static historyReplace(state, title, url) {
         window.history.replaceState(state, title, url)
@@ -468,47 +485,25 @@ class AaURI {
      * @param state
      * @param title
      * @param url
+     * @TODO
      */
     static historyAdd(state, title, url) {
         window.history.pushState(state, title, url)
     }
 
+    // @TODO
     static historyGo(step) {
         window.history.go(step)
     }
 
+    // @TODO
     static historyBack() {
         window.history.back()
     }
 
+    // @TODO
     static historyForward() {
         window.history.forward()
     }
 
-    /**
-     * Split host to hostname and port
-     * @param {string} host
-     * @return {[string,string ]}
-     */
-    // e.g. luexu.com:8080, {hostname}:{port:uint},    {aab}.com:{port:uint}
-    static splitHost(host) {
-        const matches = [...host.matchAll(/{[\w:]+}/g)]
-        if (matches.length === 0) {
-            return host.split(':')
-        }
-
-        for (let i = 0; i < matches.length; i++) {
-            host = host.replace(matches[i][0], "#" + i)  // # is not allowed in host
-        }
-        let [hostname, port] = host.split(':')
-        if (!port) {
-            return [hostname, port]
-        }
-
-        for (let i = 0; i < matches.length; i++) {
-            hostname = hostname.replace('#' + i, matches[i][0])
-            port = port.replace('#' + i, matches[i][0])
-        }
-        return [hostname, port]
-    }
 }

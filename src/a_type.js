@@ -2,14 +2,10 @@
  * @typedef { "array"|"boolean"|"class"|"date"|"dom"|"function"|"null"|"number"|"struct"|"string"|"undefined"|"regexp"} atypes
  */
 
+
 //  react state  数字 001231 === 1231 == 001231.000  这些数值都没有变化，state就不会触发
 
-Number.prototype.is = function (b) {
-    return this === number(b)
-}
-String.prototype.is = function (b) {
-    return this === string(b)
-}
+
 
 /**
  * Try call the method if the method is a function
@@ -22,7 +18,7 @@ function trycall(method, ...args) {
         return null
     }
     if (typeof method !== 'function') {
-       loge(new TypeError(`trycall method is not a function`))
+        loge(new TypeError(`trycall method is not a function`))
         return null
     }
     return method(...fmt.args(args))
@@ -387,7 +383,7 @@ function len(...args) {
         return 0
     }
     if (typeof v === "number" || typeof v === 'string') {
-        return String(v).length
+        return string(v).length  // String(void 0) ===>  "undefined"
     }
     if (Array.isArray(v)) {
         return v.length    // s.match() 必须不可用下面，否则长度会多

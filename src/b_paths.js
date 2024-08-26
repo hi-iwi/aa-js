@@ -73,7 +73,7 @@ class paths {
                 }
             }
 
-            dir = strings.trimEnd(dir, '/')
+            dir = dir.trimEnd('/')
             if (path.substring(0, 1) === '/') {
                 dir = '/' + dir
             } else if (ignore > 0) {
@@ -97,14 +97,21 @@ class paths {
         this.init(path)
     }
 
+    static new(path) {
+        return new paths(path)
+    }
 
     // Report whether the path is absolute
     isAbs() {
         return this.dir[0] === '/'
     }
 
+    replaceAll(searchValue, replaceValue) {
+        return this.toString().replaceAll(searchValue, replaceValue)
+    }
+
     toSlash(separator = '\\') {
-        return strings.replaceAll(this.toString(), '/', separator)
+        return this.replaceAll('/', separator)
     }
 
     toString() {
@@ -128,7 +135,7 @@ class paths {
     }
 
     /**
-     *
+     * Join paths with slash
      * @param {Stringable} base
      * @param {string} args
      * @example
@@ -138,7 +145,7 @@ class paths {
      *  join("/", "//test/file") ===> /test/file
      */
     static join(base, ...args) {
-        base = !base || base === '/' ? base : strings.trimEnd(base, '/')
+        base = !base || base === '/' ? base : base.trimEnd('/')
         args.map(arg => {
             const arr = arg.split('/')
             arr.map(a => {
@@ -153,6 +160,7 @@ class paths {
         })
         return base
     }
+
 
 }
 

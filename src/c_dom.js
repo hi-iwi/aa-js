@@ -102,14 +102,14 @@ class AaDOM {
             styleAttr = styleAttr.getAttribute('style')
         }
 
-        const styleArr = strings.split(styleAttr, ';')
+        const styleArr = styleAttr.splitTrim(';')
         if (styleArr.length === 0) {
             return null
         }
 
         let styles = {}
         styleArr.map(pair => {
-            let p = strings.split(pair, ':')
+            let p = pair.splitTrim(':')
             if (p.length !== 2 || p[0] === '' || p[1] === '') {
                 return
             }

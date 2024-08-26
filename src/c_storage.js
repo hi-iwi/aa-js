@@ -634,7 +634,7 @@ class AaStorageEngine {
         const sub = this.subSeparator
         let source = key.source
         if ((sep !== AaStorageEngine.DefaultSeparator || sub !== AaStorageEngine.DefaultSubSeparator) && source.indexOf(':') > -1) {
-            source = strings.replaceAll(':', '[' + strings.escapeReg(`${sep}${sub}`) + ']')
+            source = source.replaceAll(':', '[' + `${sep}${sub}`.toRegSource() + ']')
             wild = new RegExp(source)
         }
 

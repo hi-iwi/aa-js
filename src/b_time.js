@@ -888,7 +888,7 @@ class time {
             const padZero = u[0]
             const v = String(u[1])
             if (k === "Z") {
-                s = strings.replaceAll(s, 'Z', v)
+                s = s.replaceAll('Z', v)
                 continue
             }
 

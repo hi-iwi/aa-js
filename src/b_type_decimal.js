@@ -404,7 +404,7 @@ class Decimal {
      */
     static mantissaOk(s, scale = 0, trimScale = false) {
         if (trimScale || scale === 0) {
-            s = strings.trimEnd(s, '0')
+            s = s.trimEnd('0')
         } else if (len(s) < scale) {
             s = s.padEnd(scale, '0')
         }
