@@ -258,8 +258,6 @@ class AaStorageEngine {
      * @param {number} [defaultExpiresIn]
      */
     constructor(storage, persistentNames, withOptions, encapsulate, defaultExpiresIn = 0) {
-        panic.arrayErrorType(persistentNames, 'string', OPTIONAL)
-
         this.#storage = storage
         if (typeof persistentNames !== "undefined") {
             this.setPersistentNames(persistentNames)
@@ -288,7 +286,6 @@ class AaStorageEngine {
      * @param {boolean} force
      */
     clearExcept(ignores, force = false) {
-        panic.arrayErrorType(ignores, 'string', OPTIONAL)
         let keepData = ignores ? [...ignores] : []
         if (!force) {
             const pers = this.getPersistentValues()
@@ -610,7 +607,6 @@ class AaStorageEngine {
      * @param {string[]} persistentNames
      */
     setPersistentNames(persistentNames) {
-        panic.arrayErrorType(persistentNames, 'string', OPTIONAL)
         this.#persistentNames = persistentNames ? persistentNames : []
     }
 
@@ -780,7 +776,6 @@ class AaStorageFactor {
      * @param {(string|RegExp)[]} [ignores] ignore these fields
      */
     clearAllExcept(ignores) {
-        panic.arrayErrorType(ignores, 'string', OPTIONAL)
         this.local.clearExcept(ignores)
         this.session.clearExcept(ignores)
         this.cookie.clearExcept(ignores)

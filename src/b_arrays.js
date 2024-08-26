@@ -62,12 +62,12 @@ class arrays {
 
     /**
      * Is the array contains this item
-     * @param {(Stringable|RegExp|boolean)[]} arr
-     * @param {Stringable|boolean} item
+     * @param {any[]} arr
+     * @param {any} item
      * @return {boolean}
      */
     static contains(arr, item) {
-        if (arr) {
+        if (!arr) {
             return false
         }
         for (let i = 0; i < arr.length; i++) {
