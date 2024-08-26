@@ -178,6 +178,10 @@ class strings {
      * @constructor
      */
     static unjson(o) {
+        // struct | array | null
+        if (typeof o === 'object') {
+            return o
+        }
         if (!o || typeof o !== "string" || o.toLowerCase() === "null") {
             return null
         }
