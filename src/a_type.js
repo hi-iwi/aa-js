@@ -12,26 +12,20 @@ String.prototype.is = function (b) {
 }
 
 /**
- * exclude undefined parameters at the tail
+ * Try call the method if the method is a function
+ * @param method
  * @param args
- * @note some functions like new Date().setFullYear(2025, void 0)  will return invalid date!
- * @return {*[]}
+ * @return {*|null}
  */
-function xargs(...args) {
-    for (let i = args.length - 1; i > -1; i--) {
-        if (typeof args[i] !== 'undefined') {
-            return [...args.slice(0, i + 1)]
-        }
-    }
-    return []
-}
-
-
-function xrun(method, ...args) {
-    if (typeof method !== 'function') {
+function trycall(method, ...args) {
+    if (!method) {
         return null
     }
-    return method(...xargs(...args))
+    if (typeof method !== 'function') {
+       loge(new TypeError(`trycall method is not a function`))
+        return null
+    }
+    return method(...fmt.args(args))
 }
 
 

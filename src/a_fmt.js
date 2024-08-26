@@ -6,6 +6,20 @@
 // 基础static class
 class fmt {
     name = 'aa-fmt'
+    /**
+     * Exclude undefined arguments at the tail
+     * @param args
+     * @note some functions like new Date().setFullYear(2025, void 0)  will return invalid date!
+     * @return {*[]}
+     */
+    static args(...args) {
+        for (let i = args.length - 1; i > -1; i--) {
+            if (typeof args[i] !== 'undefined') {
+                return [...args.slice(0, i + 1)]
+            }
+        }
+        return []
+    }
 
     /**
      * Capitalize the first letter of each word and leave the other letters lowercase
@@ -161,7 +175,7 @@ class fmt {
      * @param {string} s
      */
     static toSnakeCase(s) {
-        s = strings.replaceAll(s, '-','_')  // kebab-case
+        s = strings.replaceAll(s, '-', '_')  // kebab-case
         let isPascal = s && (s[0] >= 'A' && s[0] <= 'Z')
 
         s = s.replace(/_?([A-Z]+)/g, function (x, y) {

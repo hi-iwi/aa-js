@@ -71,19 +71,18 @@ A Javascript SDK of AaGo
 
 ### global functions
 
-| name           | return          | description                               |
-|----------------|-----------------|-------------------------------------------|
-| asleep()       | Promise         | a promise sleep for a while               |
-| defval()       | any except null | Return defined value                      |
-| len()          | number          | length of anything                        |
-| loge()         |                 | alias to new log().println()              |
-| not()          | boolean         | same to !something                        |
-| Round()        |                 |                                           |
-| RoundTrim()    |                 | Trim the tail                             |
-| RoundAway()    |                 | Round away from the origin point          |
-| RoundReverse() |                 |                                           |
-| xrun()         |                 | execute if the first argument is callable |
-| xargs()        | array           | exclude undefined parameters at the tail  |
+| name           | return          | description                                   |
+|----------------|-----------------|-----------------------------------------------|
+| asleep()       | Promise         | a promise sleep for a while                   |
+| defval()       | any except null | Return defined value                          |
+| len()          | number          | length of anything                            |
+| loge()         |                 | alias to new log().println()                  |
+| not()          | boolean         | same to !something                            |
+| Round()        |                 |                                               |
+| RoundTrim()    |                 | Trim the tail                                 |
+| RoundAway()    |                 | Round away from the origin point              |
+| RoundReverse() |                 |                                               |
+| trycall()      |                 | try call a method if the method is a function |
 
 ### global classes
 

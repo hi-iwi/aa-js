@@ -459,7 +459,7 @@ class AaAuth {
      */
     static #saveItem(engine, key, value, options) {
         const keyname = AaAuth.#storageKeyName(engine, key)
-        return engine.setItem(...xargs(keyname, value, options))
+        return engine.setItem(...fmt.args(keyname, value, options))
     }
 
     /**
