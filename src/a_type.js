@@ -21,7 +21,7 @@ function trycall(method, ...args) {
         loge(new TypeError(`trycall method is not a function`))
         return null
     }
-    return method(...fmt.args(args))
+    return method(...fmt.args(...args))
 }
 
 
