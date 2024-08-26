@@ -78,6 +78,10 @@ class AaAuth {
         this.#token = null // clear program cache
     }
 
+    clearExceptAuth() {
+        this.#storage.clearAllExcept([/^aa:auth:/, "access_token", "token_type"])
+    }
+
 
     /**
      * Get authorization value in header
@@ -371,10 +375,10 @@ class AaAuth {
         return AaAuth.#readItem(this.#storage.local, key)
     }
 
-    #localGetTTL(key) {
+    #localGetTTL(key, unit) {
         const engine = this.#storage.local
         const keyname = AaAuth.#storageKeyName(engine, key)
-        return engine.getTTL(keyname)
+        return engine.getTTL(keyname, unit)
 
 
     }
@@ -424,7 +428,6 @@ class AaAuth {
             return null
         }
         const itself = this
-
         let expiresIn = int32(token, 'expires_in', 2 * time.Hour)
         let rtokenTTL = int32(token, 'refresh_ttl', 7 * time.Day)
         return {

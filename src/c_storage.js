@@ -284,7 +284,7 @@ class AaStorageEngine {
 
     /**
      * Clear all data except persistent data and ignores data from this storage
-     * @param {string[]} [ignores]
+     * @param {(string|RegExp)[]} [ignores]
      * @param {boolean} force
      */
     clearExcept(ignores, force = false) {
@@ -301,7 +301,7 @@ class AaStorageEngine {
         }
 
         this.forEach((key, _) => {
-            if (!keepData.includes(key)) {
+            if (!arrays.contains(keepData, key)) {
                 log.debug(this.instanceName, "DELETE", key, keepData[key])
                 this.#storage.removeItem(key)
             }
@@ -334,7 +334,7 @@ class AaStorageEngine {
             return ''
         }
         expires /= this.ttlUnit
-        this.#getOrSetExpireDiff()
+        this.#getTtlStartTime()
         return String(expires)
     }
 
@@ -343,11 +343,12 @@ class AaStorageEngine {
      *
      * @param {string} key
      * @param value
-     * @return {{ttl: (number|null), persistent: boolean, value}}   [value, expired]
+     * @param {number} ttlUnit
+     * @return {{ttl: number, persistent: boolean, value}}   [value, expired]
      *  ttl(Time to live): returns the remaining time (in this.ttlUnit) to live of a key that has a timeout
      */
-    decodeValue(key, value) {
-        let ttl = null
+    decodeValue(key, value, ttlUnit = time.Second) {
+        let ttl = 0
         let persistent = false
         if (!this.#encapsulate || typeof value !== "string") {
             return {value, persistent, ttl}
@@ -361,7 +362,7 @@ class AaStorageEngine {
         let type = match[2]
         persistent = type >= 'A' && type <= 'Z'
 
-        ttl = this.#ttl(number(match[3]))
+        ttl = this.#ttl(number(match[3]), ttlUnit)
         switch (type.toLowerCase()) {
             case atype.alias._serializable:
                 let arr = value.split('::')
@@ -505,6 +506,11 @@ class AaStorageEngine {
         return data
     }
 
+    getTtlStartTime(unit = this.ttlUnit) {
+        let diff = this.#getTtlStartTime()
+        return unit === this.ttlUnit ? diff : diff * this.ttlUnit / unit
+    }
+
     /**
      * Get item, returns null on not exists
      * @param {string} key
@@ -547,7 +553,7 @@ class AaStorageEngine {
                 return CONTINUE
             }
             const {persistent, ttl} = this.decodeValue(key, value)
-            if (persistent && (ttl === null || ttl > 0)) {
+            if (persistent && ttl > 0) {
                 items[key] = value
             }
         }, true)
@@ -562,13 +568,9 @@ class AaStorageEngine {
      * @return {{ttl: (number|null), persistent: boolean, value}}
      *   ttl(Time to live): returns the remaining time (in this.ttlUnit) to live of a key that has a timeout
      */
-    getTTL(key, unit = this.ttlUnit) {
+    getTTL(key, unit = time.Second) {
         let raw = this.#storage.getItem(key)
-        let {ttl, persistent, value} = this.decodeValue(key, raw)  // decodeValue will remove expired key
-        if (ttl && unit && unit !== this.ttlUnit) {
-            ttl = Math.floor(ttl * this.ttlUnit / unit)
-        }
-        return {ttl, persistent, value}
+        return this.decodeValue(key, raw, unit)  // decodeValue will remove expired key
     }
 
     key(index) {
@@ -646,10 +648,18 @@ class AaStorageEngine {
         })
     }
 
-    #getOrSetExpireDiff() {
+    /**
+     * @return {number}
+     */
+    #getTtlStartTime() {
         const key = this.ttlDiffKey
         // here must use the native getItem method
-        let diff = Number(this.#storage.getItem(key))
+        let diff = this.#storage.getItem(key)
+        try {
+            diff = Number(diff)
+        } catch (err) {
+            diff = 0
+        }
         if (!diff) {
             // expires for client is not important
             diff = Math.ceil(Date.now() / this.ttlUnit)
@@ -660,17 +670,20 @@ class AaStorageEngine {
 
     /**
      *
-     * @param {string|number} s
-     * @return {number|null}
+     * @param {number} s  0 是不会存储的
+     * @param {number} unit
+     * @return {number}
      */
-    #ttl(s) {
-        s = Number(s)
+    #ttl(s, unit = time.Second) {
+        // ttl will never be 0, except convert empty string to 0
+        // empty string ttl will be never expired
         if (!s) {
-            return null
+            return Math.floor(365 * 24 * 3600 * time.Second / unit)
         }
-        const diff = this.#getOrSetExpireDiff()
-        const now = Date.now() / this.ttlUnit
-        return diff + s - now
+        const startTime = this.getTtlStartTime(time.Millisecond)
+        const now = Date.now()
+        const ttl = Number(s) * this.ttlUnit
+        return Math.floor((startTime + ttl - now) / unit)
     }
 
 }
@@ -764,7 +777,7 @@ class AaStorageFactor {
 
     /**
      * Clear all data except some fields from all storages
-     * @param {string[]} [ignores] ignore these fields
+     * @param {(string|RegExp)[]} [ignores] ignore these fields
      */
     clearAllExcept(ignores) {
         panic.arrayErrorType(ignores, 'string', OPTIONAL)
