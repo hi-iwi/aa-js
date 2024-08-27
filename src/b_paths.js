@@ -11,20 +11,6 @@ class paths {
     /** @property {string} the href.origin, e.g. https://luexu.com */
     origin
 
-    #parseBasename(base) {
-        let b = base.split('.')
-        if (b.length === 1) {
-            return {
-                ext     : '',
-                filename: base,
-            }
-
-        }
-        return {
-            ext     : b[b.length - 1],
-            filename: b.slice(0, b.length - 1).join('.')
-        }
-    }
 
     /**
      * @param {string} path
@@ -81,8 +67,8 @@ class paths {
             }
 
         }
-        const {ext, filename} = this.#parseBasename(base)
-
+        const ext = paths.ext(base)
+        const filename = base.trimEnd(ext, 1)
         this.base = base
         this.dir = dir
         this.ext = ext
@@ -132,6 +118,28 @@ class paths {
      */
     static clean(path) {
         return new paths(path).toString()
+    }
+
+    /**
+     * Return the last element of path, base equals to filename + ext
+     * @param path
+     * @return {*|string}
+     */
+    static base(path) {
+        if (!path || path[path.length - 1] === '/') {
+            return ""
+        }
+        let i = path.lastIndexOf('/')
+        return i < 0 ? path : path.slice(i)
+    }
+
+    static ext(path) {
+        for (let i = len(path) - 1; i >= 0 && path[i] !== '/'; i--) {
+            if (path[i] === '.') {
+                return path.slice(i)
+            }
+        }
+        return ""
     }
 
     /**

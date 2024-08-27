@@ -11,6 +11,8 @@ String.prototype.cut = function (separator) {
     }
     return [this, "", false]
 }
+
+ 
 /**
  * @param {string|number} b
  * @return {boolean}
