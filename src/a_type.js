@@ -1,7 +1,4 @@
-/**
- * @typedef { "array"|"boolean"|"class"|"date"|"dom"|"function"|"null"|"number"|"struct"|"string"|"undefined"|"regexp"} atypes
- */
-
+/** @typedef { "array"|"boolean"|"class"|"date"|"dom"|"function"|"null"|"number"|"struct"|"string"|"undefined"|"regexp"} atypes */
 
 //  react state  数字 001231 === 1231 == 001231.000  这些数值都没有变化，state就不会触发
 

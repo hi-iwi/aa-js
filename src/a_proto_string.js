@@ -1,4 +1,17 @@
 /**
+ * Cut string around the first instance of separator
+ * @param {string} separator
+ * @return {[String,string,boolean]|[string,string,boolean]}
+ */
+String.prototype.cut = function (separator) {
+    separator = string(separator)
+    let i = this.indexOf(separator)
+    if (i >= 0) {
+        return [this.slice(0, i), this.slice(i + separator.length), true]
+    }
+    return [this, "", false]
+}
+/**
  * @param {string|number} b
  * @return {boolean}
  * @note
