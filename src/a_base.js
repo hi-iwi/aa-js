@@ -16,12 +16,13 @@
  * @typedef {string} QueryString  k=v&k=v&k=v
  * @typedef {*} vv_vk_defaultV  e.g. (value) (obj, key)  (obj, key, defaultValue)
  * @typedef {'<'|'='|'>'|'>='|'<='|'=='} ComparisonSymbol
- * @typedef {(number|string)} NumberLike
  *
  */
 
 /**
- * @typedef {(key:string, value:any)=>any} ForEachCallback
+ * @callback  ForEachCallback
+ * @param {string} key
+ * @param {any} value
  */
 
 const BREAK = '-.../.-././.-/-.-' // a signal from callback function to break forEach((value,key)) iterator

@@ -302,7 +302,7 @@ class AaMultiLevelSelects {
     /**
      *
      * @param callable
-     * @param incr
+     * @param {INCR|DECR} incr
      * @return {*[]}
      * @note for(const options of mselects){callable(options)}      is alias to   .map(callable)
      */
@@ -327,8 +327,8 @@ class AaMultiLevelSelects {
      *
      * @param {function} callable
      * @param {number} [selectIndex]
-     * @param {'INCR'|'DECR'} [selectsIncr]
-     * @param {'INCR'|'DECR'} [optionsIncr]
+     * @param {INCR|DECR} [selectsIncr]
+     * @param {INCR|DECR} [optionsIncr]
      * @return {*[]}
      * @note `options` is array, you can use `for(const option of options){callable(option)}`
      */

@@ -3,7 +3,7 @@ class panic {
      * Throw Error when it's not a typed array
      * @param {*[]} arr
      * @param {(function|RegExpConstructor|atypes)[]|function|RegExpConstructor|atypes} type
-     * @param required
+     * @param {REQUIRED|OPTIONAL} required
      * @warn 不要滥用这个，会耗费不必要的性能。对于异步获取值的时候，最好使用，比如Promise 或 registry.Register的时候，应该使用！
      * @example
      *  panic.arrayErrorType(names, 'string')
@@ -61,7 +61,7 @@ class panic {
      * Throw Error when the value not in the list
      * @param value
      * @param {*[]|string} list
-     * @param required
+     * @param {REQUIRED|OPTIONAL} required
      * @warn 不要滥用这个，会耗费不必要的性能。对于异步获取值的时候，最好使用，比如Promise 或 registry.Register的时候，应该使用！
      * @example
      *  panic.enumError(sex, ['male', 'female'])
