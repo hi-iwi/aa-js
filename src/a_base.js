@@ -16,6 +16,7 @@
  * @typedef {string} QueryString  k=v&k=v&k=v
  * @typedef {*} vv_vk_defaultV  e.g. (value) (obj, key)  (obj, key, defaultValue)
  * @typedef {'<'|'='|'>'|'>='|'<='|'=='} ComparisonSymbol
+ * @typedef {(number|string)} NumberLike
  *
  */
 

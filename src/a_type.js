@@ -406,6 +406,7 @@ function len(...args) {
 /**
  * @param {vv_vk_defaultV} [args]
  * @return {function}
+ * @ignore
  */
 function func(...args) {
     let v = defval(...args)
@@ -430,6 +431,7 @@ function _inRange(x, min, max, name) {
 /**
  * @param {vv_vk_defaultV} [args]
  * @return {boolean}
+ * @ignore
  */
 function bool(...args) {
     /** @type {Bool} */
@@ -473,6 +475,7 @@ function bool(...args) {
 /**
  * @param {vv_vk_defaultV} [args]
  * @return {0|1}
+ * @ignore
  */
 function booln(...args) {
     return bool(...args) ? 1 : 0
@@ -481,6 +484,7 @@ function booln(...args) {
 /**
  * @param {vv_vk_defaultV} [args]
  * @return {boolean}
+ * @ignore
  */
 function not(...args) {
     return !bool(...args)
@@ -489,6 +493,7 @@ function not(...args) {
 /**
  * @param {vv_vk_defaultV} [args]
  * @return {string}
+ * @ignore
  */
 function string(...args) {
     let v = defval(...args)
@@ -529,6 +534,7 @@ function string(...args) {
  * @param {vv_vk_defaultV} [args]
  * @return {number}
  * @note js 数字全部是采用的双精度浮点数存储的。 js number 最大值是：9007199254740992
+ * @ignore
  */
 function number(...args) {
     return Number(defval(...args))
@@ -537,6 +543,7 @@ function number(...args) {
 /**
  * @param {vv_vk_defaultV} [args]
  * @return {number}
+ * @ignore
  */
 function float64(...args) {
     return number(...args)
@@ -545,6 +552,7 @@ function float64(...args) {
 /**
  * @param {vv_vk_defaultV} [args]
  * @return {number}
+ * @ignore
  */
 function float32(...args) {
     return float64(...args)
@@ -554,6 +562,7 @@ function float32(...args) {
 /**
  * @param {vv_vk_defaultV} [args]
  * @return {number}
+ * @ignore
  * @note 暂时不允许 int64，后端所有int64范围都应该保持载 int54范围内
  *  int64   [-2^63,       2^63 -1]
  *  int54   [-(2^53 - 1), 2^53 – 1]    ===> [Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER]

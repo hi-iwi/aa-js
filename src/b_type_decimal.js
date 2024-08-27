@@ -26,28 +26,7 @@ class Decimal {
     units = Decimal.Units
     rounder = Decimal.Rounder   // 取整方式 ceil -> round up;  floor -> round down
 
-    /**
-     *
-     * @param {number} num
-     * @return {Decimal}
-     */
-    static unitsX(num) {
-        const self = this  // 使用 this （不能用 this.constructor()). 可以传递到子类
-        const units = self.Units
-        return new self(num * units)
-    }
 
-    /**
-     * Divide two numbers and convert its result to Decimal
-     * @param {number} a
-     * @param {number} b
-     * @return {Decimal}
-     */
-    static div(a, b) {
-        const self = this  // 使用 this （不能用 this.constructor()). 可以传递到子类
-        const units = self.Units
-        return new self(a * units / b) // 使用 this （不能用 this.constructor()). 可以传递到子类
-    }
 
     /**
      * @param {vv_vk_defaultV} [args]
@@ -369,6 +348,17 @@ class Decimal {
         return String(this.value)
     }
 
+    /**
+     * Divide two numbers and convert its result to Decimal
+     * @param {number} a
+     * @param {number} b
+     * @return {typeof Decimal}
+     */
+    static div(a, b) {
+        const self = this  // 使用 this （不能用 this.constructor()). 可以传递到子类
+        const units = self.Units
+        return new self(a * units / b) // 使用 this （不能用 this.constructor()). 可以传递到子类
+    }
 
     /**
      * @param {number|DecimalFormatSettings} [settings]
@@ -413,10 +403,20 @@ class Decimal {
         }
         return [s, true]
     }
+    /**
+     *
+     * @param {number} num
+     * @return {typeof Decimal}
+     */
+    static unitsX(num) {
+        const self = this  // 使用 this （不能用 this.constructor()). 可以传递到子类
+        const units = self.Units
+        return new self(num * units)
+    }
 
     /**
      * @param {str} str
-     * @return {Decimal}
+     * @return {typeof Decimal}
      * @note compatible with this.serialize()
      */
     static unserialize(str) {

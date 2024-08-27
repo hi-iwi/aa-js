@@ -119,10 +119,6 @@ class AaDateZero extends Date {
         return 0
     }
 
-    valueOf() {
-        return 0
-    }
-
     toString() {
         return this.value
     }

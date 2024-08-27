@@ -34,6 +34,7 @@
   * @borrows
  
 
+
 ## types
 
 | type                        | description                     |
@@ -45,4 +46,10 @@
 | @param {(TYPE1\|TYPE2)} var | TYPE1 or TYPE2                  |
 | @callback var               | callback                        |
 
-## callback
+## Classes
+
+```js
+/**
+ * @return {typeof SubClass} 返回一个 SubClass 的新实例}
+ */
+```

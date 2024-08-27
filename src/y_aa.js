@@ -1,8 +1,10 @@
+
 class Aa {
     name = 'aa'
     /** @type {typeof AaDOM} */
     dom = AaDOM
 
+    /** @type {typeof AaHack} */
     hack = AaHack
 
     /** @type {AaRegistry} */
