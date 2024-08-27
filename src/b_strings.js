@@ -11,7 +11,7 @@ class strings {
 
     /**
      * Slice string by length in placeholder format
-     * @param {Stringable} s
+     * @param {str} s
      * @param {number} length
      * @return {string}
      */
@@ -34,7 +34,7 @@ class strings {
 
     /**
      * Slice string by length in utf-8 format
-     * @param {Stringable} s
+     * @param {str} s
      * @param {number} length
      * @return {string}
      */
@@ -75,8 +75,8 @@ class strings {
 
     /**
      * Stringify object into json string
-     * @param {|struct|array|null} o
-     * @return {string|null}
+     * @param {struct|array|null} o
+     * @return {?string}
      */
     static json(o) {
         if (!o) {
@@ -93,7 +93,7 @@ class strings {
 
     /**
      * Get placeholder length of give string
-     * @param {Stringable} s
+     * @param {str} s
      * @return {number}
      */
     static placeLen(s) {
@@ -174,7 +174,7 @@ class strings {
     /**
      *  Parse JSON string or object more fault-tolerant
      * @param {(jsonstr|struct|array|null)} o
-     * @return {(*[]|struct|null)}
+     * @return {(array|struct|null)}
      * @constructor
      */
     static unjson(o) {
@@ -195,7 +195,7 @@ class strings {
 
     /**
      * Get utf8 length of given string
-     * @param {Stringable} s
+     * @param {str} s
      * @return {number}
      */
     static utf8Len(s) {

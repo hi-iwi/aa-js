@@ -1,6 +1,6 @@
 /**
  *
- * @param {UnixTimeMillisecond} timeout
+ * @param {TimeUnixMs} timeout
  * @param params
  * @return {Promise<number>}
  */
@@ -10,7 +10,7 @@ function asleep(timeout, ...params) {
 
 /**
  *
- * @param {UnixTimeMillisecond} timeout
+ * @param {TimeUnixMs} timeout
  * @return {Promise<number>}
  */
 Promise.prototype.asleep = function (timeout) {

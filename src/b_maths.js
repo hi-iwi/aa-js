@@ -1,7 +1,7 @@
 /**
  * Special Mathematics
  * @import atype
- * @typedef  {string|NumberX|{[key:NumberX]:ResponsiveSize}} ResponsiveSize
+ * @typedef  {number|string|{[key:number|string]:ResponsiveSize}} ResponsiveSize
  */
 
 class maths {
@@ -94,7 +94,7 @@ class maths {
 
     /**
      * 千分位表示法
-     * @param {NumberX} num
+     * @param {number|string} num
      * @param {number} n
      * @param {string} separator
      * @returns {string}

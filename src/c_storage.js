@@ -33,7 +33,7 @@ class AaCookieStorage {
     /**
      *
      * @param {number} index
-     * @return {string|null}
+     * @return {?string}
      */
     key(index) {
         const all = this.getAll()
@@ -63,7 +63,7 @@ class AaCookieStorage {
 
     /**
      *
-     * @param {IteratorCallback} callback
+     * @param {ForEachCallback} callback
      * @param {(value:any)=>any} [valueHandler]
      */
     forEach(callback, valueHandler) {
@@ -129,7 +129,7 @@ class AaCookieStorage {
 
     /**
      * Get all
-     * @return {struct|null}
+     * @return {?struct}
      */
     getAll() {
         if (!this.available() || !document.cookie) {
@@ -464,7 +464,7 @@ class AaStorageEngine {
 
     /**
      * Iterate storage
-     * @param {IteratorCallback} callback
+     * @param {ForEachCallback} callback
      * @param {boolean} [raw]
      */
     forEach(callback, raw = false) {
@@ -562,7 +562,7 @@ class AaStorageEngine {
      * Get item with ttl
      * @param {string} key
      * @param {TimeUnit} unit
-     * @return {{ttl: (number|null), persistent: boolean, value}}
+     * @return {{ttl: number, persistent: boolean, value}}
      *   ttl(Time to live): returns the remaining time (in this.ttlUnit) to live of a key that has a timeout
      */
     getTTL(key, unit = time.Second) {
@@ -783,7 +783,7 @@ class AaStorageFactor {
 
     /**
      * Iterate all storages in the order of localStorage, sessionStorage,  CookieStorage
-     * @param {IteratorCallback} callback
+     * @param {ForEachCallback} callback
      * @param {struct} [options] cookie options
      */
     forEachEntire(callback, options) {

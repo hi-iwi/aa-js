@@ -136,7 +136,7 @@ class paths {
 
     /**
      * Join paths with slash
-     * @param {Stringable} base
+     * @param {str} base
      * @param {string} args
      * @example
      *  join("a/b","../../../xyz")  ===>  ../xyz

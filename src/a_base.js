@@ -1,35 +1,42 @@
 /**
- * @typedef {boolean|function:boolean|number|string} bool  --> 注意支持对函数判断
+ * @typedef {boolean|null|void|function:boolean|0|1|"TRUE"|"FALSE"|"True"|"False"|"true"|"false"|"T"|"F"|"t"|"f"|"1"|"0"|"YES"|"NO"|"Yes"|"No"|"yes"|"no"|"ON"|"OFF"|"On"|"Off"|"on"|"off"} Bool
  * @typedef {string} jsonstr
  * @typedef {{[key:string]:any}|*} struct   为了方便JSDoc，这里struct 用空泛的更方便
  * @typedef {object|*} Class
  * @typedef {array|struct|map|URLSearchParams|*} iterable
- * @typedef {(value:any, key:string)=>*} IteratorCallback
  * @typedef {((a:any, b:any)=>number)|boolean} SortMethod
- * @typedef {string|number|function} Stringable
- * @typedef {number|string} NumberX
+ * @typedef {string|number|function} str
  * @typedef {number} TimeUnit
- * @typedef {number} UnixTime     unix time in seconds
- * @typedef {number} UnixTimeMillisecond unix time in milliseconds
+ * @typedef {number} TimeUnix     unix time in seconds
+ * @typedef {number} TimeUnixMs unix time in milliseconds
  * @typedef {number} Timeout
  * @typedef {string} RequestURL  e.g. 'GET https://luexu.com' or 'https://luexu.com'
- * @typedef {string} filepath
+ * @typedef {string} Path
+ * @typedef {string} Base64
  * @typedef {string} QueryString  k=v&k=v&k=v
  * @typedef {*} vv_vk_defaultV  e.g. (value) (obj, key)  (obj, key, defaultValue)
- * @typedef {string} MAX
- * @typedef {string} MIN
  * @typedef {'<'|'='|'>'|'>='|'<='|'=='} ComparisonSymbol
  *
  */
 
-const nif = () => void 0   // a nil function  ==>  Go语言都定义 any = interface{}，这里定义要给 nif 是有必要的
-const MAX = 'MAX'
-const MIN = 'MIN'
+/**
+ * @typedef {(key:string, value:any)=>any} ForEachCallback
+ */
+
 const BREAK = '-.../.-././.-/-.-' // a signal from callback function to break forEach((value,key)) iterator
 const CONTINUE = void '' // return CONTINUE in a loop is not important, but better for people to read
+const nif = () => void 0   // a nil function  ==>  Go语言都定义 any = interface{}，这里定义要给 nif 是有必要的
+/** @typedef {"MAX"} MAX */
+const MAX = 'MAX'
+/** @typedef {"MIN"} MIN */
+const MIN = 'MIN'
+/** @typedef {false} OPTIONAL */
 const OPTIONAL = false
+/** @typedef {true} REQUIRED */
 const REQUIRED = !OPTIONAL
+/** @typedef @typedef {"INCR"} INCR */
 const INCR = 'INCR'
+/** @typedef @typedef {"DECR"} DECR */
 const DECR = 'DECR'
 const U0 = uint64(0)
 

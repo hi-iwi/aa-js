@@ -37,7 +37,7 @@ class map {
 
     /**
      *
-     * @return {Generator<Stringable|any[], void, *>}
+     * @return {Generator<str|any[], void, *>}
      */
     * [Symbol.iterator]() {
         for (let [key, value] of this.entries()) {
@@ -55,7 +55,7 @@ class map {
 
     /**
      * Delete a key in this map
-     * @param {Stringable} key
+     * @param {str} key
      */
     delete(key) {
         delete this.props[key]
@@ -77,7 +77,7 @@ class map {
     }
 
     /**
-     * @param {IteratorCallback} callback
+     * @param {ForEachCallback} callback
      * @param {SortMethod} [sort]
      * @return {*[]|void}
      */
@@ -87,7 +87,7 @@ class map {
 
     /**
      * Get from map
-     * @param {Stringable} key
+     * @param {str} key
      * @param {(value:any)=>any} [cast]
      * @return {*}
      */
@@ -98,7 +98,7 @@ class map {
 
     /**
      * Get or set
-     * @param {Stringable} key
+     * @param {str} key
      * @param defaultValue
      * @param allowUndefined
      * @return {*}
@@ -112,7 +112,7 @@ class map {
 
     /**
      * Check map has property key, and its value is not undefined
-     * @param {Stringable} key
+     * @param {str} key
      * @param allowUndefined
      * @return {boolean}
      */
@@ -124,7 +124,7 @@ class map {
      * Join object keys and values
      * @param {string} [kvSeparator]
      * @param {string} [separator]
-     * @param {(key:Stringable, value:any)=>{key:string,value:any, ok:boolean}} [hook]
+     * @param {(key:str, value:any)=>{key:string,value:any, ok:boolean}} [hook]
      * @param {SortMethod} [sort]
      * @return {string}
      */
@@ -138,7 +138,7 @@ class map {
 
     /**
      * Set an item
-     * @param {Stringable} key
+     * @param {str} key
      * @param value
      */
     set(key, value) {
@@ -163,7 +163,7 @@ class map {
 
     /**
      *
-     * @param {(key:Stringable, value:any)=>{key:string,value:any, ok:boolean}} [hook]
+     * @param {(key:str, value:any)=>{key:string,value:any, ok:boolean}} [hook]
      * @param {((a:any, b:any)=>number)|boolean} [sort]
      * @return {string}
      */
@@ -217,7 +217,7 @@ class map {
      * Deep clone any data except functions and classes
      *  深度复制一个对象；浅复制，就自行  newObj  = {...obj}
      * @param {object|array|struct|map|string|number|boolean|*} data
-     * @returns {struct|null}
+     * @returns {?struct}
      */
     static clone(data) {
         if (typeof data !== 'object' || data === null) {
@@ -403,7 +403,7 @@ class map {
      * Find the first matched object
      * @param {struct[]} objects
      * @param {struct} condition
-     * @return {number|struct|null[]} the index and the matched object
+     * @return {(number|?struct)[]} the index and the matched object
      */
     static find(objects, condition) {
         Loop:
@@ -420,7 +420,7 @@ class map {
 
     /**
      * @param {iterable} iterable
-     * @param {IteratorCallback} callback
+     * @param {ForEachCallback} callback
      * @param {SortMethod} [sort]
      * @return {*[]|void}
      */
@@ -490,7 +490,7 @@ class map {
     /**
      * Get value from a struct
      * @param {struct|*} obj
-     * @param {Stringable} key
+     * @param {str} key
      * @return {*}
      */
     static get(obj, key) {
@@ -500,9 +500,9 @@ class map {
     /**l
      *
      * @param  {Class|struct} target
-     * @param  {Stringable} key
+     * @param  {str} key
      * @param {(v:any)=>any} [convertor]
-     * @return {Stringable}
+     * @return {str}
      */
     static handleKeyname(target, key, convertor) {
         if (convertor && convertor !== nif) {
@@ -564,7 +564,7 @@ class map {
      * @param {iterable} iterable
      * @param {string} [kvSeparator]
      * @param {string} [separator]
-     * @param {(key:Stringable, value:any)=>{key:string,value:any, ok:boolean}} [hook]
+     * @param {(key:str, value:any)=>{key:string,value:any, ok:boolean}} [hook]
      * @param {SortMethod} [sort]
      * @return {string}
      */
@@ -689,7 +689,7 @@ class map {
     /**
      * Set item into a struct
      * @param {struct|*} obj
-     * @param {Stringable} key
+     * @param {str} key
      * @param value
      * @return {{[p: string]: *}|*}
      */

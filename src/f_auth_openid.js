@@ -63,7 +63,7 @@ class AaAuthOpenid {
     /**
      *
      * @param {boolean} forceRefresh
-     * @return {Promise<string|null>|*}
+     * @return {Promise<?string>|*}
      */
     fetch(forceRefresh = false) {
         if (!forceRefresh) {

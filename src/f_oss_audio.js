@@ -35,7 +35,7 @@ class AaAudioSrc extends AaSrc{
     }
 
     /**
-     * @param {Stringable} str
+     * @param {str} str
      * @return {AaAudioSrc}
      * @note compatible with this.serialize()
      */

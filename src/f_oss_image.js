@@ -1,5 +1,4 @@
 /**
- * @typedef {string} ImageBase64
  * @typedef {{path:string, filetype:number, size:number, provider:number, allowed:(number[][]|null), origin:string, width:number, crop_pattern:string, resize_pattern:string, height:number, thumbnail?:string, multiple_file?:string}} ImgSrcStruct
  * @typedef {{height:number, width:number, ratio:Decimal, realHeight:number, realWidth:number, originalHeight:number, originalWidth:number, url:string}} ImgResizedData
  */
@@ -24,7 +23,7 @@ class AaImgSrc extends AaSrc {
      */
     jsonkey
 
-    /** @type {ImageBase64|filepath} for upload */
+    /** @type {Base64|Path} for upload */
     #thumbnail
     /** @type {File} for upload */
     #multipleFile
@@ -77,8 +76,8 @@ class AaImgSrc extends AaSrc {
 
 
     /**
-     * @param {ImgSrcStruct|AaImgSrc|string|*} [data]
-     * @param {ImageBase64|filepath} [thumbnail]
+     * @param {ImgSrcStruct|AaImgSrc|Path|*} [data]
+     * @param {Base64|Path} [thumbnail]
      * @param {File} [multipleFile]
      * @note 由于 construct 返回null是无效的，这里对无效的直接返回null
      */

@@ -1,23 +1,32 @@
 class AaHack {
 
+    /**
+     * Instantiate a class with the class name
+     * @param {string} className
+     * @return {Class}
+     * @throws {TypeError}
+     */
     static class(className) {
         if (typeof window === 'object' && typeof window[className] === 'object') {
-            return window[className]
+            return new window[className]()
         }
         if (typeof global === 'object' && typeof global[className] === 'object') {
-            return global[className]
+            return new global[className]()
         }
         try {
             return new Function(`return ${className}`)()
         } catch (err) {
+            throw new TypeError(`class ${className} is not found`)
         }
-        throw new TypeError(`class ${className} is not found`)
     }
 
     /**
+     * Call the static method with its name
      * @param {string} className
      * @param {string} methodName
      * @param {string|number|boolean|*} args
+     * @return {any}
+     * @throws {TypeError}
      */
     static callStaticMethod(className, methodName, ...args) {
         let c = AaHack.class(className)
@@ -25,6 +34,7 @@ class AaHack {
     }
 
     /**
+     * Check a string is callable static method
      * @param {string} className
      * @param {string} methodName
      */

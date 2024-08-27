@@ -203,7 +203,7 @@ class AaURI {
 
     /**
      *
-     * @param {(key:Stringable,value:any)=>boolean} filter
+     * @param {(key:str,value:any)=>boolean} filter
      * @return {AaURI}
      */
     filter(filter) {
@@ -470,7 +470,7 @@ class AaURI {
 
     /**
      * Replace the current history entry
-     * @param {struct|null} state
+     * @param {?struct} state
      * @param {string} [title]
      * @param {string} url
      * @doc https://developer.mozilla.org/en-US/docs/Web/API/History/replaceState

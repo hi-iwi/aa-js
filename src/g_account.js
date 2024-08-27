@@ -64,7 +64,7 @@ class AaAccount {
     /**
      * @param {Vuser[]|null|void} vusers
      * @param {number} vtype
-     * @return {Vuser|null}
+     * @return {?Vuser}
      */
     findByVtype(vusers, vtype) {
         if (!vusers) {
@@ -82,7 +82,7 @@ class AaAccount {
     /**
      * @param {Vuser[]|null|void} vusers
      * @param {BigInt} vuid
-     * @return {Vuser|null}
+     * @return {?Vuser}
      */
     findVuser(vusers, vuid) {
         if (!vusers) {
@@ -119,7 +119,7 @@ class AaAccount {
 
     /**
      * @param {VuserCondition} condition
-     * @return {Vuser|null}
+     * @return {?Vuser}
      */
     getCachedVuser(condition) {
         if (condition === 'selected') {
@@ -135,7 +135,7 @@ class AaAccount {
     }
 
     /**
-     * @return {Vuser|null}
+     * @return {?Vuser}
      */
     getCachedByVtype(vtype) {
         let profile = this.getCachedProfile()
@@ -150,7 +150,7 @@ class AaAccount {
     }
 
     /**
-     * @return {Vuser|null}
+     * @return {?Vuser}
      */
     getCachedMainVuser() {
         return this.getCachedByVtype(AaAccount.MainVtype)
@@ -175,7 +175,7 @@ class AaAccount {
     }
 
     /**
-     * @return {Vuser|null}
+     * @return {?Vuser}
      */
     getCachedSelectedVuser() {
         let profile = this.getCachedProfile()
@@ -350,7 +350,7 @@ class AaAccount {
 
     /**
      * Get vuser with vtype
-     * @param {NumberX} vtype
+     * @param {number|string} vtype
      * @return {Promise<Vuser>}
      */
     searchVuser(vtype) {

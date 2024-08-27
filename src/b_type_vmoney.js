@@ -19,26 +19,23 @@ class VMoney extends Money {
     units = Money.Units
     // @override
     rounder = VMoney.Rounder   // 取整方式 ceil -> round up;  floor -> round down
+
     /**
-     * @param {struct|NumberX} [vv]
-     * @param {Stringable} [vk]
-     * @param {NumberX} [defaultV]
+     * @param {vv_vk_defaultV} [args]
      */
-    constructor(vv, vk, defaultV) {
-        super(...arguments)
+    constructor(...args) {
+        super(...args)
     }
 }
 
 /**
  * New a {VMoney} instance
- * @param {struct|NumberX|VMoney} vv
- * @param {Stringable} [vk]
- * @param {NumberX|VMoney} [defaultV]
+ * @param {vv_vk_defaultV} [args]
  */
-function vmoney(vv, vk, defaultV) {
-    vv = defval(...arguments)
-    if (vv instanceof VMoney) {
-        return vv
+function vmoney(...args) {
+    const v = defval(...args)
+    if (v instanceof VMoney) {
+        return v
     }
-    return new VMoney(vv)
+    return new VMoney(v)
 }

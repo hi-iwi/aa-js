@@ -15,14 +15,14 @@ class mathn {
 
     /**
      * Get the value of the closest key in a setting
-     * @param {NumberX[]} values
+     * @param {(number|string)[]} values
      * @param {ComparisonSymbol} symbol
      *      >           the closest and greater value
      *      <           the closest and lesser value
      *      = or ==     the closest value, may be lesser, equal to or greater
      *      >=          the closest and greater value or equal value
      *      <=          the closest and lesser value or equal value
-     * @param {NumberX} value
+     * @param {number|string} value
      * @return {number}
      */
     static closest(values, symbol, value) {

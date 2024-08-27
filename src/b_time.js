@@ -936,11 +936,15 @@ class time {
         return string(this.valueOf())
     }
 
-    static dateString(vv, vk, defaultV) {
-        vv = defval(...arguments)
-        if (vv) {
+    /**
+     * @param {vv_vk_defaultV} [args]
+     * @return {string|string}
+     */
+    static dateString(...args) {
+        const v = defval(...args)
+        if (v) {
             try {
-                let d = new time(vv)
+                let d = new time(v)
                 return d.toDateString()
             } catch (err) {
                 console.error(err)
@@ -949,13 +953,15 @@ class time {
 
         return AaDateString.minDate
     }
-
-    static datetimeString(vv, vk, defaultV) {
-
-        vv = defval(...arguments)
-        if (vv) {
+    /**
+     * @param {vv_vk_defaultV} [args]
+     * @return {string|string}
+     */
+    static datetimeString(...args) {
+        const v = defval(...args)
+        if (v) {
             try {
-                let d = new time(vv)
+                let d = new time(v)
                 return d.toDatetimeString()
             } catch (err) {
                 console.error(err)
@@ -1015,7 +1021,7 @@ class time {
     }
 
     /**
-     * @param {Stringable} str
+     * @param {str} str
      * @return {time}
      * @note compatible with this.serialize()
      */
@@ -1391,26 +1397,22 @@ class TimeDiff {
 
 /**
  * New a {time} in `YYYY-MM-DD` pattern
- * @param {struct|NumberX|string} [vv]
- * @param {Stringable} [vk]
- * @param {time|Date|NumberX|string} [defaultV]
+ * @param {vv_vk_defaultV} [args]
  * @return {time}
  */
-function date(vv, vk, defaultV) {
-    vv = defval(...arguments)
-    const t = new time(vv ? vv : AaDateString.minDate)
+function date(...args) {
+    const v = defval(...args)
+    const t = new time(v ? v : AaDateString.minDate)
     return t.setPattern('YYYY-MM-DD')
 }
 
 /**
  * New a {time} in `YYYY-MM-DD HH:II:SS` pattern
- * @param {struct|NumberX|string} [vv]
- * @param {Stringable} [vk]
- * @param {time|Date|NumberX|string} [defaultV]
+ * @param {vv_vk_defaultV} [args]
  * @return {time}
  */
-function datetime(vv, vk, defaultV) {
-    vv = defval(...arguments)
-    const t = new time(vv ? vv : AaDateString.minDatetime)
+function datetime(...args) {
+    const v = defval(...args)
+    const t = new time(v ? v : AaDateString.minDatetime)
     return t.setPattern('YYYY-MM-DD HH:II:SS')
 }

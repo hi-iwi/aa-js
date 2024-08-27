@@ -1,17 +1,12 @@
-/**
- * @import atype
- */
-
-
 // 基础static class
 class fmt {
     name = 'aa-fmt'
 
     /**
      * Exclude undefined arguments at the tail
-     * @param args
+     * @param {any} args
      * @note some functions like new Date().setFullYear(2025, void 0)  will return invalid date!
-     * @return {*[]}
+     * @return {any[]}
      */
     static args(...args) {
         for (let i = args.length - 1; i > -1; i--) {
@@ -25,7 +20,7 @@ class fmt {
     /**
      * Capitalize the first letter of each word and leave the other letters lowercase
      * @param {string} s  separate words with spaces, underscore(_) or hyphen(-)
-     * @param handleCases
+     * @param {boolean} handleCases
      */
     static capitalizeEachWord(s, handleCases = false) {
         if (handleCases) {
@@ -61,13 +56,13 @@ class fmt {
 
     /**
      * Translate formatted string
-     * @param {struct|null} dict
+     * @param {?struct} dict
      * @param args
      * @return {string}
      * @example fmt.translate({'I LOVE %s':'我爱%s'}, "I LOVE %s", "你")    ===>   我爱你
      */
     static translate(dict, ...args) {
-        if (args.length < 1) {
+        if (len(dict) === 0 || args.length < 1) {
             return ""
         }
         let format = dict && dict[args[0]] ? dict[args[0]] : args[0]
@@ -77,6 +72,7 @@ class fmt {
     /**
      * Convert  UPPER_UNDERSCORE_CASE/snake_case/PascalCase/kebab-case to  camelCase
      * @param {string } s
+     * @return {string}
      */
     static toCamelCase(s) {
         return s.toLowerCase().replace(/[^a-z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
@@ -87,11 +83,11 @@ class fmt {
 
     /**
      * Convert Arabic numerals to Chinese numerals
-     * @param {NumberX} num
-     * @param {boolean} [financial] convert to financial numerals (`capital` numerals)
+     * @param {number|string} num
+     * @param {boolean} financial convert to financial numerals (`capital` numerals)
      * @return {string}
      */
-    static toChineseNumber(num, financial) {
+    static toChineseNumber(num, financial = false) {
         num = float64(num)
         let hanziNum = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九']
 
@@ -152,7 +148,6 @@ class fmt {
     }
 
     /**
-     *
      * @param {string} s
      * @return {string}
      */
@@ -163,6 +158,9 @@ class fmt {
 
     /**
      * Convert to sentence-case
+     * @param {string} s
+     * @param {boolean} handleCases
+     * @return {string}
      */
     static toSentenceCase(s, handleCases = false) {
         if (handleCases) {
@@ -174,6 +172,7 @@ class fmt {
     /**
      * Convert UPPER_UNDERSCORE_CASE/PascalCase/camelCase/kebab-case to lower-case snake case(underscore_case)
      * @param {string} s
+     * @return {string}
      */
     static toSnakeCase(s) {
         s = s.replaceAll('-', '_')  // kebab-case

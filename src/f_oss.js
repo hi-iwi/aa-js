@@ -152,7 +152,7 @@ class AaSrc {
     }
 
     /**
-     * @param {Stringable} str
+     * @param {str} str
      * @return {AaImgSrc|null}
      * @note compatible with this.serialize()
      */
@@ -216,7 +216,7 @@ class AaOSS {
     /**
      *
      * @param {ImgSrcStruct|AaImgSrc} [data]
-     * @param {ImageBase64|filepath} [thumbnail]
+     * @param {Base64|Path} [thumbnail]
      * @param {File} [multipleFile]
      * @return {AaImgSrc|null}
      */

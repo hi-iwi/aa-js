@@ -28,25 +28,21 @@ class Percent extends Decimal {
     }
 
     /**
-     * @param {struct|NumberX} [vv]
-     * @param {Stringable} [vk]
-     * @param {NumberX} [defaultV]
+     * @param {vv_vk_defaultV} [args]
      */
-    constructor(vv, vk, defaultV) {
-        super(...arguments)
+    constructor(...args) {
+        super(...args)
     }
 }
 
 /**
  * New a {Percent} instance
- * @param {struct|Percent|NumberX} vv
- * @param {Stringable} [vk]
- * @param {Percent|NumberX} [defaultV]
+ * @param {vv_vk_defaultV} [args]
  */
-function percent(vv, vk, defaultV) {
-    vv = defval(...arguments)
-    if (vv instanceof Percent) {
-        return vv
+function percent(...args) {
+    const v = defval(...args)
+    if (v instanceof Percent) {
+        return v
     }
-    return new Percent(vv)
+    return new Percent(v)
 }

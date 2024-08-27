@@ -50,12 +50,10 @@ class Decimal {
     }
 
     /**
-     * @param {struct|NumberX} [vv]
-     * @param {Stringable} [vk]
-     * @param {NumberX} [defaultV]
+     * @param {vv_vk_defaultV} [args]
      */
-    constructor(vv, vk, defaultV) {
-        this.value = Math.floor(number(...arguments))
+    constructor(...args) {
+        this.value = Math.floor(number(...args))
     }
 
 
@@ -417,8 +415,8 @@ class Decimal {
     }
 
     /**
-     * @param {Stringable} str
-     * @return {AaImgSrc|null}
+     * @param {str} str
+     * @return {Decimal}
      * @note compatible with this.serialize()
      */
     static unserialize(str) {
@@ -427,15 +425,13 @@ class Decimal {
 }
 
 /**
- * @param {struct|NumberX|Decimal} [vv]
- * @param {Stringable} [vk]
- * @param {NumberX|Decimal} [defaultV]
+ * @param {vv_vk_defaultV} [args]
  * @return {Decimal}
  */
-function decimal(vv, vk, defaultV) {
-    vv = defval(...arguments)
-    if (vv instanceof Decimal) {
-        return vv
+function decimal(...args) {
+    const v = defval(...args)
+    if (v instanceof Decimal) {
+        return v
     }
-    return new Decimal(vv)
+    return new Decimal(v)
 }

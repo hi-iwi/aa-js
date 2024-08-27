@@ -93,7 +93,7 @@ String.prototype.replaceAll = function (searchValue, replaceValue) {
 }
 /**
  * Replace if the string ends with `oldCut`
- * @param {Stringable} s
+ * @param {str} s
  * @param {string} searchValue
  * @param {string} replaceValue
  * @return {string}
@@ -154,7 +154,7 @@ String.prototype.splitTrim = function (separator, limit) {
 /**
  * Repeat `n` times to trim the suffix `cut` from the string `s`, if n<1, trim unlimited
  * @override
- * @param {Stringable} s
+ * @param {str} s
  * @param {string|number} [cut]
  * @param {number} [n]
  * @return {string}
@@ -218,7 +218,7 @@ String.prototype.trimStart = function (cut = ' ', n) {
 /**
  * Repeat `n` times to trim the prefix and suffix `cut` from the string `s`, if n<1, trim unlimited
  * @override
- * @param {Stringable} s
+ * @param {str} s
  * @param {string|number} [cut]
  * @param {number} [n]
  * @return {string}

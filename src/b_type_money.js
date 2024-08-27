@@ -37,12 +37,10 @@ class Money extends Decimal {
 
 
     /**
-     * @param {struct|NumberX} [vv]
-     * @param {Stringable} [vk]
-     * @param {NumberX} [defaultV]
+     * @param {vv_vk_defaultV} [args]
      */
-    constructor(vv, vk, defaultV) {
-        super(...arguments)
+    constructor(...args) {
+        super(...args)
     }
 
     toCent() {
@@ -138,15 +136,13 @@ class Money extends Decimal {
 
 /**
  * New a {Money} instance
- * @param {struct|Money|NumberX} [vv]
- * @param {Stringable} [vk]
- * @param {Money|NumberX} [defaultV]
+ * @param {vv_vk_defaultV} [args]
  * @return {Money}
  */
-function money(vv, vk, defaultV) {
-    vv = defval(...arguments)
-    if (vv instanceof Money) {
-        return vv
+function money(...args) {
+    const v = defval(...args)
+    if (v instanceof Money) {
+        return v
     }
-    return new Money(vv)
+    return new Money(v)
 }

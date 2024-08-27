@@ -6,12 +6,11 @@
 //  react state  数字 001231 === 1231 == 001231.000  这些数值都没有变化，state就不会触发
 
 
-
 /**
  * Try call the method if the method is a function
  * @param method
  * @param args
- * @return {*|null}
+ * @return {*}
  */
 function trycall(method, ...args) {
     if (!method) {
@@ -28,7 +27,7 @@ function trycall(method, ...args) {
 /**
  * Return defined value
  * @param {*} [vv]
- * @param {Stringable} [vk]
+ * @param {string} [vk]
  * @param {*} [defaultV]
  * @returns {null|*} return any type except type `undefined`
  * @note Golang 至今未支持三元写法，因此不代表某种习惯就必须要所有人接受。这里规定一种写法并无障碍，并非强制性要求。
@@ -433,6 +432,7 @@ function _inRange(x, min, max, name) {
  * @return {boolean}
  */
 function bool(...args) {
+    /** @type {Bool} */
     let v = defval(...args)
     if (v === null) {// 不要用 AaLib.Type 判断是否 undefined
         return false
@@ -460,11 +460,12 @@ function bool(...args) {
             /*
                      null
              TRUE -> false
+             T -> F
              1    -> 0
              yes   -> no
              on  -> off  // html attribute 会用到
              */
-            return !["false", "0", "no", "off", "null"].includes(v)
+            return !["false", "f", "0", "no", "off", "null"].includes(v)
     }
     return !!v
 }
