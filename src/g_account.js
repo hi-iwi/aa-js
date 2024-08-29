@@ -1,10 +1,7 @@
-/**
- * @import AaAuth
- * @typedef {struct} LoginResponseData
- * @typedef {struct} Profile
- * @typedef {struct} Vuser
- * @typedef {'main'|'selected'|{vtype:number}} VuserCondition
- */
+/** @typedef {struct} LoginResponseData */
+/** @typedef {struct} Profile */
+/** @typedef {struct} Vuser */
+/** @typedef {'main'|'selected'|{vtype:number}} VuserCondition */
 
 class AaAccount {
     name = 'aa-account'
@@ -183,11 +180,11 @@ class AaAccount {
             return null
         }
         let vuid = this.#selectedVuid
-        if (!vuid) {
+        if (eq(vuid, 0)) {
             vuid = this.#readSelectedVuid()
         }
         const main = profile['vuser']
-        if (!vuid || main['vuid'] === vuid) {
+        if (eq(vuid, 0) || main['vuid'] === vuid) {
             return profile['vuser']
         }
         return this.findVuser(profile['doppes'], vuid)
@@ -237,10 +234,10 @@ class AaAccount {
      */
     getSelectedVuser() {
         let vuid = this.#selectedVuid
-        if (!vuid) {
+        if (eq(vuid, 0)) {
             vuid = this.#readSelectedVuid()
         }
-        if (!vuid) {
+        if (eq(vuid, 0)) {
             return this.mainVuser()
         }
         return this.getVuser(vuid)

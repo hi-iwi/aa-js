@@ -1,7 +1,8 @@
+/** @typedef {{value:any, text:string, key?:number, pid?:number, prefix?:any, suffix?:any, inherit?:boolean, comment?:any, virtual?:boolean}} MselectOption */
+
 /**
  * Multi-level dropdowns(selects) data 多级联动数据
  * 多个 <select></select><select></select> 组合
- * @typedef {{value:any, text:string, key?:number, pid?:number, prefix?:any, suffix?:any, inherit?:boolean, comment?:any, virtual?:boolean}} MselectOption
  */
 class AaMultiLevelSelects {
 
@@ -119,7 +120,7 @@ class AaMultiLevelSelects {
                 for (let k = 0; k < i; k++) {
                     for (let n = 0; n < opts[k].length; n++) {
                         tt = opts[k][n].text
-                        if (v === opts[k][n].value && !t.is(tt)) {
+                        if (v === opts[k][n].value && ne(t, tt)) {
                             console.error("AaSelect: conflict\n    " + strings.json(opts[k][n]) + "\n    " + strings.json(opts[i][j]))
                         }
                     }
@@ -183,21 +184,21 @@ class AaMultiLevelSelects {
             let opts = this.nth(i)
             for (let j = 0; j < opts.length; j++) {
                 const sj = opts[j]
-                if (!pid || pid === '0') {
+                if (eq(pid, 0)) {
                     // 空value，就选择第一个
-                    if (!value || value === '0' || value.is(sj.value)) {
+                    if (!value || value === '0' || eq(value, sj.value)) {
                         pid = sj.pid
                         chain.unshift(sj)
                         break
                     }
                 } else {
                     // 判定是否前置
-                    if (value.is(sj.value)) {
+                    if (eq(value, sj.value)) {
                         pid = sj.pid
                         chain = [sj]  // 重置 chain
                         break
                     }
-                    if (sj.value.is(pid)) {
+                    if (eq(sj.value, pid)) {
                         pid = sj.pid
                         chain.unshift(sj)
                         break

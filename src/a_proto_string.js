@@ -12,18 +12,7 @@ String.prototype.cut = function (separator) {
     return [this, "", false]
 }
 
- 
-/**
- * @param {string|number} b
- * @return {boolean}
- * @note
- *  "".is(null)     ===> true
- *  "".is(void 0)   ===> true
- *  "".is(0)        ===> false
- */
-String.prototype.is = function (b) {
-    return this === string(b)   // String(void 0) ===> "undefined"
-}
+
 
 /**
  * Joins strings, inserting a blank string between each
@@ -69,7 +58,7 @@ String.prototype.joinWithIf = function (condition, separator, ...args) {
 /**
  * Override String.prototype.replaceAll
  * @override
- * @param {string|RegExp|{[key:string]:(string|number)}|(string|number|RegExp)[][]|(string|number|RegExp)[]} searchValue
+ * @param {string|RegExp|struct|(string|number|RegExp)[][]|(string|number|RegExp)[]} searchValue
  * @param {string|((match0: string, ...matches: any[])=>string)} [replaceValue]
  * @return {string}
  * @example
@@ -108,7 +97,6 @@ String.prototype.replaceAll = function (searchValue, replaceValue) {
 }
 /**
  * Replace if the string ends with `oldCut`
- * @param {str} s
  * @param {string} searchValue
  * @param {string} replaceValue
  * @return {string}
@@ -169,7 +157,6 @@ String.prototype.splitTrim = function (separator, limit) {
 /**
  * Repeat `n` times to trim the suffix `cut` from the string `s`, if n<1, trim unlimited
  * @override
- * @param {str} s
  * @param {string|number} [cut]
  * @param {number} [n]
  * @return {string}
@@ -233,7 +220,6 @@ String.prototype.trimStart = function (cut = ' ', n) {
 /**
  * Repeat `n` times to trim the prefix and suffix `cut` from the string `s`, if n<1, trim unlimited
  * @override
- * @param {str} s
  * @param {string|number} [cut]
  * @param {number} [n]
  * @return {string}

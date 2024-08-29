@@ -1,7 +1,4 @@
-/**
- * @import atype
- * @typedef {struct|map|Map|URLSearchParams|*} Iterator
- */
+/** @typedef {struct|map|Map|URLSearchParams|*} Iterator */
 
 // 自定义map类型  参考 Map
 class map {

@@ -1,6 +1,5 @@
-/**
- * @typedef {number|{segmentSize?: number, scale?: number, separator?: string, trimScale?: boolean, scaleRound?: "floor"|"round"|"ceil"}} DecimalFormatSettings
- */
+/** @typedef {number|{segmentSize?: number, scale?: number, separator?: string, trimScale?: boolean, scaleRound?: "floor"|"round"|"ceil"}} DecimalFormatSettings */
+
 class Decimal {
     name = 'aa-decimal'
 

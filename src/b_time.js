@@ -1,8 +1,7 @@
-/**
- * @typedef {string} DateString
- * @typedef {string} DatetimeString
- * @typedef {time|Date|DateString|DatetimeString|number} TimeParam
- */
+/** @typedef {string} DateString */
+/** @typedef {string} DatetimeString */
+/** @typedef {time|Date|DateString|DatetimeString|number} TimeParam */
+
 class AaDateZero extends Date {
     name = 'aa-date-zero'
     value = '0000-00-00 00:00:00'

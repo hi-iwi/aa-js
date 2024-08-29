@@ -1,6 +1,6 @@
+/** @typedef {Node|HTMLElement|Document} DOM    anything extends Node */
+
 /**
- * @typedef {Node|HTMLElement|Document} DOM    anything extends Node
- *
  * Node 继承关系特别复杂，不同子element具有方法差别较大，因此不再统一封装
  *    Document : Node : EventTarget
  *    HtmlElement : Node : EventTarget
@@ -100,8 +100,10 @@ class AaDOM {
     static parseStyleAttr(styleAttr, useCamelKey = false) {
         if (styleAttr instanceof Node) {
             styleAttr = styleAttr.getAttribute('style')
+            if (!styleAttr) {
+                return null
+            }
         }
-
         const styleArr = styleAttr.splitTrim(';')
         if (styleArr.length === 0) {
             return null

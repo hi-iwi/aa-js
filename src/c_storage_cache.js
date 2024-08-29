@@ -1,6 +1,4 @@
-/**
- * @typedef {{is?:string|RegExp|(string|RegExp)[], not?:string|RegExp|(string|RegExp)[]}} AaCachePattern
- */
+/** @typedef {{is?:string|RegExp|(string|RegExp)[], not?:string|RegExp|(string|RegExp)[]}} AaCachePattern */
 class AaCache {
     name = 'aa-cache'
 

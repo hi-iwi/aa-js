@@ -1,7 +1,4 @@
-/**
- * @import AaStorageFactor, AaURI
- * @typedef {struct|string} RequestData
- */
+/** @typedef {struct|string} RequestData */
 
 class AaRawFetch {
     name = 'aa-raw-fetch'

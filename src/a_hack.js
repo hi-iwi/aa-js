@@ -37,6 +37,7 @@ class AaHack {
      * Check a string is callable static method
      * @param {string} className
      * @param {string} methodName
+     * @return {boolean}
      */
     static staticCallable(className, methodName) {
         try {

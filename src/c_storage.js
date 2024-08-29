@@ -1,7 +1,4 @@
-/**
- * @import
- * @typedef {{ persistent?:boolean, expires?:number|Date|string, path?:string, secure?:boolean, sameSite?:string }} StorageOptions
- */
+/**  @typedef {{ persistent?:boolean, expires?:number|Date|string, path?:string, secure?:boolean, sameSite?:string }} StorageOptions */
 class AaCookieStorage {
     name = 'aa-cookie-storage'
 

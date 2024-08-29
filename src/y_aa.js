@@ -92,7 +92,7 @@ class Aa {
         switch (typeof a) {
             case 'string':
             case 'number':
-                return a.is(b)
+                return eq(a, b)
             case 'object':
 
                 if (typeof a.toJSON === 'function') {

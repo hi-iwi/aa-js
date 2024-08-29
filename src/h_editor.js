@@ -1,6 +1,4 @@
-/**
- * @typedef {(src:string)=>(AaAudioSrc|AaFileSrc|AaImgSrc|AaVideoSrc)}  SrcComposer
- */
+/** @typedef {(src:string)=>(AaAudioSrc|AaFileSrc|AaImgSrc|AaVideoSrc)}  SrcComposer */
 class AaEditor {
     name = 'aa-editor'
 

@@ -2,10 +2,10 @@
  * @import atype
  * @private
  */
-/** @type {(null|{[key:number]:string})} */
+/** @type {(null|struct)} */
 let _aerrorCode2MsgMap_ = null
 
-/** @type {{[key:string]:(null|{[key:string]:string})}} */
+/** @type {{[key:string]:?struct}} */
 let _aerrorDict_ = {
     'en'   : null,  // will init later   必须要增加一个en模式的，这样直接匹配到可以直接输出
     'zh-CN': {
@@ -83,7 +83,7 @@ const AErrorEnum = {
 
     /**
      *
-     * @return {{[key:number]:string}}
+     * @return {struct}
      */
     getCode2MsgMap: function () {
         if (_aerrorCode2MsgMap_) {
@@ -102,7 +102,7 @@ const AErrorEnum = {
     /**
      *
      * @param {number} code
-     * @param  {string|{[key:string]:string}} [dict]
+     * @param  {string|struct} [dict]
      * @return {string}
      */
     code2Msg: function (code, dict = 'zh-CN') {
@@ -116,7 +116,7 @@ const AErrorEnum = {
     /**
      *
      * @param  {string|struct} [dict]
-     * @return {{[key:string]:string}}
+     * @return {struct}
      */
     getDict: function (dict = 'zh-CN') {
         if (!_aerrorDict_['en']) {
@@ -143,7 +143,7 @@ const AErrorEnum = {
      *
      * @param {number} code
      * @param {string} [msg]
-     * @param  {string|{[key:string]:string}} [dict]
+     * @param  {string|struct} [dict]
      * @return {string}
      */
     translate: function (code, msg, dict = 'zh-CN') {

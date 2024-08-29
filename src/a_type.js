@@ -2,6 +2,33 @@
 
 //  react state  数字 001231 === 1231 == 001231.000  这些数值都没有变化，state就不会触发
 
+/**
+ * Equal or is empty
+ *  eq(a, b)  ===> is a equals to b
+ *  eq(a)     ===> is a empty
+ * @param {any} a
+ * @param {any} [b]
+ * @return {boolean}
+ * @example
+ *  eq(a)  ===>  a && a !== "0"
+ */
+function eq(a, b) {
+    a = string(a)  // @warn String(void 0) === "undefined";  string(void 0) === ""
+    b = string(b)
+    return a === b || (!a && b === "0") || (!b && a === "0")
+}
+
+/**
+ * Not equal or not empty
+ *  ne(a, b) ==> is a not equals to b
+ *  ne(a)    ==> is a not empty
+ * @param {any} a
+ * @param {any} [b]
+ * @return {boolean}
+ */
+function ne(a, b) {
+    return !eq(a, b)
+}
 
 /**
  * Try call the method if the method is a function

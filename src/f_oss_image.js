@@ -1,7 +1,6 @@
-/**
- * @typedef {{path:string, filetype:number, size:number, provider:number, allowed:(number[][]|null), origin:string, width:number, crop_pattern:string, resize_pattern:string, height:number, thumbnail?:string, multiple_file?:string}} ImgSrcStruct
- * @typedef {{height:number, width:number, ratio:Decimal, realHeight:number, realWidth:number, originalHeight:number, originalWidth:number, url:string}} ImgResizedData
- */
+/** @typedef {{path:string, filetype:number, size:number, provider:number, allowed:(number[][]|null), origin:string, width:number, crop_pattern:string, resize_pattern:string, height:number, thumbnail?:string, multiple_file?:string}} ImgSrcStruct */
+/** @typedef {{height:number, width:number, ratio:Decimal, realHeight:number, realWidth:number, originalHeight:number, originalWidth:number, url:string}} ImgResizedData */
+
 class AaImgSrc extends AaSrc {
     name = 'aa-img-src'
 
@@ -319,7 +318,7 @@ class AaImgSrc extends AaSrc {
         }
         return {
             path    : p.toString().trimStart('/'),
-            filetype: AaFileTypeEnum.parseImage(p.ext),
+            filetype: new AaFileType(p.ext).valueOf(),
             size    : size,
             width   : width,
             height  : height,

@@ -1,8 +1,4 @@
-// @import AaStorageFactor, AaURI, AaRawFetch, AaAuth
-/**
- * Ajax 包括：XMLHttpRequest 、fetch 等
- * @typedef {{mustAuth?:boolean, onAuthError?:function, preventTokenRefresh?:boolean, mode?: string, redirect?: string, debounce?: boolean, referrer?: string, dict?: struct, data?: struct, method?: string, referrerPolicy?: string, credentials?: string, keepalive?: boolean, body?: any, signal?: any, window:? any}} FetchSettings
- */
+/**  @typedef {{mustAuth?:boolean, onAuthError?:function, preventTokenRefresh?:boolean, mode?: string, redirect?: string, debounce?: boolean, referrer?: string, dict?: struct, data?: struct, method?: string, referrerPolicy?: string, credentials?: string, keepalive?: boolean, body?: any, signal?: any, window:? any}} FetchSettings */
 class AaFetch {
     name = 'aa-fetch'
 

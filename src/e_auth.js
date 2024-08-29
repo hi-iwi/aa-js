@@ -1,7 +1,4 @@
-/**
- * @import aparam, AaStorageFactor, AaRawFetch
- * @typedef {{access_token: string, conflict?: boolean, expires_in?: number, refresh_api?: string, refresh_token?: string, refresh_ttl?:number, scope?: null, secure?: boolean, state?:string, token_type: string, validate_api?: string}} TokenData
- */
+/** @typedef {{access_token: string, conflict?: boolean, expires_in?: number, refresh_api?: string, refresh_token?: string, refresh_ttl?:number, scope?: null, secure?: boolean, state?:string, token_type: string, validate_api?: string}} TokenData */
 
 
 class AaAuth {
@@ -417,7 +414,7 @@ class AaAuth {
 
     /**
      * @param token
-     * @return {{access_token, refresh_token: string, refresh_api: string, validate_api: string, scope: ({[key:string]:any}|null), isValid: ()=> boolean, state: string, token_type, refresh_ttl: number, secure: (void|boolean), expires_in: number, conflict: (void|boolean)}|null}
+     * @return {?{access_token:string, refresh_token: string, refresh_api: string, validate_api: string, scope: ?struct, isValid: ()=> boolean, state: string, token_type, refresh_ttl: number, secure: (void|boolean), expires_in: number, conflict: (void|boolean)}}
      * @note 有可能access_token已过期，而refresh_token还未过期，因此需要 .isValid()判断
      */
     #validateToken(token) {

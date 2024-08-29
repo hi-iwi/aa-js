@@ -16,9 +16,6 @@ A Javascript SDK of AaGo
 
 | prototype           | description     |
 |---------------------|-----------------|
-| Number.is(b)        | this==number(b) |
-| Number.replaceAll() |                 |
-| String.is(b)        | this==string(b) |
 | String.replaceAll() |                 |
 
 ### type caster functions
@@ -77,8 +74,10 @@ A Javascript SDK of AaGo
 |----------------|-----------------|-----------------------------------------------|
 | asleep()       | Promise         | a promise sleep for a while                   |
 | defval()       | any except null | Return defined value                          |
+| eq()           | boolean         | equal or is empty                             |
 | len()          | number          | length of anything                            |
 | loge()         |                 | alias to new log().println()                  |
+| ne()           | boolean         | not equal or not empty                        |
 | not()          | boolean         | same to !something                            |
 | Round()        |                 |                                               |
 | RoundTrim()    |                 | Trim the tail                                 |

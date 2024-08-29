@@ -1,9 +1,7 @@
-/**
- * @import AaEnv
- * @typedef {function(scrollTop, prevScrollTop, autoScroll:bool)} Condition
- * @typedef {function(scrollTop, prevScrollTop, autoScroll:bool)} Trigger
- * @typedef {{condition: Condition|null, trigger: Trigger, pause: boolean}} Event
- */
+/** @typedef {function(scrollTop, prevScrollTop, autoScroll:bool)} Condition */
+/** @typedef {function(scrollTop, prevScrollTop, autoScroll:bool)} Trigger */
+/** @typedef {{condition: Condition|null, trigger: Trigger, pause: boolean}} Event */
+
 class AaScrollEvent {
     /** @type {Map} */
     #events

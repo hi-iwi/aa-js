@@ -1,9 +1,8 @@
-/**
- * Special Mathematics
- * @import atype
- * @typedef  {number|string|{[key:number|string]:ResponsiveSize}} ResponsiveSize
- */
+/**  @typedef  {number|string|{[key:number|string]:ResponsiveSize}} ResponsiveSize */
 
+/**
+ * Special mathematics
+ */
 class maths {
     name = 'aa-maths'
 
