@@ -18,13 +18,13 @@ class AaAuth {
     /** @type {function}  外部可以使用、修改 */
     #unauthorizedHandler
 
-    /** @type {TokenData|null} */
+    /** @type {?TokenData} */
     #token
     /** @type {number} local authed at in milliseconds */
     #tokenAuthAt = 0
     #validateTried = false
 
-    /** @type {string[]|null}  Auth fields */
+    /** @type {?string[]}  Auth fields */
     #fields
 
     enableCookie = true
@@ -97,7 +97,7 @@ class AaAuth {
     /**
      * Get token data
      * @param noRefresh
-     * @return {Promise<TokenData|null>}
+     * @return {Promise<?TokenData>}
      */
     getToken(noRefresh = false) {
         let token = this.#getCachedToken()
@@ -144,7 +144,7 @@ class AaAuth {
 
     /**
      * Refresh access token, and return new token data
-     * @return {Promise<TokenData|null>|*}
+     * @return {Promise<?TokenData>|*}
      */
     refresh() {
         const token = this.#getCachedToken()
@@ -317,7 +317,7 @@ class AaAuth {
 
     /**
      * Format authorization header value
-     * @param {TokenData|null} token
+     * @param {?TokenData} token
      * @return {string}
      */
     #formatAuthorization(token) {

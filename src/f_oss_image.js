@@ -1,4 +1,4 @@
-/** @typedef {{path:string, filetype:number, size:number, provider:number, allowed:(number[][]|null), origin:string, width:number, crop_pattern:string, resize_pattern:string, height:number, thumbnail?:string, multiple_file?:string}} ImgSrcStruct */
+/** @typedef {{path:string, filetype:number, size:number, provider:number, allowed:?number[][], origin:string, width:number, crop_pattern:string, resize_pattern:string, height:number, thumbnail?:string, multiple_file?:string}} ImgSrcStruct */
 /** @typedef {{height:number, width:number, ratio:Decimal, realHeight:number, realWidth:number, originalHeight:number, originalWidth:number, url:string}} ImgResizedData */
 
 class AaImgSrc extends AaSrc {
@@ -172,7 +172,7 @@ class AaImgSrc extends AaSrc {
 
     /**
      * Get the original image, return resized if original image not exists
-     * @return {ImgResizedData|null} 返回struct是最合适的，方便直接并入组件 state
+     * @return {?ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
      */
     getOriginal() {
         if (!this.isValid()) {

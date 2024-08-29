@@ -47,7 +47,7 @@ class AaScrollEvent {
     /**
      * Register a scroll event
      * @param name
-     * @param {Condition|null} [condition]
+     * @param {?Condition} [condition]
      * @param {Trigger} trigger
      * @param {boolean} [pause]
      */

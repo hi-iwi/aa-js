@@ -54,7 +54,7 @@ class AaCache {
      * Find from table
      * @param {string} table
      * @param {string|RegExp} field
-     * @return {string|*|null}
+     * @return {any}
      */
     find(table, field) {
         if (!table || !field) {

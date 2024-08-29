@@ -1,5 +1,6 @@
 /** @typedef {struct} LoginResponseData */
 /** @typedef {struct} Profile */
+
 /** @typedef {struct} Vuser */
 /** @typedef {'main'|'selected'|{vtype:number}} VuserCondition */
 
@@ -59,7 +60,7 @@ class AaAccount {
     }
 
     /**
-     * @param {Vuser[]|null|void} vusers
+     * @param {Vuser[]|null|void} [vusers]
      * @param {number} vtype
      * @return {?Vuser}
      */
@@ -96,7 +97,7 @@ class AaAccount {
 
     /**
      * @param profile
-     * @return {Profile|null}
+     * @return {?Profile}
      */
     formatProfile(profile) {
         if (!profile) {
@@ -154,7 +155,7 @@ class AaAccount {
     }
 
     /**
-     * @return {Profile|null}
+     * @return {?Profile}
      */
     getCachedProfile() {
         let profile = this.#profile
@@ -283,7 +284,7 @@ class AaAccount {
     /**
      *
      * @param {Vuser} vuser
-     * @return {Profile|null} profile
+     * @return {?Profile} profile
      */
     modifyVuser(vuser) {
         let profile = this.getCachedProfile()
@@ -348,16 +349,12 @@ class AaAccount {
     /**
      * Get vuser with vtype
      * @param {number|string} vtype
-     * @return {Promise<Vuser>}
+     * @return {Promise<?Vuser>}
      */
     searchVuser(vtype) {
         vtype = this.castVtype(vtype)
         return this.getVusers().then(vusers => {
-            const vuser = this.findByVtype(vusers, vtype)
-            if (vuser) {
-                return vuser
-            }
-            throw new TypeError(`not found vuser with vtype: ${vtype}`)
+            return this.findByVtype(vusers, vtype)
         })
     }
 

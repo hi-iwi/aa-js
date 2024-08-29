@@ -55,9 +55,9 @@ class AaEditor {
      *
      * @param {string|DOM} content
      * @param {DOM|string} [appendTo]
-     * @param {{[key:string]:SrcComposer}|null} [srcComposers]
-     * @param {(node:DOM)=>(DOM|null)} [hook]
-     * @return {HTMLElement|null}
+     * @param {?{[key:string]:SrcComposer}} [srcComposers]
+     * @param {(node:DOM)=>?DOM} [hook]
+     * @return {?HTMLElement}
      */
     decodeContent(content, appendTo, srcComposers, hook) {
         // 剪贴板从word复制，会组成 <html><body>
@@ -129,7 +129,7 @@ class AaEditor {
     /**
      * Clean HTML content before submit
      * @param {HTMLElement|string} content
-     * @param {{[key:string]:SrcComposer}|null} [srcComposers]
+     * @param {?{[key:string]:SrcComposer}} [srcComposers]
      * @return {string}
      */
     encodeContent(content, srcComposers) {
@@ -147,7 +147,7 @@ class AaEditor {
      * @param {HTMLElement|string} content
      * @param {{[key:string]:SrcComposer}} [srcComposers]
      * @param {boolean} [beforeSubmit]
-     * @param {(node:DOM)=>(DOM|null)} [hook]
+     * @param {(node:DOM)=>?DOM} [hook]
      * @return {HTMLElement}
      */
     formatContent(content, srcComposers, beforeSubmit, hook) {
@@ -216,7 +216,7 @@ class AaEditor {
     /**
      * @param {string} tagName
      * @param {{[key:string]:SrcComposer}} [composers]
-     * @return {SrcComposer|null}
+     * @return {?SrcComposer}
      */
     getSrcComposer(tagName, composers) {
         if (composers && composers[tagName]) {

@@ -79,7 +79,7 @@ class AaDOM {
      *
      * @param {string|Node} s
      * @param {DOMParserSupportedType} type
-     * @return {Node|null}
+     * @return {?Node}
      */
     static parse(s, type = 'text/html') {
         if (!s) {
@@ -123,7 +123,7 @@ class AaDOM {
 
     /**
      * Prevent the event's all default actions, include propagation's and parents' actions
-     * @param {Event|void|null} event
+     * @param {?Event} [event]
      */
     static preventEvent(event) {
         if (!event) {
@@ -150,7 +150,7 @@ class AaDOM {
 
     /**
      * @param {Node|string} selector
-     * @return {DOM|null}
+     * @return {?DOM}
      */
     static querySelector(selector) {
         if (!selector) {

@@ -63,7 +63,6 @@ A Javascript SDK of AaGo
 | MIN            | string     | a global parameter to indicate passed a MIN value                         |
 | OPTIONAL       | boolean    | a global parameter to indicate passed a optional value                    |
 | REQUIRED       | boolean    | equal to !OPTIONAL                                                        |
-| U0             | string     | U0                                                                        |
 | -------------  | ---------- | ------------------------------------------------------------------------  |
 | AaFileTypeEnum |            |                                                                           |
 |                |            |                                                                           |

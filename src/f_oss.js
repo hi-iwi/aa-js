@@ -31,7 +31,7 @@ class AaSrc {
 
     /**
      * @param {str} str
-     * @return {AaImgSrc|null}
+     * @return {?AaImgSrc}
      * @note compatible with this.serialize()
      */
     static unserialize(str) {
@@ -96,7 +96,7 @@ class AaOSS {
      * @param {ImgSrcStruct|AaImgSrc} [data]
      * @param {Base64|Path} [thumbnail]
      * @param {File} [multipleFile]
-     * @return {AaImgSrc|null}
+     * @return {?AaImgSrc}
      */
     imgSrc(data, thumbnail, multipleFile) {
         if (data instanceof AaImgSrc) {

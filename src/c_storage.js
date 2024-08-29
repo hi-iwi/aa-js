@@ -154,7 +154,7 @@ class AaCookieStorage {
     /**
      *
      * @param {string} key
-     * @return {*|null}
+     * @return {any}
      */
     getItem(key) {
         if (!this.available() || !document.cookie) {

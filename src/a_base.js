@@ -36,10 +36,6 @@ const REQUIRED = !OPTIONAL
 const INCR = 'INCR'
 /** @typedef @typedef {"DECR"} DECR */
 const DECR = 'DECR'
-const U0 = uint64(0)
-
-
-
 
 /**
  * Keep-names of URL parameters
