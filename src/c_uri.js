@@ -272,6 +272,35 @@ class AaURI {
         }
     }
 
+    /**
+     * Parse domain unsafe, inaccurate but enough for this SDK (luexu.com)
+     * @param {string} hostname
+     * @return {(string|boolean)[]}
+     */
+    static parseDomainUnsafe(hostname) {
+        let a = hostname.indexOf("//")
+        if (a > -1) {
+            hostname = hostname.slice(a + 2)
+        }
+        // e.g. luexu.com:80/i
+        hostname = hostname.split('/')[0].split(':')[0]
+        a = hostname.split('.')
+        const n = a.length
+        if (n < 2) {
+            return ["", false]
+        }
+        if (/\d/.test(a[n - 1])) {
+            return [hostname, false]
+        }
+        if (n < 3) {
+            return [hostname, true]
+        }
+        if (["com", "edu", "gov", "org"].includes(a[n - 2])) {
+            return [a.slice(-3).join('.'), true]
+        }
+        return [a.slice(-2).join('.'), true]
+    }
+
     query(key, cast = string) {
         return this.searchParams.get(key, cast)
     }

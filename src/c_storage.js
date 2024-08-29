@@ -1,4 +1,4 @@
-/**  @typedef {{ persistent?:boolean, expires?:number|Date|string, path?:string, secure?:boolean, sameSite?:string }} StorageOptions */
+/**  @typedef {{ domain?:string, persistent?:boolean, expires?:number|Date|string, path?:string, secure?:boolean, sameSite?:string }} StorageOptions */
 class AaCookieStorage {
     name = 'aa-cookie-storage'
 
@@ -91,6 +91,17 @@ class AaCookieStorage {
     setItem(key, value, options) {
         if (!this.available()) {
             return
+        }
+        options = options ? options : {}
+        if (!options.domain) {
+            options.domain = location.hostname
+            const [d, ok] = AaURI.parseDomainUnsafe(options.domain)
+            if (ok) {
+                options.domain = "." + d
+            }
+        }
+        if (!options.path) {
+            options.path = '/'
         }
         options = map.fillUp(options, this.defaultOptions)
         if (typeof options.expires === 'number') {

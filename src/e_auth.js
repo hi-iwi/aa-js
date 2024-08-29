@@ -298,11 +298,7 @@ class AaAuth {
 
 
     #cookieOptions(expires) {
-        const hostname = location.hostname
         let domain = this.cookieDomainHandler ? this.cookieDomainHandler() : false
-        if (!domain) {
-            domain = /^([\d.]+|[^.]+)$/.test(hostname) ? hostname : "." + hostname
-        }
         return {
             domain : domain,
             path   : '/',
