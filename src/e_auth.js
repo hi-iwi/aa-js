@@ -302,10 +302,7 @@ class AaAuth {
         return {
             domain : domain,
             path   : '/',
-            expires: expires ? expires : 0, // Lax 允许部分第三方跳转过来时请求携带Cookie；Strict 仅允许同站请求携带cookie
-            // 微信授权登录，跳转回来。如果是strict，就不会携带cookie（防止csrf攻击）；而lax就会携带。
-            // 在 Lax 模式下只会阻止在使用危险 HTTP 方法进行请求携带的三方 Cookie，例如 POST 方式。同时，使用 Js 脚本发起的请求也无法携带三方 Cookie。
-            // 谷歌默认 sameSite=Lax
+            expires: expires ? expires : 0,
             sameSite: 'lax',
             secure  : location.protocol === "https"  // 只允许https访问
         }

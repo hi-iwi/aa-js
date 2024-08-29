@@ -6,57 +6,33 @@ class AaCookieStorage {
     separator = '_'
     subSeparator = '_'
 
-    defaultOptions = {
-        //expires: 0,  // Date or Number
-        path: '/', //domain: '',
-        //secure: true,  // require https
-        //sameSite: 'Lax',
-    }
 
     get length() {
         const all = this.getAll()
         return all ? Object.keys(all).length : 0
     }
 
-    // constructor() {
-    //     super()
-    //
-    // }
 
     available() {
         return typeof document !== 'undefined'
     }
 
     /**
+     * Note that this code has two limitations:
      *
-     * @param {number} index
-     * @return {?string}
+     * It will not delete cookies with HttpOnly flag set, as the HttpOnly flag disables JavaScript's access to the cookie.
+     * It will not delete cookies that have been set with a Path value. (This is despite the fact that those cookies will appear in document.cookie, but you can't delete it without specifying the same Path value with which it was set.)
+     * @param {StorageOptions} [options]
      */
-    key(index) {
-        const all = this.getAll()
-        const keys = all ? Object.keys(all) : []
-        return keys.length > index ? keys[index] : null
-    }
-
-    /**
-     *
-     * @param {string} value
-     * @return {string}
-     */
-    #read(value) {
-        if (value[0] === '"') {
-            value = value.slice(1, -1)
+    clear(options) {
+        if (!this.available() || !document.cookie) {
+            return
         }
-        return value.replace(/(%[\dA-F]{2})+/gi, decodeURIComponent)
+        this.forEach((key, _) => {
+            this.removeItem(key, options)
+        })
     }
 
-    /**
-     * @param {string} value
-     * @return {string}
-     */
-    #write(value) {
-        return encodeURIComponent(value).replace(/%(2[346BF]|3[AC-F]|40|5[BDE]|60|7[BCD])/g, decodeURIComponent)
-    }
 
     /**
      *
@@ -82,58 +58,6 @@ class AaCookieStorage {
         return result
     }
 
-    /**
-     *
-     * @param {string } key
-     * @param {string|number} value
-     * @param {StorageOptions} [options]
-     */
-    setItem(key, value, options) {
-        if (!this.available()) {
-            return
-        }
-        options = options ? options : {}
-        if (!options.domain) {
-            options.domain = location.hostname
-            const [d, ok] = AaURI.parseDomainUnsafe(options.domain)
-            if (ok) {
-                options.domain = "." + d
-            }
-        }
-        if (!options.path) {
-            options.path = '/'
-        }
-        options = map.fillUp(options, this.defaultOptions)
-        if (typeof options.expires === 'number') {
-            options.expires = new Date(Date.now() + options.expires)  // 多少ms后过期
-        }
-        if (options.expires instanceof Date) {
-            options.expires = options.expires.toUTCString()
-        }
-        key = encodeURIComponent(key)
-            .replace(/%(2[346B]|5E|60|7C)/g, decodeURIComponent)
-            .replace(/[()]/g, escape)
-
-        let s = ''
-        for (const [k, v] of Object.entries(options)) {
-            if (!v) {
-                continue
-            }
-            s += '; ' + k
-            if (v === true) {
-                continue
-            }
-            // Considers RFC 6265 section 5.2:
-            // ...
-            // 3.  If the remaining unparsed-attributes contains a %x3B (";")
-            //     character:
-            // Consume the characters of the unparsed-attributes up to,
-            // not including, the first %x3B (";") character.
-            // ...
-            s += '=' + v.split(';')[0]
-        }
-        document.cookie = key + '=' + this.#write(value) + s
-    }
 
     /**
      * Get all
@@ -146,18 +70,15 @@ class AaCookieStorage {
         let data = {}
         // 相同key，前面优先
         //  k=v; k=v; k=v; k=xxx=xxx; k; k;
-        document.cookie.split('; ').forEach(cookie => {
-            let parts = cookie.split('=')
-            let key = parts[0]
-            let value = parts.slice(1).join('=')  // 有可能是  k=xxx=xxx; k=v; k;
-
-            try {
-                data[decodeURIComponent(key)] = value ? this.#read(value) : ''
-            } catch {
-                // Do nothing...
+        document.cookie.splitTrim('; ').forEach(cookie => {
+            let parts = cookie.splitTrim('=')
+            if (parts.length < 2 || !parts[0]) {
+                return
             }
+            let key = decodeURIComponent(parts[0])
+            // 有可能是  k=xxx=xxx; k=v; k;
+            data[key] = decodeURIComponent(parts.slice(1).join('='))
         })
-
 
         return data
     }
@@ -177,6 +98,17 @@ class AaCookieStorage {
 
     /**
      *
+     * @param {number} index
+     * @return {?string}
+     */
+    key(index) {
+        const all = this.getAll()
+        const keys = all ? Object.keys(all) : []
+        return keys.length > index ? keys[index] : null
+    }
+
+    /**
+     *
      * @param key
      * @param options
      * Note that this code has two limitations:
@@ -189,20 +121,71 @@ class AaCookieStorage {
         this.setItem(key, '', map.fillUp({expires: -3600 * 48}, options))
     }
 
+
     /**
-     * Note that this code has two limitations:
      *
-     * It will not delete cookies with HttpOnly flag set, as the HttpOnly flag disables JavaScript's access to the cookie.
-     * It will not delete cookies that have been set with a Path value. (This is despite the fact that those cookies will appear in document.cookie, but you can't delete it without specifying the same Path value with which it was set.)
+     * @param {string } key
+     * @param {string|number} value
      * @param {StorageOptions} [options]
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
      */
-    clear(options) {
-        if (!this.available() || !document.cookie) {
+    setItem(key, value, options) {
+        if (!this.available()) {
             return
         }
-        this.forEach((key, _) => {
-            this.removeItem(key, options)
-        })
+        if (!key || ["expires", "max-age", "path", "domain", "secure"].includes(key.toLowerCase())) {
+            log.error(`invalid cookie key "${key}"`)
+            return
+        }
+        options = options ? options : {}
+        // cookie domain 新标准已经取消了域名前面的.，   luexu.com 将会被视为 .luexu.com，可以匹配任何子域名
+        if (!options.domain) {
+            options.domain = location.hostname
+            const [d, ok] = AaURI.parseDomainUnsafe(options.domain)
+            if (ok) {
+                options.domain = d
+            }
+        }
+        if (typeof options.path === 'undefined') {
+            options.path = '/'
+        }
+        if (typeof options.secure === 'undefined') {
+            options.secure = location.protocol === "https"
+        }
+
+        // Lax 允许部分第三方跳转过来时请求携带Cookie；Strict 仅允许同站请求携带cookie
+        // 微信授权登录，跳转回来。如果是strict，就不会携带cookie（防止csrf攻击）；而lax就会携带。
+        // 在 Lax 模式下只会阻止在使用危险 HTTP 方法进行请求携带的三方 Cookie，例如 POST 方式。同时，使用 Js 脚本发起的请求也无法携带三方 Cookie。
+        // 谷歌默认 sameSite=Lax
+        if (typeof options.sameSite === 'undefined') {
+            options.sameSite = 'Lax'
+        }
+        if (typeof options.expires === 'number') {
+            options.expires = new Date(Date.now() + options.expires)  // 多少ms后过期
+        }
+        if (options.expires instanceof Date) {
+            options.expires = options.expires.toUTCString()
+        }
+        let s = ''
+        for (const [k, v] of Object.entries(options)) {
+            if (!v) {
+                continue
+            }
+            s += '; ' + k
+            if (v === true) {
+                continue
+            }
+            // Considers RFC 6265 section 5.2:
+            // ...
+            // 3.  If the remaining unparsed-attributes contains a %x3B (";")
+            //     character:
+            // Consume the characters of the unparsed-attributes up to,
+            // not including, the first %x3B (";") character.
+            // ...
+            s += '=' + v.split(';')[0]
+        }
+        key = encodeURIComponent(key)
+        document.cookie = key + '=' + encodeURIComponent(value) + s
     }
 }
 
