@@ -14,9 +14,9 @@ A Javascript SDK of AaGo
 
 ### prototype
 
-| prototype           | description     |
-|---------------------|-----------------|
-| String.replaceAll() |                 |
+| prototype           | description |
+|---------------------|-------------|
+| String.replaceAll() |             |
 
 ### type caster functions
 
@@ -74,11 +74,12 @@ A Javascript SDK of AaGo
 | asleep()       | Promise         | a promise sleep for a while                   |
 | defval()       | any except null | Return defined value                          |
 | eq()           | boolean         | equal or is empty                             |
+| forever()      |                 | run forever                                   |
 | len()          | number          | length of anything                            |
 | loge()         |                 | alias to new log().println()                  |
 | ne()           | boolean         | not equal or not empty                        |
 | not()          | boolean         | same to !something                            |
-| once()         |                 |                                               |
+| once()         |                 | retry until ready                             |
 | Round()        |                 |                                               |
 | RoundTrim()    |                 | Trim the tail                                 |
 | RoundAway()    |                 | Round away from the origin point              |

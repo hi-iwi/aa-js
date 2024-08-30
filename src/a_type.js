@@ -31,22 +31,40 @@ function ne(a, b) {
 }
 
 /**
- * Run recursively
+ * Retry until ready
  * @param {()=>boolean} ready
- * @param {()=>void} callback
+ * @param {()=>void} run
  * @param {Timeout} interval
  * @param {number} [retry]
  */
-function once(ready, callback, interval, retry = 5) {
+function once(ready, run, interval, retry) {
     if (!ready()) {
-        if (retry > 0) {
+        if (typeof retry === 'undefined') {
+            retry = Math.ceil(5 * time.Second / interval)
+        }
+        if (retry === Infinity || retry > 0) {
             setTimeout(() => {
-                once(ready, callback, interval, retry - 1)
+                once(ready, run, interval, retry === Infinity ? Infinity : retry - 1)
             }, interval)
         }
         return
     }
-    callback()
+    run()
+}
+
+/**
+ * Run forever
+ * @param {(i:number)=>any} run
+ * @param {Timeout} interval
+ * @param {number} [i]
+ */
+function forever(run, interval, i = 0) {
+    if (run(i) === BREAK) {
+        return
+    }
+    setTimeout(() => {
+        forever(run, interval, i + 1)
+    }, interval)
 }
 
 /**
