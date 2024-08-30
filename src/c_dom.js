@@ -162,4 +162,18 @@ class AaDOM {
         }
         return document.querySelector(selector)
     }
+
+    static removeClass(selector, ...patterns) {
+        selector = AaDOM.querySelector(selector)
+        if (!selector) {
+            return
+        }
+        selector.classList.forEach(className => {
+            patterns.map(pattern => {
+                if ((pattern instanceof RegExp && pattern.test(className)) || pattern === className) {
+                    selector.classList.remove(className)
+                }
+            })
+        })
+    }
 }

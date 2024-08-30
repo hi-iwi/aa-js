@@ -65,6 +65,7 @@ const aparam = {
 
 /**
  * 为了方便 log 类，debug状态一律用全局
+ * @warn 这里不能使用 loge() 或 log.xxx()
  */
 var _aaDebug = new (class {
     name = 'aa-debug'
@@ -121,7 +122,6 @@ var _aaDebug = new (class {
 
         // C类局域网IP
         return /^192\.168\.\d+\.\d+$/.test(h);
-
     }
 
     loadStorage() {
@@ -140,16 +140,17 @@ var _aaDebug = new (class {
         if (!localStorage) {
             return
         }
-        const value = this.value + " |" + atype.aliasOf(this.value).toUpperCase()   // add |N to make this storage persistent
+        //@warn 这里是基础函数，不要使用 atype.aliasOf(this.value).toUpperCase()
+        const value = this.value + " |N"  // add |N to make this storage persistent
         localStorage.setItem(this.#storageKeyname, value)
     }
 
-   
+
     #parseValue(value) {
         if (!value) {
             return this.#disabled
         }
-        value = string(value).toUpperCase()
+        value = ('' + value).toUpperCase()
         if (['1', 'TRUE'].includes(value)) {
             return this.#console
         }
