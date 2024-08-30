@@ -86,6 +86,30 @@ class arrays {
     }
 
     /**
+     * Create an array with n elements
+     * @template T
+     * @param {number} n
+     * @param {T} startValue
+     * @param {(prev:T,i:number)=>T} [nextValueHandler]
+     * @return {T[]}
+     */
+    static fill(n, startValue, nextValueHandler) {
+        if (!n) {
+            return []
+        }
+        let arr = [startValue]
+        for (let i = 1; i < n; i++) {
+            if (!nextValueHandler) {
+                arr.push(startValue)
+            } else {
+                startValue = nextValueHandler(startValue, i)
+                arr.push(startValue)
+            }
+        }
+        return arr
+    }
+
+    /**
      * Range from start to end
      * @param {number} start
      * @param {number} end
