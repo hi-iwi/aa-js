@@ -20,7 +20,7 @@ class AaEditor {
 
     classWhitelist = [/^e-/]
     styleWhitelist = ['background', 'background-color', 'color', 'zoom']
-    textAlignWhitelist = ['center', 'justify', 'right']
+    textAlignWhitelist = ['center', 'right']  // justify 为默认；
     inlineElements = ['B', 'DEL', 'EM', 'I', 'PRIVACY', 'S', 'SPAN', 'STRONG', 'SUB', 'SUP', 'U']
     emptyableElements = ['DD', 'DT', 'P', 'TD']
     srcElements = ['AUDIO', 'IMG', 'VIDEO']
@@ -139,7 +139,7 @@ class AaEditor {
             return ''
         }
         content = this.formatContent(content, srcComposers, true)
-        return content ? content.innerHTML : ''
+        return content ? content.innerHTML.trim("<p></p>") : ''
     }
 
     /**
@@ -344,10 +344,12 @@ class AaEditor {
         }
 
         let align = styles['text-align'] ? styles['text-align'] : node.getAttribute('align')
+        node.classList.remove("e-align-left", "e-align-justify", "e-align-center", "e-align-right")
+        node.removeAttribute('align')
         if (align && this.textAlignWhitelist.includes(align)) {
             node.classList.add('e-align-' + align)
         }
-        node.removeAttribute('align')
+
         let remove = []
         for (const [name,] of Object.entries(styles)) {
             if (!arrays.contains(this.styleWhitelist, name)) {
