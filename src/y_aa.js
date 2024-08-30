@@ -1,8 +1,9 @@
-
 class Aa {
     name = 'aa'
     /** @type {typeof AaDOM} */
     dom = AaDOM
+
+    paths=AaPath
 
     /** @type {typeof AaHack} */
     hack = AaHack
@@ -129,6 +130,9 @@ class Aa {
         return new AaMultiLevelSelects(...arguments)
     }
 
+    path(path){
+        return new AaPath(path)
+    }
     /**
      *
      * @param {string} url

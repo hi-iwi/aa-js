@@ -78,6 +78,7 @@ A Javascript SDK of AaGo
 | loge()         |                 | alias to new log().println()                  |
 | ne()           | boolean         | not equal or not empty                        |
 | not()          | boolean         | same to !something                            |
+| once()         |                 |                                               |
 | Round()        |                 |                                               |
 | RoundTrim()    |                 | Trim the tail                                 |
 | RoundAway()    |                 | Round away from the origin point              |

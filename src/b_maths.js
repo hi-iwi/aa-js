@@ -23,7 +23,7 @@ class maths {
         keys.sort() // Ascending order 字符串和数字都一样能排序
         value = number(value)
 
-        const key = mathn.closest(keys, symbol, value)
+        const key = math.closest(keys, symbol, value)
         if (typeof key !== "undefined") {
             return maths.pixel(settings[key])
         }

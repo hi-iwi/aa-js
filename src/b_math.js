@@ -1,7 +1,7 @@
 /**
  * Normal Mathematics
  */
-class mathn {
+class math {
     name = 'aa-mathn'
 
     static Wan = 10000 // 万
@@ -9,6 +9,10 @@ class mathn {
 
     static Million = 1000000 // 100万
     static Billion = 1000000000 // 10亿
+
+    static KB = 1024
+    static MB = 1024 * 1024
+    static GB = 1024 * 1024 * 1024
 
     static ComparisonSymbols = ['>', '<', '=', '==', '>=', '<=']
 
@@ -26,6 +30,7 @@ class mathn {
      * @return {number}
      */
     static closest(values, symbol, value) {
+
         values.sort() // Ascending order 字符串和数字都一样能排序
         value = Number(value)
         const s1 = symbol[0]

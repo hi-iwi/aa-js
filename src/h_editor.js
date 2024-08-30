@@ -236,7 +236,8 @@ class AaEditor {
      * @return {boolean}
      */
     isWhiteAttribute(tagName, attr, beforeSubmit) {
-        if (['initial'].includes(attr.value)) {
+        // e.g. rgb()
+        if (/(initial|[()])/i.test(attr.value)) {
             return false
         }
         const w = this.submittableAttributeWhitelist
@@ -324,6 +325,7 @@ class AaEditor {
 
     #cleanClassList(node) {
         if (node.classList.length > 0) {
+            node.classList.remove("e-align-left", "e-align-justify")
             node.classList.forEach(c => {
                 if (!arrays.contains(this.classWhitelist, c)) {
                     node.classList.remove(c)
@@ -338,16 +340,17 @@ class AaEditor {
 
     #cleanAttrStyle(node) {
         const styles = AaDOM.parseStyleAttr(node)   // must from attribute, not node.style
-        if (!styles) {
-            node.removeAttribute('style')
-            return
-        }
 
-        let align = styles['text-align'] ? styles['text-align'] : node.getAttribute('align')
+        let align = styles && styles['text-align'] ? styles['text-align'] : node.getAttribute('align')
         node.classList.remove("e-align-left", "e-align-justify", "e-align-center", "e-align-right")
         node.removeAttribute('align')
         if (align && this.textAlignWhitelist.includes(align)) {
             node.classList.add('e-align-' + align)
+        }
+
+        if (!styles) {
+            node.removeAttribute('style')
+            return
         }
 
         let remove = []
@@ -379,9 +382,15 @@ class AaEditor {
             return node
         }
 
-        this.#cleanAttrs(node, beforeSubmit)
-        this.#cleanClassList(node)
-        return this.#cleanHtmlTag(node)
+        if (/^H\d$/.test(node.tagName)) {
+            for (const attr of node.attributes) {
+                node.removeAttribute(attr.name)
+            }
+        } else {
+            this.#cleanAttrs(node, beforeSubmit)
+            this.#cleanClassList(node)
+            return this.#cleanHtmlTag(node)
+        }
     }
 
     /**

@@ -31,6 +31,25 @@ function ne(a, b) {
 }
 
 /**
+ * Run recursively
+ * @param {()=>boolean} ready
+ * @param {()=>void} callback
+ * @param {Timeout} interval
+ * @param {number} [retry]
+ */
+function once(ready, callback, interval, retry = 5) {
+    if (!ready()) {
+        if (retry > 0) {
+            setTimeout(() => {
+                once(ready, callback, interval, retry - 1)
+            }, interval)
+        }
+        return
+    }
+    callback()
+}
+
+/**
  * Try call the method if the method is a function
  * @param method
  * @param args

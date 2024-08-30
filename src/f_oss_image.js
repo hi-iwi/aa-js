@@ -47,10 +47,17 @@ class AaImgSrc extends AaSrc {
         }
     }
 
-    getMultipleFile(file) {
+    getMultipleFile() {
         return this.#multipleFile
     }
 
+    /**
+     *
+     * @param {number} [width]
+     * @param {number} [height]
+     * @param {boolean} [real]
+     * @return {Base64|Path|void}
+     */
     getThumbnail(width, height, real = false) {
         if (this.#thumbnail) {
             return this.#thumbnail
@@ -308,7 +315,7 @@ class AaImgSrc extends AaSrc {
      * @return {{path: (string|*), filetype: number, size: number, width: number, height: number}}
      */
     static parsePath(path) {
-        const p = new paths(path)
+        const p = new AaPath(path)
         let width = 0, size = 0, height = 0
         const a = p.filename.split('_')
         if (len(a) > 1 && len(a[0]) > 32 && len(a[1]) > 0) {

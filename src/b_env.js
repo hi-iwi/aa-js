@@ -1,4 +1,3 @@
-
 class AaEnv {
     name = 'aa-environment'
 
@@ -20,7 +19,7 @@ class AaEnv {
     }
 
     static isDebug() {
-        return _aaDebug
+        return !_aaDebug.disabled()
     }
 
     static isEdge() {

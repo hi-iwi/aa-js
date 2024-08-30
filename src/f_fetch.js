@@ -79,7 +79,6 @@ class AaFetch {
     fetch(url, settings) {
         settings = map.fillUp(settings, this.#defaultSettingsExt)
         const response = this.#rawFetch.fetch(url, settings, this.fetchHook.bind(this))
-
         return response.then(data => data).catch(err => {
             err = aerror(err)
             if (this.enableRedirect && err.isRetryWith()) {
@@ -284,6 +283,58 @@ class AaFetch {
      */
     deleteNA(url, params, dict) {
         return this.deleteA(url, params, dict).catch(AError.alert)
+    }
+
+    /**
+     * Detect url resource ready
+     * @param {string} url
+     * @param {(string)=>void} onReady
+     * @param {number} [retry]
+     * @param {number} [size]
+     * @param {number} [retryInterval]
+     */
+    detect(url, onReady, size, retry, retryInterval) {
+        if (!retryInterval) {
+            if (size > 10 * math.MB) {
+                retryInterval = 8 * time.Second
+            } else if (size > math.MB) {
+                retryInterval = (Math.floor(size / (2 * math.MB)) + 3) * time.Second
+            } else if (size > 300 * math.KB) {
+                retryInterval = 2 * time.Second
+            } else if (size > 0) {
+                retryInterval = time.Second
+            } else {
+                const ext = AaPath.ext()
+                if ([".avi", ".mov", ".mp4", ".mpeg", ".3gp", ".3g2", ".wav", ".webm"].includes(ext)) {
+                    // video
+                    retryInterval = 8 * time.Second
+                } else if ([".aiff", ".3gp", ".3g2", ".webm", ".wav", ".mp3"].includes(ext)) {
+                    // audio
+                    retryInterval = 3 * time.Second
+                } else if ([".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".gif", ".heic", ".jpg", ".png", ".webp"].includes(ext)) {
+                    // pdf/doc/image about 200KB~800KB
+                    retryInterval = 2 * time.Second
+                } else {
+                    retryInterval = time.Second
+                }
+            }
+        }
+
+
+        fetch(url, {method: "HEAD"}).then(res => {
+            if (!res.ok) {
+                throw new Error(`fetch url http code: ${res.status}`)
+            }
+            onReady(url)
+        }).catch(err => {
+            log.error(`detect ${url}`, err)
+            if (!retry) {
+                return
+            }
+            setTimeout(() => {
+                this.detect(url, onReady, retry - 1, retryInterval * 2)
+            }, retryInterval)
+        })
     }
 
     /**

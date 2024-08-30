@@ -1,4 +1,4 @@
-class paths {
+class AaPath {
     name = 'aa-path'
     /** @proprerty {string} the directory of the, e.g. /a/b */
     dir
@@ -67,7 +67,7 @@ class paths {
             }
 
         }
-        const ext = paths.ext(base)
+        const ext = AaPath.ext(base)
         const filename = base.trimEnd(ext, 1)
         this.base = base
         this.dir = dir
@@ -83,9 +83,6 @@ class paths {
         this.init(path)
     }
 
-    static new(path) {
-        return new paths(path)
-    }
 
     // Report whether the path is absolute
     isAbs() {
@@ -117,7 +114,7 @@ class paths {
      *  .clean("../a//b/c/d/e/../../../f/.//./g/.//.///./../.././i/./../.")  ===> ../a/b
      */
     static clean(path) {
-        return new paths(path).toString()
+        return new AaPath(path).toString()
     }
 
     /**

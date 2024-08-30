@@ -420,7 +420,7 @@ class AaURI {
         if (s.indexOf('/') === 0) {
             return location.origin + s
         }
-        let pathname = paths.join(new paths(location.pathname).dir, s)
+        let pathname = AaPath.join(new AaPath(location.pathname).dir, s)
         return location.origin + pathname
     }
 
@@ -486,7 +486,7 @@ class AaURI {
         if (args.length === 0) {
             return base
         }
-        let path = paths.join(...args)
+        let path = AaPath.join(...args)
         const a = base.slice(-1)
         const b = path.slice(0, 1)
         if (a === '/' && b === '/') {
