@@ -12,8 +12,6 @@ String.prototype.cut = function (separator) {
     return [this, "", false]
 }
 
-
-
 /**
  * Joins strings, inserting a blank string between each
  * @param {any} args

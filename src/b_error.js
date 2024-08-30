@@ -184,7 +184,7 @@ class AError extends Error {
     name = "AError"
 
     /** @type {(err:AError)=>void} */
-    static alerter
+    static alertHandler = err => alert(err.toString())
 
     #code
     message // 原始数据。部分错误会把msg当作有效信息。比如 449 RetryWith 会通过该数据传递跳转URL等
@@ -397,11 +397,7 @@ class AError extends Error {
         if (!(err instanceof AError)) {
             console.error(`AError.alert() invalid err `, err)
         }
-        if (typeof AError.alerter !== "function") {
-            console.error(`${this.toString()} [AError.alerter is not defined]`)
-            return
-        }
-        AError.alerter(err)
+        AError.alertHandler(err)
     }
 
 

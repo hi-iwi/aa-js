@@ -36,24 +36,15 @@ class log {
     name = 'aa-log'
 
     /** @type {(s:string)=>void} */
-    static alertEffect = s => console.log(s)
+    static alertHandler = s => alert(s)
     static _breakpointIncr = 0
-
-
-    /**
-     *
-     * @param {(s:string)=>void} effect
-     */
-    static setAlertEffect(effect) {
-        log.alertEffect = effect
-    }
 
     static alert(...args) {
         let s = ''
         for (let i = 0; i < args.length; i++) {
             s += args[i] + ' '
         }
-        log.alertEffect(s)
+        log.alertHandler(s)
     }
 
     static breakpoint(...args) {

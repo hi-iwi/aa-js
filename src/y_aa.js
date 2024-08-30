@@ -1,37 +1,30 @@
 class Aa {
     name = 'aa'
-    /** @type {typeof AaDOM} */
+
     dom = AaDOM
-
-    paths=AaPath
-
-    /** @type {typeof AaHack} */
+    env = AaEnv
     hack = AaHack
+    paths = AaPath
+    uri = AaURI
+    validator = AaValidator
 
     /** @type {AaRegistry} */
     registry
 
+    /** @type {AaScrollEvent} */
     scrollEvent
 
     /** @type {AaStorageFactor} */
     storage
+
+    /** @type {AaCache} */
     cache
+
     /** @type {AaCache} */
     db
 
-
-    /** @type {typeof AaURI} */
-    uri = AaURI
-    /** @type {typeof AaValidator} */
-    validator = AaValidator
-
-    /** @type {AaEnv} */
-    env = AaEnv
-
-
     /** @type {AaAuth} */
     auth
-
 
     /** @type {AaFetch} */
     fetch
@@ -47,6 +40,7 @@ class Aa {
 
     /** @type {AaEditor} */
     editor
+
 
     constructor() {
         const registry = new AaRegistry()
@@ -85,6 +79,7 @@ class Aa {
     archive(tableName, db, pattern, options) {
         return new AaArchive(...arguments)
     }
+
 
     compare(a, b) {
         if (!(a && b)) {
@@ -130,9 +125,10 @@ class Aa {
         return new AaMultiLevelSelects(...arguments)
     }
 
-    path(path){
+    path(path) {
         return new AaPath(path)
     }
+
     /**
      *
      * @param {string} url

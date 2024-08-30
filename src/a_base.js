@@ -79,16 +79,31 @@ var _aaDebug = new (class {
         // check query string
         const match = location.search.match(new RegExp("[?&]" + aparam.Debug + "=(\\w+)", 'i'))
         if (match) {
-            this.init(match[1], true)
+            this.value = this.#parseValue(match[1])
+            this.store()
             return
         }
 
-        const [_, ok] = this.loadStorage()
+        const [value, ok] = this.loadStorage()
         if (ok) {
+            this.value = value
             return
         }
         this.value = this.isLocalhost() ? this.#console : this.#disabled
     }
+
+    disabled() {
+        return this.value === this.#disabled
+    }
+
+    isAlert() {
+        return this.value === this.#alert
+    }
+
+    isConsole() {
+        return this.value === this.#console
+    }
+
 
     isLocalhost() {
         const h = location.hostname.toLowerCase()
@@ -109,22 +124,17 @@ var _aaDebug = new (class {
 
     }
 
-    init(type, store = false) {
-        type = string(type).toUpperCase()
-        if (['1', 'TRUE'].includes(type)) {
-            this.value = this.#console
+    loadStorage() {
+        if (!localStorage) {
+            return
         }
-        if (['2', 'ALERT'].includes(type)) {
-            this.value = this.#alert
+        let value = localStorage.getItem(this.#storageKeyname)
+        if (!value) {
+            return [0, false]
         }
-        if (!['0', 'FALSE', 'DISABLED'].includes(type)) {
-            console.error("RangeError: set debug error " + type)
-        } else if (store) {
-            this.store()
-        }
-        this.value = this.#disabled
+        value = this.#parseValue(value.split(" |")[0])
+        return [value, true]
     }
-
 
     store() {
         if (!localStorage) {
@@ -134,30 +144,20 @@ var _aaDebug = new (class {
         localStorage.setItem(this.#storageKeyname, value)
     }
 
-    loadStorage() {
-        if (!localStorage) {
-            return
+   
+    #parseValue(value) {
+        if (!value) {
+            return this.#disabled
         }
-        const sk = localStorage.getItem(this.#storageKeyname)
-        const value = sk ? Number(sk.replace(/^\d/g, '')) : 0
-        const ok = isNaN(value) || ![0, 1, 2].includes(value)
-        return [value, ok]
+        value = string(value).toUpperCase()
+        if (['1', 'TRUE'].includes(value)) {
+            return this.#console
+        }
+        if (['2', 'ALERT'].includes(value)) {
+            return this.#alert
+        }
+        return this.#disabled
     }
 
-    disabled() {
-        return this.value === this.#disabled
-    }
-
-    isConsole() {
-        return this.value === this.#console
-    }
-
-    isAlert() {
-        return this.value === this.#alert
-    }
-
-    toValue() {
-        return this.value
-    }
 })()
 
