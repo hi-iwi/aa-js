@@ -130,11 +130,7 @@ class AaCookieStorage {
      * @see https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
      */
     setItem(key, value, options) {
-        if (!this.available()) {
-            return
-        }
-        if (!key || ["expires", "max-age", "path", "domain", "secure"].includes(key.toLowerCase())) {
-            log.error(`invalid cookie key "${key}"`)
+        if (!this.available() || !key) {
             return
         }
         options = options ? options : {}
