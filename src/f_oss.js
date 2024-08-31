@@ -90,11 +90,10 @@ class AaOSS {
     }
 
     /**
-     *
-     * @param {ImgSrcStruct|AaImgSrc} [data]
+     * @param {ImgSrcStruct|AaImgSrc|Path|*} [data]
      * @param {Base64|Path} [thumbnail]
      * @param {File} [multipleFile]
-     * @return {?AaImgSrc}
+     * @note 由于 construct 返回null是无效的，这里对无效的直接返回null
      */
     imgSrc(data, thumbnail, multipleFile) {
         if (data instanceof AaImgSrc) {

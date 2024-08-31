@@ -481,7 +481,7 @@ class AaURI {
             base = location.protocol + base
         }
         if (base.indexOf("://") < 0) {
-            base = location.origin + '/' + base
+            base = location.origin + (base.substring(0, 1) === '/' ? '' : '/') + base
         }
         if (args.length === 0) {
             return base

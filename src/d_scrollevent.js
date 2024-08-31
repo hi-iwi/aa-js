@@ -1,7 +1,3 @@
-/** @typedef {function(scrollTop, prevScrollTop, autoScroll:bool)} Condition */
-/** @typedef {function(scrollTop, prevScrollTop, autoScroll:bool)} Trigger */
-/** @typedef {{condition: Condition|null, trigger: Trigger, pause: boolean}} Event */
-
 class AaScrollEvent {
     /** @type {Map} */
     #events
@@ -47,8 +43,8 @@ class AaScrollEvent {
     /**
      * Register a scroll event
      * @param name
-     * @param {?Condition} [condition]
-     * @param {Trigger} trigger
+     * @param {?{function(scrollTop, prevScrollTop, autoScroll:bool)}} [condition]
+     * @param {function(scrollTop, prevScrollTop, autoScroll:bool)} trigger
      * @param {boolean} [pause]
      */
     register(name, condition, trigger, pause) {
@@ -104,8 +100,7 @@ class AaScrollEvent {
         const isAuto = this.isAuto(scrollTop, prevScrollTop)
         let e = {}
 
-        //@param {Event} event
-        this.#events.forEach((event, name) => {
+         this.#events.forEach((event, name) => {
             if (event.pause) {
                 return CONTINUE
             }

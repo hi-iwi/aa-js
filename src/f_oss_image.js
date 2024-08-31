@@ -87,7 +87,6 @@ class AaImgSrc extends AaSrc {
      * @param {File} [multipleFile]
      * @note 由于 construct 返回null是无效的，这里对无效的直接返回null
      */
-
     constructor(data, thumbnail, multipleFile) {
         super()
         map.overwrite(this, data, key => {
