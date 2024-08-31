@@ -35,7 +35,7 @@ class Decimal {
      * @param {vv_vk_defaultV} [args]
      */
     constructor(...args) {
-        this.value = Math.floor(number(...args))
+        this.value = this.rounder(number(...args))
     }
 
 
@@ -108,16 +108,16 @@ class Decimal {
      */
     multiply(n) {
         panic.errorType(n, Decimal)
-        // money * decimal ==> money, decimal * decimal ==> decimal
+        // @T*Decimal => @T; @T*Percent => @T
         if (n.group === 'decimal') {
-            this.value = this.rounder(this.value * n.toReal())
+            this.value = this.rounder(this.value * n.units / n.value)
             return this
         }
 
-        // decimal * money ==> money
+        // @Decimal*T => T; @Percent*T => T
         if (this.group === 'decimal') {
             const newN = n.clone()
-            newN.value = newN.rounder(newN.value * this.toReal())
+            newN.value = newN.rounder(newN.value * this.units / this.value)
             return newN
         }
 
@@ -126,28 +126,30 @@ class Decimal {
 
 
     /**
-     * @template T
-     * @param {T} n
-     * @return {this|T}
+     * @param {DecimalT} n
+     * @return {this|Decimal}
      * @throws {TypeError}
      */
     divide(n) {
         panic.errorType(n, Decimal)
-        if(n.value ===0){
+        if (n.value === 0) {
             throw new TypeError(`0 cannot be a dividend`)
         }
 
-        // money / decimal ==> money, decimal / decimal ==> decimal
+        // @T/Decimal => @T; @T/Percent => @T
         if (n.group === 'decimal') {
-            this.value = this.rounder(this.value / n.toReal())
+            // (this.toReal() / n.toReal()) * this.units = ((this.value/this.units) / (n.value/n.units)) * this.units
+            this.value = this.rounder(this.value * n.units / n.value)
             return this
         }
-        // decimal /decimal ==> decimal, money / money ===> decimal
+
+        // @Money/Money => Decimal; @VMoney/VMoney => Decimal
         if (n.constructor === this.constructor) {
-            return decimal(this.value * Decimal.Units / n.valueOf())
+            return decimal(this.value * Decimal.Units / n.value)
         }
+        // @Money/VMoney => Decimal; @VMoney/Money => Decimal
         if (n.group === this.group) {
-            return decimal(this.toReal() * Decimal.Units / n.toReal())
+            return decimal(this.value * n.units * Decimal.Units / (n.value * this.units))
         }
 
         throw new TypeError(`${this.constructor.name} div ${n.constructor.name} is not allowed`)
@@ -155,9 +157,8 @@ class Decimal {
 
 
     /**
-     * @template T
-     * @param {T} n
-     * @return {T|Decimal}
+     * @param {DecimalT} n
+     * @return {this|Decimal}
      * @throws {TypeError}
      */
     beDivided(n) {
@@ -165,20 +166,23 @@ class Decimal {
         if (this.value === 0) {
             throw new RangeError(`0 cannot be a dividend`)
         }
-        // money / [decimal] ==> money, decimal / [decimal] ==> decimal
+        // T/@Decimal => T; T/@Percent => T
         if (this.group === 'decimal') {
-            let newN = n.clone()
-            newN.value = this.rounder(newN.value / this.toReal())
-            return newN
+            // Decimal/@Decimal => @Decimal; Percent/@Decimal => @Decimal
+            if (n.group !== 'decimal') {
+                // (n.toReal() / this.toReal()) * this.units = ((n.value/n.units) / (this.value/this.units)) * this.units
+                this.value = this.rounder(n.value * this.units * this.units / (this.value * n.units))
+                return this
+            }
+            return n.clone().divide(this)
         }
-        // decimal /decimal ==> decimal, money / money ===> decimal
+        // Money/@Money => Decimal; VMoney/@VMoney => Decimal
         if (n.constructor === this.constructor) {
-            return decimal(n.valueOf() * Decimal.Units / this.value)
+            return decimal(n.value * Decimal.Units / this.value)
         }
         if (n.group === this.group) {
-            return decimal(n.toReal() * Decimal.Units / this.toReal())
+            return decimal(n.value * this.units * Decimal.Units / (this.value * n.units))
         }
-
         throw new TypeError(`${this.constructor.name} div ${n.constructor.name} is not allowed`)
     }
 
@@ -344,15 +348,63 @@ class Decimal {
     }
 
     /**
-     * Divide two numbers and convert its result to DecimalT
-     * @param {number} a
-     * @param {number} b
+     * Convert the remainder of division of multiple real numbers to DecimalT
+     * @param {number} dividend
+     * @param {number} divisors
      * @return {this}
      */
-    static div(a, b) {
+    static divideReal(dividend, ...divisors) {
         const self = this  // 使用 this （不能用 this.constructor()). 可以传递到子类
-        const units = self.Units
-        return new self(a * units / b) // 使用 this （不能用 this.constructor()). 可以传递到子类
+        let v = dividend * self.Units
+        divisors.map(d => {
+            v /= d
+        })
+        return new self(v)
+    }
+
+    /**
+     * Convert the difference of multiple real numbers to DecimalT
+     * @param {number} minuend
+     * @param {number} subtrahends
+     * @return {Decimal}
+     */
+    static minusReal(minuend, ...subtrahends) {
+        const self = this  // 使用 this （不能用 this.constructor()). 可以传递到子类
+        let v = minuend
+        subtrahends.map(d => {
+            v -= d
+        })
+        return new self(v * self.Units)
+    }
+
+    /**
+     * Convert the product of multiple real numbers to DecimalT
+     * @param {number} multiplicand
+     * @param {number} multipliers
+     * @return {this}
+     */
+    static multiplyReal(multiplicand, ...multipliers) {
+        const self = this  // 使用 this （不能用 this.constructor()). 可以传递到子类
+        let v = multiplicand * self.Units
+        multipliers.map(m => {
+            v *= m
+        })
+        return new self(v)
+    }
+
+    /**
+     * Convert the sum of multiple real numbers to Decimal
+     * @param {number} addend
+     * @param {number} adders
+     * @return {this}
+     */
+    static plusReal(addend, ...adders) {
+        const self = this  // 使用 this （不能用 this.constructor()). 可以传递到子类
+        let v = addend
+        adders.map(d => {
+            v += d
+        })
+        return new self(v * self.Units)
     }
 
     /**
@@ -400,11 +452,11 @@ class Decimal {
     }
 
     /**
-     *
+     * Convert real number to DecimalT
      * @param {number} num
      * @return {this}
      */
-    static Int(num) {
+    static real(num) {
         const self = this  // 使用 this （不能用 this.constructor()). 可以传递到子类
         const units = self.Units
         return new self(num * units)
@@ -416,7 +468,8 @@ class Decimal {
      * @note compatible with this.serialize()
      */
     static unserialize(str) {
-        return new this.constructor(int54(str))  // 使用 this.constructor(). 可以传递到子类
+        const self = this  // 使用 this （不能用 this.constructor()). 可以传递到子类
+        return new self(int54(str))  // 使用 this.constructor(). 可以传递到子类
     }
 }
 

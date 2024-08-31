@@ -105,7 +105,7 @@ class AaImgSrc extends AaSrc {
      * @return {Decimal}
      */
     ratio() {
-        return this.height ? Decimal.div(this.width, this.height) : decimal(0)
+        return this.height ? Decimal.divideReal(this.width, this.height) : decimal(0)
     }
 
     /**
@@ -186,7 +186,7 @@ class AaImgSrc extends AaSrc {
         if (!this.origin) {
             return this.resize(this.width, this.height)
         }
-        const ratio = Decimal.div(this.width, this.height)
+        const ratio = Decimal.divideReal(this.width, this.height)
         return {
             height        : this.height,
             width         : this.width,
@@ -208,16 +208,16 @@ class AaImgSrc extends AaSrc {
      */
     #fillAllowedSize(width, height, imageWidth, imageHeight) {
         if (width > 0 && height > 0 && imageWidth > 0 && imageHeight > 0) {
-            let ratio = Decimal.div(imageHeight, imageWidth)
+            let ratio = Decimal.divideReal(imageHeight, imageWidth)
             return {width, height, ratio, imageWidth: imageWidth, imageHeight: imageHeight,}
         }
 
          let ratio = this.ratio()
         if (ratio.value === 0 && imageHeight) {
-            ratio = Decimal.div(imageWidth, imageHeight)
+            ratio = Decimal.divideReal(imageWidth, imageHeight)
         }
         if (ratio.value === 0 && height) {
-            ratio = Decimal.div(width, height)
+            ratio = Decimal.divideReal(width, height)
         }
         if (ratio.value === 0) {
             log.error(`invalid image size ${width} ${height}`)
