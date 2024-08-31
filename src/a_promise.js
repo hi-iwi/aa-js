@@ -33,9 +33,4 @@ function APromiseReject(err) {
     })
 }
 
-/**
- * 既不会执行then，也不会抛出异常
- * @return {Promise<void>}
- * @constructor
- */
-const nip = new Promise(nif)
+

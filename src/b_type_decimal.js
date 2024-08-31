@@ -1,5 +1,10 @@
 /** @typedef {number|{segmentSize?: number, scale?: number, separator?: string, trimScale?: boolean, scaleRound?: "floor"|"round"|"ceil"}} DecimalFormatSettings */
 
+/** @typedef {Decimal|Money|Percent|VMoney} DecimalT */
+/**
+ * @class
+ * @template T
+ */
 class Decimal {
     name = 'aa-decimal'
 
@@ -26,7 +31,6 @@ class Decimal {
     rounder = Decimal.Rounder   // 取整方式 ceil -> round up;  floor -> round down
 
 
-
     /**
      * @param {vv_vk_defaultV} [args]
      */
@@ -38,35 +42,32 @@ class Decimal {
     /**
      * Set rounder for this instance
      * @param {function} rounder
-     * @return {Decimal}
+     * @return {this}
      */
     setRounder(rounder) {
         this.rounder = rounder
         return this
     }
 
-
-    clone() {
+    /**
+     * @param {number} [value]
+     * @return {T}
+     */
+    clone(value) {
+        value = value ? Number(value) : this.value
         const self = this.constructor  // 使用 this.constructor(). 可以传递到子类
-        return new self(this.value).setRounder(this.rounder)
+        return new self(value).setRounder(this.rounder)
     }
 
 
     /**
-     * @param {Decimal|number} n
-     * @return {Decimal}
+     * @param {DecimalT} n
+     * @return {this}
+     * @throws {TypeError}
      */
     plus(n) {
-        if (typeof n === "number") {
-            this.value = this.rounder(this.value + n)
-            return this
-        }
-
-        if (!(n instanceof Decimal)) {
-            throw new TypeError(`${this.name} plus ${n} is invalid`)
-        }
-
-        if (n.name === this.name) {
+        panic.errorType(n, this.constructor)
+        if (n.constructor === this.constructor) {
             this.value += n.valueOf()
             return this
         }
@@ -75,24 +76,18 @@ class Decimal {
             return this
         }
 
-        throw new TypeError(`${this.name} plus ${n.name} is not allowed`)
+        throw new TypeError(`${this.constructor.name} plus ${n.constructor.name} is not allowed`)
     }
 
-    plusUnitsX(n) {
-        return this.plus(n * this.units)
-    }
 
     /**
-     * @param {Decimal|number} n
-     * @return {Decimal}
+     * @param {DecimalT} n
+     * @return {this}
+     * @throws {TypeError}
      */
     minus(n) {
-        if (typeof n === "number") {
-            this.value = this.rounder(this.value - n)
-            return this
-        }
-
-        if (n.name === this.name) {
+        panic.errorType(n, this.constructor)
+        if (n.constructor === this.constructor) {
             this.value -= n.valueOf()
             return this
         }
@@ -101,24 +96,18 @@ class Decimal {
             return this
         }
 
-        throw new TypeError(`${this.name} minus ${n.name} is not allowed`)
+        throw new TypeError(`${this.constructor.name} minus ${n.constructor.name} is not allowed`)
     }
 
-    minusUnitsX(n) {
-        return this.minus(n * this.units)
-    }
 
     /**
-     * @param {Decimal|number} n
-     * @return {Decimal}
+     * @template T
+     * @param {T} n
+     * @return {this|T}
+     * @throws {TypeError}
      */
     multiply(n) {
-        if (typeof n === "number") {
-            this.value = this.rounder(this.value * n / this.units)
-            return this
-        }
-
-
+        panic.errorType(n, Decimal)
         // money * decimal ==> money, decimal * decimal ==> decimal
         if (n.group === 'decimal') {
             this.value = this.rounder(this.value * n.toReal())
@@ -132,78 +121,85 @@ class Decimal {
             return newN
         }
 
-        throw new TypeError(`${this.name} multiply ${n.name} is not allowed`)
+        throw new TypeError(`${this.constructor.name} multiply ${n.constructor.name} is not allowed`)
     }
 
-    multiplyUnitsX(n) {
-        return this.multiply(n * this.units)
-    }
 
     /**
-     * @param {Decimal|number} n
-     * @return {Decimal}
+     * @template T
+     * @param {T} n
+     * @return {this|T}
+     * @throws {TypeError}
      */
     divide(n) {
-        if (n === 0) {
-            throw new RangeError(`zero can't be a dividend`)
+        panic.errorType(n, Decimal)
+        if(n.value ===0){
+            throw new TypeError(`0 cannot be a dividend`)
         }
-
-        if (typeof n === "number") {
-            this.value = this.rounder(this.value * this.units / n)
-            return this
-        }
-
 
         // money / decimal ==> money, decimal / decimal ==> decimal
         if (n.group === 'decimal') {
             this.value = this.rounder(this.value / n.toReal())
             return this
         }
-        // decimal /decimal ==> decimal, money / money ===> money
-        if (n.name === this.name) {
+        // decimal /decimal ==> decimal, money / money ===> decimal
+        if (n.constructor === this.constructor) {
             return decimal(this.value * Decimal.Units / n.valueOf())
         }
         if (n.group === this.group) {
             return decimal(this.toReal() * Decimal.Units / n.toReal())
         }
 
-        throw new TypeError(`${this.name} div ${n.name} is not allowed`)
+        throw new TypeError(`${this.constructor.name} div ${n.constructor.name} is not allowed`)
     }
 
-    divideUnitsX(n) {
-        return this.divide(n * this.units)
-    }
 
     /**
-     * @param {Decimal|number} n
-     * @return {Decimal}
+     * @template T
+     * @param {T} n
+     * @return {T|Decimal}
+     * @throws {TypeError}
      */
     beDivided(n) {
+        panic.errorType(n, Decimal)
         if (this.value === 0) {
-            throw new RangeError(`${n}/0 zero can't be a dividend`)
+            throw new RangeError(`0 cannot be a dividend`)
         }
-
-        if (typeof n === "number") {
-            n *= this.units
-            this.value = this.rounder(n / this.value)
-            return this
-        }
-
         // money / [decimal] ==> money, decimal / [decimal] ==> decimal
         if (this.group === 'decimal') {
             let newN = n.clone()
             newN.value = this.rounder(newN.value / this.toReal())
-            return this
+            return newN
         }
-        // decimal /decimal ==> decimal, money / money ===> money
-        if (n.name === this.name) {
+        // decimal /decimal ==> decimal, money / money ===> decimal
+        if (n.constructor === this.constructor) {
             return decimal(n.valueOf() * Decimal.Units / this.value)
         }
         if (n.group === this.group) {
             return decimal(n.toReal() * Decimal.Units / this.toReal())
         }
 
-        throw new TypeError(`${this.name} div ${n.name} is not allowed`)
+        throw new TypeError(`${this.constructor.name} div ${n.constructor.name} is not allowed`)
+    }
+
+    beDividedInt(n) {
+        return this.beDivided(this.clone(n * this.units))
+    }
+
+    divideInt(n) {
+        return this.divide(this.clone(n * this.units))
+    }
+
+    multiplyInt(n) {
+        return this.multiply(this.clone(n * this.units))
+    }
+
+    minusInt(n) {
+        return this.minus(this.clone(n * this.units))
+    }
+
+    plusInt(n) {
+        return this.plus(this.clone(n * this.units))
     }
 
     // 精度
@@ -273,7 +269,7 @@ class Decimal {
         }
         let ok = false;
 
-        [s, ok] = Decimal.mantissaOk(s, scale, trimScale)
+        [s, ok] = this.constructor.mantissaOk(s, scale, trimScale)
         if (!ok) {
             return s
         }
@@ -290,7 +286,7 @@ class Decimal {
                 }
             }
             // s 发生变化
-            [s, ok] = Decimal.mantissaOk(s, scale, trimScale)
+            [s, ok] = this.constructor.mantissaOk(s, scale, trimScale)
             if (!ok) {
                 return s
             }
@@ -303,7 +299,7 @@ class Decimal {
      * @returns {string}
      */
     format(settings) {
-        settings = Decimal.newFormatSettings(settings)
+        settings = this.constructor.newFormatSettings(settings)
         return this.formatWhole(settings.segmentSize, settings.separator) + this.formatMantissa(settings.scale, settings.trimScale, settings.scaleRound)
     }
 
@@ -348,10 +344,10 @@ class Decimal {
     }
 
     /**
-     * Divide two numbers and convert its result to Decimal
+     * Divide two numbers and convert its result to DecimalT
      * @param {number} a
      * @param {number} b
-     * @return {typeof Decimal}
+     * @return {this}
      */
     static div(a, b) {
         const self = this  // 使用 this （不能用 this.constructor()). 可以传递到子类
@@ -402,12 +398,13 @@ class Decimal {
         }
         return [s, true]
     }
+
     /**
      *
      * @param {number} num
-     * @return {typeof Decimal}
+     * @return {this}
      */
-    static unitsX(num) {
+    static Int(num) {
         const self = this  // 使用 this （不能用 this.constructor()). 可以传递到子类
         const units = self.Units
         return new self(num * units)
@@ -415,7 +412,7 @@ class Decimal {
 
     /**
      * @param {str} str
-     * @return {typeof Decimal}
+     * @return {this}
      * @note compatible with this.serialize()
      */
     static unserialize(str) {

@@ -1,9 +1,8 @@
 /** @typedef {{path:string, filetype:number, size:number, provider:number, allowed:?number[][], origin:string, width:number, crop_pattern:string, resize_pattern:string, height:number, thumbnail?:string, multiple_file?:string}} ImgSrcStruct */
-/** @typedef {{height:number, width:number, ratio:Decimal, realHeight:number, realWidth:number, originalHeight:number, originalWidth:number, url:string}} ImgResizedData */
+/** @typedef {{height:number, width:number, ratio:Decimal, imageHeight:number, imageWidth:number, originalHeight:number, originalWidth:number, url:string}} ImgResizedData */
 
 class AaImgSrc extends AaSrc {
     name = 'aa-img-src'
-
 
     // @property {int}
     provider
@@ -191,8 +190,8 @@ class AaImgSrc extends AaSrc {
         return {
             height        : this.height,
             width         : this.width,
-            realHeight    : this.height,
-            realWidth     : this.width,
+            imageHeight   : this.height,
+            imageWidth    : this.width,
             ratio         : ratio,
             originalHeight: this.height,
             originalWidth : this.width,
@@ -201,80 +200,82 @@ class AaImgSrc extends AaSrc {
     }
 
     /**
-     * @param width
-     * @param height
-     * @param realWidth
-     * @param realHeight
-     * @return {{width:number, height:number,ratio:Decimal, realWidth:number, realHeight:number}}
+     * @param {number} width
+     * @param {number} height
+     * @param {number} imageWidth
+     * @param {number} imageHeight
+     * @return {{width:number, height:number,ratio:Decimal, imageWidth:number, imageHeight:number}}
      */
-    #fillAllowedSize(width, height, realWidth, realHeight) {
-        if (width > 0 && height > 0 && realWidth > 0 && realHeight > 0) {
-            let ratio = Decimal.div(realHeight, realWidth)
-            return {width, height, ratio, realWidth, realHeight,}
+    #fillAllowedSize(width, height, imageWidth, imageHeight) {
+        if (width > 0 && height > 0 && imageWidth > 0 && imageHeight > 0) {
+            let ratio = Decimal.div(imageHeight, imageWidth)
+            return {width, height, ratio, imageWidth: imageWidth, imageHeight: imageHeight,}
         }
 
-        let ratio = this.ratio()
-        if (ratio.value === 0 && realHeight) {
-            ratio = Decimal.div(realWidth, realHeight)
+         let ratio = this.ratio()
+        if (ratio.value === 0 && imageHeight) {
+            ratio = Decimal.div(imageWidth, imageHeight)
         }
         if (ratio.value === 0 && height) {
             ratio = Decimal.div(width, height)
         }
         if (ratio.value === 0) {
             log.error(`invalid image size ${width} ${height}`)
-            return {width, height, ratio, realWidth, realHeight}
+            return {width, height, ratio, imageWidth: imageWidth, imageHeight: imageHeight}
         }
 
         ratio.rounder = Math.ceil
         if (width === 0) {
-            width = ratio.multiply(height).toCeil()
+            width = ratio.clone().multiplyInt(height).toCeil()
         } else if (height === 0) {
-            height = ratio.beDivided(width).toCeil()
+            height = ratio.clone().beDividedInt(width).toCeil()
+            loge("xx", this.width, this.height, ratio.toReal())
+            loge("xx", width,  height)
         }
-        if (realWidth === 0) {
-            realWidth = ratio.multiply(realHeight).toCeil()
-        } else if (realHeight === 0) {
-            realHeight = ratio.beDivided(realWidth).toCeil()
+        if (imageWidth === 0) {
+            imageWidth = ratio.clone().multiplyInt(imageHeight).toCeil()
+        } else if (imageHeight === 0) {
+            imageHeight = ratio.clone().beDividedInt(imageWidth).toCeil()
         }
-        if (width === 0 || height === 0 || realWidth === 0 || realHeight === 0) {
+        if (width === 0 || height === 0 || imageWidth === 0 || imageHeight === 0) {
             log.error(`invalid image size ${width} ${height}`)
         }
-        return {width, height, ratio, realWidth, realHeight}
+        return {width, height, ratio, imageWidth: imageWidth, imageHeight: imageHeight}
     }
 
     /**
      * Return the closest size
      * @param {number} width
      * @param {number} [height]
-     * @return {{width:number, height:number,ratio:Decimal, realWidth:number, realHeight:number}}
+     * @return {{width:number, height:number,ratio:Decimal, imageWidth:number, imageHeight:number}}
      */
     #allowedSize(width, height = 0) {
         width = maths.pixel(width)
         height = maths.pixel(height)
-        let realWidth = Math.ceil(number(width) * AaEnv.devicePixelRatio())
-        let realHeight = Math.ceil(number(height) * AaEnv.devicePixelRatio())
+        let imageWidth = Math.ceil(number(width) * AaEnv.devicePixelRatio())
+        let imageHeight = Math.ceil(number(height) * AaEnv.devicePixelRatio())
 
-        if (this.width && realWidth > this.width) {
-            realWidth = this.width
+        if (this.width && imageWidth > this.width) {
+            imageWidth = this.width
         }
-        if (this.height && realHeight > this.height) {
-            realHeight = this.height
+        if (this.height && imageHeight > this.height) {
+            imageHeight = this.height
         }
 
         const allowed = this.allowed
         if (len(allowed) === 0) {
-            return this.#fillAllowedSize(width, height, realWidth, realHeight)
+            return this.#fillAllowedSize(width, height, imageWidth, imageHeight)
         }
         let matched = false
         let maxWidth = 0
         let maxHeight = 0
-        let w = realWidth
-        let h = realHeight
+        let w = imageWidth
+        let h = imageHeight
 
         for (let i = 0; i < allowed.length; i++) {
             const allowedWidth = maths.pixel(allowed[i][0])
             const allowedHeight = maths.pixel(allowed[i][1])
-            if ((allowedWidth === realWidth && allowedHeight === realHeight) || (allowedWidth === realWidth && realHeight === 0) || (allowedHeight === realHeight && realWidth === 0)) {
+            if ((allowedWidth === imageWidth && allowedHeight === imageHeight) || (allowedWidth === imageWidth && imageHeight === 0) || (allowedHeight === imageHeight && imageWidth === 0)) {
                 return this.#fillAllowedSize(width, height, allowedWidth, allowedHeight)
             }
 
@@ -291,7 +292,7 @@ class AaImgSrc extends AaSrc {
                 }
             } else {
                 // 后面的都跟第一次匹配的比，找到最小匹配
-                if (allowedWidth >= realWidth && allowedWidth <= w && allowedHeight >= realHeight && allowedHeight <= h) {
+                if (allowedWidth >= imageWidth && allowedWidth <= w && allowedHeight >= imageHeight && allowedHeight <= h) {
                     w = allowedWidth
                     h = allowedHeight
                 }
@@ -339,8 +340,8 @@ class AaImgSrc extends AaSrc {
         return {
             height        : 0,
             width         : 0,
-            realHeight    : 0,
-            realWidth     : 0,
+            imageHeight   : 0,
+            imageWidth    : 0,
             ratio         : decimal(0),
             originalHeight: 0,
             originalWidth : 0,

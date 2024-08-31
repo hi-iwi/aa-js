@@ -23,7 +23,8 @@
 
 const BREAK = '-.../.-././.-/-.-' // a signal from callback function to break forEach((value,key)) iterator
 const CONTINUE = void '' // return CONTINUE in a loop is not important, but better for people to read
-const nif = () => void 0   // a nil function  ==>  Go语言都定义 any = interface{}，这里定义要给 nif 是有必要的
+const nif = () => void 0   // a nil function  Go语言都定义 any = interface{}，这里定义要给 nif 是有必要的
+const nip = new Promise(nif) // a nil promise 既不会执行then，也不会抛出异常
 /** @typedef {"MAX"} MAX */
 const MAX = 'MAX'
 /** @typedef {"MIN"} MIN */

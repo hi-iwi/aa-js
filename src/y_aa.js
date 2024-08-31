@@ -42,6 +42,7 @@ class Aa {
     editor
 
 
+
     constructor() {
         const registry = new AaRegistry()
         const scrollEvent = new AaScrollEvent()

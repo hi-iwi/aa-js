@@ -2,10 +2,8 @@ class AaScrollEvent {
     /** @type {Map} */
     #events
 
-
     onAutoScrolling = false   // 是否在触发自动
     prevScrollTop = 0
-
 
     constructor() {
         this.#events = new Map()
