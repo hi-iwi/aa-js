@@ -100,11 +100,11 @@ class AaMultiLevelSelects {
                 opts = [opts]
             }
         }
-        let v = void ''
-        let t = void ''
-        let tt = void ''
-        let z = void {}
-        let pid = void null
+        let v = undefined
+        let t = undefined
+        let tt = undefined
+        let z = undefined
+        let pid = undefined
         // 按key排序，及转化数据格式
         // 转化 inherit
         for (let i = 0; i < opts.length; i++) {
@@ -138,7 +138,7 @@ class AaMultiLevelSelects {
                 // 转换类型
                 if (typeof cast === "function") {
                     opts[i][j].value = cast(v)
-                    pid = typeof opts[i][j].pid !== "undefined" ? void null : opts[i][j].pid
+                    pid = typeof opts[i][j].pid !== "undefined" ? undefined : opts[i][j].pid
                     if (typeof pid !== "undefined" && pid !== "" && pid !== null) {
                         opts[i][j].pid = cast(pid)
                     }
@@ -386,7 +386,7 @@ class AaMultiLevelSelects {
     // 将 {value:text, value:text} 或[{value:text},{value:text}] [{value:, text:},{value:, text:}]  转为 [value]
     static extractChainValues(option) {
         let a = []
-        let w = void null
+        let w = undefined
         if (atype.isStruct(option)) {
             for (let b in option) {
                 if (option.hasOwnProperty(b)) {

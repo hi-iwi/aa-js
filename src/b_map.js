@@ -109,7 +109,7 @@ class map {
 
     /**
      * Check map has property key, and its value is not undefined
-     * @param {str} key
+     * @param {string} key
      * @param allowUndefined
      * @return {boolean}
      */
@@ -192,11 +192,11 @@ class map {
     }
 
     /**
-     *
-     * @param target A
-     * @param source B
+     * @template T
+     * @param {T} target A
+     * @param {T} source B
      * @param {(v:any)=>any} [keynameConvertor]
-     * @return {struct}    A = A ∪ B
+     * @return {T}    A = A ∪ B
      */
     static assign(target, source, keynameConvertor) {
         target = struct(target)
@@ -213,8 +213,9 @@ class map {
     /**
      * Deep clone any data except functions and classes
      *  深度复制一个对象；浅复制，就自行  newObj  = {...obj}
-     * @param {object|array|struct|map|string|number|boolean|*} data
-     * @returns {?struct}
+     * @template T
+     * @param {T} data
+     * @returns {?(T|struct)}
      */
     static clone(data) {
         if (typeof data !== 'object' || data === null) {
@@ -248,8 +249,9 @@ class map {
 
     /**
      * Compare two object
-     * @param {*} target
-     * @param {*} src
+     * @template T
+     * @param {T} target
+     * @param {T} src
      * @warn 如果用在 react 判断是否改变props/state 去 setState，需要用 if(!map.compare()) ， 否则就是true，死循环更新
      */
     static compare(target, src) {
@@ -301,8 +303,9 @@ class map {
 
     /**
      * Compare property values of two struct
-     * @param {struct} a
-     * @param {struct} b
+     * @template T
+     * @param {T} a
+     * @param {T} b
      * @param {string|string[]} keys
      * @return {boolean}
      */
@@ -385,9 +388,7 @@ class map {
         defaults = struct(defaults)
         if (!handler) {
             handler = (k, v, target) => {
-                if (typeof target[k] === "undefined") {
-                    target[k] = v
-                }
+                setNx(target, k, v)
             }
         }
         map.forEach(defaults, (k, v) => {
@@ -614,9 +615,7 @@ class map {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
             // 定义不存在undefined。undefined当作特殊情况过滤；
-            if (typeof v !== "undefined" && target.hasOwnProperty(k)) {
-                target[k] = v
-            }
+            setNx(target, k, v)
         })
         return target
     }
@@ -752,7 +751,7 @@ class map {
                 k = map.handleKeyname(target, k, keynameConvertor)
             }
             if (typeof v === "undefined" || !target.hasOwnProperty(k)) {
-                return  CONTINUE
+                return CONTINUE
             }
             let t = target[k]
             // type consistency, except undefined/null (unknown type)

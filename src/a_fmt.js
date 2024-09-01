@@ -5,7 +5,7 @@ class fmt {
     /**
      * Exclude undefined arguments at the tail
      * @param {any} args
-     * @note some functions like new Date().setFullYear(2025, void 0)  will return invalid date!
+     * @note some functions like new Date().setFullYear(2025, undefined)  will return invalid date!
      * @return {any[]}
      */
     static args(...args) {

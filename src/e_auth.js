@@ -429,11 +429,11 @@ class AaAuth {
             "token_type"  : token["token_type"],
 
             // 非标准参数
-            "conflict"     : typeof token['conflict'] === 'undefined' ? void false : bool(token["conflict"]),
+            "conflict"     : typeof token['conflict'] === 'undefined' ? undefined : bool(token["conflict"]),
             "refresh_api"  : string(token, "refresh_api"),  // 非必要
             "refresh_token": string(token, "refresh_token"),// 非必要
             "refresh_ttl"  : rtokenTTL,// 非必要
-            "secure"       : typeof token["secure"] === 'undefined' ? void false : bool(token["secure"]),
+            "secure"       : typeof token["secure"] === 'undefined' ? undefined : bool(token["secure"]),
             "validate_api" : string(token, "validate_api"),// 非必要
             isValid        : function () {
                 const expires = this['expires_in'] * time.Second + itself.#getTokenAuthAt()

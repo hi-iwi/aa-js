@@ -1,4 +1,5 @@
 /** @typedef {string} DateString */
+
 /** @typedef {string} DatetimeString */
 /** @typedef {time|Date|DateString|DatetimeString|number} TimeParam */
 
@@ -558,16 +559,14 @@ class time {
      */
     #parseArgs(...args) {
         let l = args.length
-        let offset = void ''
+        let offset = undefined
         if (l === 0) {
             return [new Date(), offset]
         }
         if (args[0] instanceof time || args[0] instanceof Date) {
             return [args[0], offset]
         }
-        if (typeof args[0] === "undefined" || args[0] === null) {
-            args[0] = new Date()
-        }
+        setNx(args, 0, new Date(), [null])
 
         // parse zone
         if (l > 1 && args[l - 1] && typeof args[l - 1] === "string") {
@@ -795,7 +794,7 @@ class time {
      * @param {number} sec
      * @param {number} [ms]
      * @return {number}
-     * @warn new Date().setSeconds(2, void 0)  will return invalid date!
+     * @warn new Date().setSeconds(2, undefined)  will return invalid date!
      */
     setSeconds(sec, ms) {
         return this.#date.setSeconds(...arguments)
@@ -807,7 +806,7 @@ class time {
      * @param {number} [sec]
      * @param {number} [ms]
      * @return {number}
-     * @warn new Date().setMinutes(2, void 0)  will return invalid date!
+     * @warn new Date().setMinutes(2, undefined)  will return invalid date!
      */
     setMinutes(min, sec, ms) {
         return this.#date.setMinutes(...arguments)
@@ -820,7 +819,7 @@ class time {
      * @param {number} [sec]
      * @param {number} [ms]
      * @return {number}
-     * @warn new Date().setHours(2, void 0)  will return invalid date!
+     * @warn new Date().setHours(2, undefined)  will return invalid date!
      */
     setHours(hours, min, sec, ms) {
         return this.#date.setHours(...arguments)
@@ -840,7 +839,7 @@ class time {
      * @param {number} month
      * @param {number} [day]
      * @return {number}
-     * @warn new Date().setMonth(2, void 0)  will return invalid date!
+     * @warn new Date().setMonth(2, undefined)  will return invalid date!
      */
     setMonth(month, day) {
         return this.#date.setMonth(...arguments)
@@ -852,7 +851,7 @@ class time {
      * @param {number} [month]
      * @param {number} [day]
      * @return {number}
-     * @warn new Date().setFullYear(2025, void 0)  will return invalid date!
+     * @warn new Date().setFullYear(2025, undefined)  will return invalid date!
      */
     setFullYear(year, month, day) {
         return this.#date.setFullYear(...arguments)
@@ -915,7 +914,7 @@ class time {
 
     // 只保留特殊常用的函数，其他的如果需要用。就调用 xxx.date.xxxx 直接调用即可
     // @return {string}
-    toString(invalidString = void '') {
+    toString(invalidString = undefined) {
         if (typeof invalidString !== "undefined" && !this.validator.isValid()) {
             return invalidString
         }
@@ -948,6 +947,7 @@ class time {
 
         return AaDateString.minDate
     }
+
     /**
      * @param {vv_vk_defaultV} [args]
      * @return {string|string}
@@ -1047,7 +1047,7 @@ class TimeDiff {
      */
     constructor(timeA, timeB) {
         const d0 = timeA instanceof time ? timeA : new time(timeA)
-        const d1 = timeB instanceof time ? timeB : new time(timeB)  // new time(undfined) equals to new time(new Date())
+        const d1 = timeB instanceof time ? timeB : new time(timeB)  // new time(void 0) equals to new time(new Date())
         if (!d0.validator.isValid(true) || !d0.validator.isValid(true)) {
             log.error("date difference: invalid date", d0, d1)
             return

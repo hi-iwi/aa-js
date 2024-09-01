@@ -17,7 +17,7 @@ class AaImgSrc extends AaSrc {
     allowed
     /**
      * @override
-     * @type {string|void}
+     * @type {string|undefined}
      */
     jsonkey
 
@@ -55,14 +55,14 @@ class AaImgSrc extends AaSrc {
      * @param {number} [width]
      * @param {number} [height]
      * @param {boolean} [real]
-     * @return {Base64|Path|void}
+     * @return {Base64|Path|undefined}
      */
     getThumbnail(width, height, real = false) {
         if (this.#thumbnail) {
             return this.#thumbnail
         }
         if (real || !this.isValid()) {
-            return void ""
+            return undefined
         }
         return this.crop(width, height).url
     }

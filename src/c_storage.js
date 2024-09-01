@@ -263,7 +263,7 @@ class AaStorageEngine {
      * @param {boolean} force
      */
     clear(force = false) {
-        this.clearExcept(void [], force)
+        this.clearExcept(undefined, force)
     }
 
 

@@ -18,7 +18,7 @@ class AaFetch {
     #defaultSettingsExt = {
         mustAuth: false,    //  must validate access_token before fetching
         // @param {AError} err
-        onAuthError        : void nif,
+        onAuthError        : undefined,
         preventTokenRefresh: false,
     }
 

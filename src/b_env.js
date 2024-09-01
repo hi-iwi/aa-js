@@ -65,9 +65,12 @@ class AaEnv {
      *     // window.innerWidth /  window.innerHeight 去掉状态栏的高度、宽度
      *     // window.outerWidth / window.outerHeight 带状态栏高度
      *     // screen.width / screen.height  分辨率尺寸
+     * @param {boolean} [inRatio]
+     * @return {number}
      */
-    static maxWidth() {
-        return document.querySelector('body').offsetWidth
+    static maxWidth(inRatio = false) {
+        let width = Number(document.querySelector('body').offsetWidth)
+        return inRatio ? width * AaEnv.devicePixelRatio() : width
     }
 
 

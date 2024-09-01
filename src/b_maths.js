@@ -28,7 +28,7 @@ class maths {
             return maths.pixel(settings[key])
         }
 
-        return void 0
+        return undefined
     }
 
     /**
@@ -54,17 +54,17 @@ class maths {
      * @param {string} [vk]
      * @param {ResponsiveSize} [defaultV]
      * @param {ResponsiveSize} [relativeBase]
-     * @return {number}
+     * @return {number|undefined}
      * @example
      *  maths.pixel(100) = maths.pixel("100 PX") = maths.pixel("100px")   ===> 100
      *  maths.pixel("1rem")   ===> rem to pixel
-     *  maths.pixel({767:"1rem", 768:"2rem"}) = maths.pixel({767:"1rem", 768:"2rem"}, void '', void 0, AaEnv.maxWidth())
-     *  maths.pixel("20%") = maths.pixel("20%", void '', void 0, AaEnv.maxWidth())
+     *  maths.pixel({767:"1rem", 768:"2rem"}) = maths.pixel({767:"1rem", 768:"2rem"}, undefined, undefined, AaEnv.maxWidth())
+     *  maths.pixel("20%") = maths.pixel("20%", undefined, undefined, AaEnv.maxWidth())
      */
     static pixel(vv, vk, defaultV, relativeBase) {
         vv = defval(...arguments)
-        if (!vv) {
-            return 0
+        if (!vv || (typeof vv === "string" && vv.indexOf("auto") > -1)) {
+            return void 0
         }
         if (typeof vv === "number") {
             return Math.floor(vv)
@@ -82,13 +82,23 @@ class maths {
             relativeBase = !relativeBase ? AaEnv.maxWidth() : maths.pixel(relativeBase)
             return isSettings ? maths.closestSetting(vv, '<=', relativeBase) : Math.floor(relativeBase * parseFloat(vv) / 100)
         }
-
-        if (vv.indexOf("rem") > -1) {
-            // 计算1rem对应px
-            const rem = parseFloat(window.getComputedStyle(document.documentElement)["fontSize"])  // 1rem 对应像素
-            return Math.floor(Number(vv.trimEnd("rem")) * rem)
+        if (typeof vv !== "string") {
+            return void 0
         }
-        return Math.floor(Number(vv.trimEnd("px")))
+        let value
+        try {
+            if (vv.indexOf("rem") > 0) {
+                // 计算1rem对应px
+                const rem = parseFloat(window.getComputedStyle(document.documentElement)["fontSize"])  // 1rem 对应像素
+                value = Number(vv.trimEnd("rem")) * rem
+            } else {
+                value = Number(vv.trimEnd("px"))
+            }
+        } catch (err) {
+            log.error(`invalid pixel: ${vv}`)
+            return void 0
+        }
+        return Math.floor(value)
     }
 
     /**

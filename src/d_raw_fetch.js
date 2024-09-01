@@ -314,7 +314,7 @@ class AaRawFetch {
         // 如果使用 response = await fetch();  json= await response.json() 必须要await，阻塞等待response返回
         // 这里就不用await最好，外面使用的时候，再自行 await
         return fetch(url, settings).then(resp => {
-            let err = new AError(resp.status, void '', settings.dict)
+            let err = new AError(resp.status, undefined, settings.dict)
             if (!err.isOK()) {
                 throw err
             }

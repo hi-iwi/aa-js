@@ -60,7 +60,7 @@ class AaAccount {
     }
 
     /**
-     * @param {Vuser[]|null|void} [vusers]
+     * @param {?Vuser[]} [vusers]
      * @param {number} vtype
      * @return {?Vuser}
      */
@@ -78,7 +78,7 @@ class AaAccount {
     }
 
     /**
-     * @param {Vuser[]|null|void} vusers
+     * @param {?Vuser[]} [vusers]
      * @param {BigInt} vuid
      * @return {?Vuser}
      */
