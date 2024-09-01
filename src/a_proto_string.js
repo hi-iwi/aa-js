@@ -39,11 +39,11 @@ String.prototype.joinIf = function (condition, ...args) {
  * @return {string}
  */
 String.prototype.joinWith = function (separator, ...args) {
-    let s = this
+    let s = this.trim()
     for (let i = 0; i < args.length; i++) {
         let v = args[i]
         if (typeof v !== 'undefined' && v !== null && v !== '') {
-            s = s ? separator + v : v
+            s += s ? separator + v : v
         }
     }
     return s

@@ -30,7 +30,7 @@ class AaMultiLevelSelects {
     }
 
     get first() {
-        return this.#data[0]
+        return this.len > 0 ? this.#data[0] : null
     }
 
 

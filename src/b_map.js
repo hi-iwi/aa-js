@@ -89,7 +89,7 @@ class map {
      * @return {*}
      */
     get(key, cast) {
-        let v = this.has(key) ? this.props[key] : void 0
+        let v = this.props[key]
         return typeof cast === 'function' ? cast(v) : v
     }
 
@@ -175,7 +175,7 @@ class map {
                 value = hr.value
             }
 
-            if (value === '') {
+            if (typeof value === "undefined" || value === null) {
                 return {key, value, ok: false}
             }
             value = encodeURIComponent(value)

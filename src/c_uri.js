@@ -30,7 +30,7 @@ scheme  user information     host     port                  query      fragm
             xhost 也可以表示这段，因为xhost一般保存在配置文件
             如 xhost https://a.com  也可能以后会被配置成 http://localhost/a
  */
-const UrlRemoveRedirect = {redirect: null}
+const UrlRemoveRedirect = {redirect: void ''}
 
 class AaURI {
     name = 'aa-uri'
@@ -155,25 +155,32 @@ class AaURI {
         }
 
         // new URL 性能更好，但是会自动encode {xxxx}
-        const u = new URL(url)
-        this.method = method
-        this.#hash = hash ? hash : this.#replaceBackPathParams(u.hash)
-        this.#hostname = this.#replaceBackPathParams(u.hostname)
-        this.#pathname = this.#replaceBackPathParams(u.pathname)
-        this.#port = this.#replaceBackPathParams(u.port)
-        this.#protocol = this.#replaceBackPathParams(u.protocol)
-        this.searchParams = new map()
-        this.#password = this.#replaceBackPathParams(u.password)
-        this.#username = this.#replaceBackPathParams(u.username)
+        try {
+            const u = new URL(url)
+            this.method = method
+            this.#hash = hash ? hash : this.#replaceBackPathParams(u.hash)
+            this.#hostname = this.#replaceBackPathParams(u.hostname)
+            this.#pathname = this.#replaceBackPathParams(u.pathname)
+            this.#port = this.#replaceBackPathParams(u.port)
+            this.#protocol = this.#replaceBackPathParams(u.protocol)
+            this.searchParams = new map()
+            this.#password = this.#replaceBackPathParams(u.password)
+            this.#username = this.#replaceBackPathParams(u.username)
 
-        for (const [key, value] of u.searchParams) {
-            this.searchParams.set(key, value)
+            for (const [key, value] of u.searchParams) {
+                if (typeof value !== "undefined" && value !== null) {
+                    this.searchParams.set(key, value)
+                }
+            }
+
+            // 一定要在 queries 实例化后
+            if (len(params) > 0) {
+                this.setParams(params)
+            }
+        } catch (err) {
+            log.error(`"${url}" is not a valid url`)
         }
 
-        // 一定要在 queries 实例化后
-        if (len(params) > 0) {
-            this.setParams(params)
-        }
     }
 
     /**
@@ -219,6 +226,10 @@ class AaURI {
 
     filterEmpty(empty = ['', '0', 0]) {
         return this.filter((_, value) => empty.includes(value))
+    }
+
+    isValid() {
+        return this.#protocol && this.#hostname && this.searchParams
     }
 
     has(key) {
@@ -341,7 +352,9 @@ class AaURI {
      */
     setParams(params) {
         map.forEach(params, (key, value) => {
-            this.searchParams.set(key, value)
+            if (typeof value !== "undefined" && value !== null) {
+                this.searchParams.set(key, value)
+            }
         })
         return this
     }
@@ -381,24 +394,24 @@ class AaURI {
 
     /**
      *
-     * @param {string} defaultRedirect
-     * @param {struct} params
+     * @param {string} [defaultRedirect]
+     * @param {struct} [params]
      * @return {string}
      */
     static defaultRedirectURL(defaultRedirect = '/', params) {
         const loc = new AaURI(location.href)
         let redirect = loc.query("redirect")
         loc.setParams(UrlRemoveRedirect)
-        if (redirect) {
+        if (redirect && !["undefined", "null"].includes(redirect.toLowerCase())) {
             redirect = new AaURI(redirect, UrlRemoveRedirect)
-            if (redirect.href !== loc.href) {
+            if (redirect.isValid() && redirect.href !== loc.href) {
                 if (params) {
                     redirect.setParams(params)
                 }
                 return redirect.href
             }
         }
-        return new AaURI(defaultRedirect ? defaultRedirect : '/', params).href
+        return new AaURI(defaultRedirect, params).href
     }
 
     /**

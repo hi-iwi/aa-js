@@ -135,10 +135,11 @@ class Aa {
      * @param {string} url
      * @param {struct|map|URLSearchParams|*} [params]
      * @param {string} [hash]
-     * @return {AaURI}
+     * @return {?AaURI}
      */
     url(url = location.href, params, hash) {
-        return new AaURI(...arguments)
+        const l =new AaURI(...arguments)
+        return l.isValid() ? l : null
     }
 
 
