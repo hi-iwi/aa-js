@@ -125,8 +125,8 @@ class AaImgSrc extends AaSrc {
         r.originalHeight = this.height
         r.originalWidth = this.width
         r.url = this.cropPattern.replaceAll({
-            "${WIDTH}" : width,
-            "${HEIGHT}": height,
+            "${WIDTH}" : r.imageWidth,
+            "${HEIGHT}": r.imageHeight,
         })
         return r
     }
@@ -134,44 +134,34 @@ class AaImgSrc extends AaSrc {
     /**
      * Resize image to the closest size after resizing by window.devicePixelRatio
      * @param {number|MAX} [maxWidth]
-     * @param {number} [maxHeight]
      * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
      */
-    resize(maxWidth = MAX, maxHeight) {
+    resize(maxWidth = MAX) {
         if (!this.isValid()) {
             throw new TypeError(`invalid AaImgSrc`)
         }
+        if (maxWidth !== MAX && maxWidth) {
 
-        maxWidth = maxWidth === MAX || (!maxWidth && !maxHeight) ? AaEnv.maxWidth() : maths.pixel(maxWidth)
-        maxHeight = maths.pixel(maxHeight)
-
-        let rat = this.height > 0 ? this.width / this.height : 0
-        if (rat) {
-            if (maxWidth > this.width) {
-                maxWidth = this.width
-                if (!maxHeight || maxHeight >= this.height) {
-                    maxHeight = this.height
-                } else {
-                    maxWidth = Math.ceil(maxHeight * rat)
-                }
-            } else if (maxHeight > this.height) {
-                maxHeight = this.height
-                if (!maxWidth || maxWidth >= this.width) {
-                    maxWidth = this.width
-                } else {
-                    maxHeight = Math.ceil(maxWidth / rat)
-                }
-            }
+        }
+        maxWidth = maths.pixel(maxWidth)
+        if (!maxWidth) {
+            maxWidth = AaEnv.maxWidth()
+        }
+        const dpr = AaEnv.devicePixelRatio()
+        let imageWidth = maxWidth * dpr
+        if (this.width > 0 && imageWidth > this.width) {
+            imageWidth = this.width
+            maxWidth = Math.floor(imageWidth / dpr)
         }
 
-
-        let r = this.#allowedSize(maxWidth, maxHeight)
+        let r = this.#allowedSize(maxWidth)
         if (!r.width) {
-            log.error(`invalid resize size: ${maxWidth} * ${maxHeight}`)
+            log.error(`invalid resize max width: ${maxWidth}`)
         }
         r.originalHeight = this.height
         r.originalWidth = this.width
-        r.url = this.resizePattern.replaceAll("${MAXWIDTH}", maxWidth)
+        r.url = this.resizePattern.replaceAll("${MAXWIDTH}", r.imageWidth)
+
         return r
     }
 
@@ -184,7 +174,7 @@ class AaImgSrc extends AaSrc {
             throw new TypeError(`invalid AaImgSrc`)
         }
         if (!this.origin) {
-            return this.resize(this.width, this.height)
+            return this.resize(this.width)
         }
         const ratio = Decimal.divideReal(this.width, this.height)
         return {
@@ -199,49 +189,6 @@ class AaImgSrc extends AaSrc {
         }
     }
 
-    /**
-     * @param {number} width
-     * @param {number} height
-     * @param {number} imageWidth
-     * @param {number} imageHeight
-     * @return {{width:number, height:number,ratio:Decimal, imageWidth:number, imageHeight:number}}
-     */
-    #fillAllowedSize(width, height, imageWidth, imageHeight) {
-        if (width > 0 && height > 0 && imageWidth > 0 && imageHeight > 0) {
-            let ratio = Decimal.divideReal(imageHeight, imageWidth)
-            return {width, height, ratio, imageWidth: imageWidth, imageHeight: imageHeight,}
-        }
-
-         let ratio = this.ratio()
-        if (ratio.value === 0 && imageHeight) {
-            ratio = Decimal.divideReal(imageWidth, imageHeight)
-        }
-        if (ratio.value === 0 && height) {
-            ratio = Decimal.divideReal(width, height)
-        }
-        if (ratio.value === 0) {
-            log.error(`invalid image size ${width} ${height}`)
-            return {width, height, ratio, imageWidth: imageWidth, imageHeight: imageHeight}
-        }
-
-        ratio.rounder = Math.ceil
-        if (width === 0) {
-            width = ratio.clone().multiplyInt(height).toCeil()
-        } else if (height === 0) {
-            height = ratio.clone().beDividedInt(width).toCeil()
-            loge("xx", this.width, this.height, ratio.toReal())
-            loge("xx", width,  height)
-        }
-        if (imageWidth === 0) {
-            imageWidth = ratio.clone().multiplyInt(imageHeight).toCeil()
-        } else if (imageHeight === 0) {
-            imageHeight = ratio.clone().beDividedInt(imageWidth).toCeil()
-        }
-        if (width === 0 || height === 0 || imageWidth === 0 || imageHeight === 0) {
-            log.error(`invalid image size ${width} ${height}`)
-        }
-        return {width, height, ratio, imageWidth: imageWidth, imageHeight: imageHeight}
-    }
 
     /**
      * Return the closest size
@@ -250,10 +197,18 @@ class AaImgSrc extends AaSrc {
      * @return {{width:number, height:number,ratio:Decimal, imageWidth:number, imageHeight:number}}
      */
     #allowedSize(width, height = 0) {
+        const dpr = AaEnv.devicePixelRatio()
+        const ratio = this.ratio()
         width = maths.pixel(width)
-        height = maths.pixel(height)
-        let imageWidth = Math.ceil(number(width) * AaEnv.devicePixelRatio())
-        let imageHeight = Math.ceil(number(height) * AaEnv.devicePixelRatio())
+        if (!width) {
+            width = AaEnv.maxWidth()
+        }
+        height = !height ? 0 : maths.pixel(height)
+        if (!height) {
+            height = ratio.clone().beDividedInt(width).toCeil()
+        }
+        let imageWidth = Math.ceil(width * dpr)  // width*dpr，最大不超过实际宽度
+        let imageHeight = Math.ceil(height * dpr)
 
         if (this.width && imageWidth > this.width) {
             imageWidth = this.width
@@ -264,7 +219,7 @@ class AaImgSrc extends AaSrc {
 
         const allowed = this.allowed
         if (len(allowed) === 0) {
-            return this.#fillAllowedSize(width, height, imageWidth, imageHeight)
+            return {width, height, ratio, imageWidth, imageHeight}
         }
         let matched = false
         let maxWidth = 0
@@ -275,8 +230,8 @@ class AaImgSrc extends AaSrc {
         for (let i = 0; i < allowed.length; i++) {
             const allowedWidth = maths.pixel(allowed[i][0])
             const allowedHeight = maths.pixel(allowed[i][1])
-            if ((allowedWidth === imageWidth && allowedHeight === imageHeight) || (allowedWidth === imageWidth && imageHeight === 0) || (allowedHeight === imageHeight && imageWidth === 0)) {
-                return this.#fillAllowedSize(width, height, allowedWidth, allowedHeight)
+            if (allowedWidth === imageWidth && allowedHeight === imageHeight) {
+                return {width, height, ratio, imageWidth, imageHeight}
             }
 
             if (!matched) {
@@ -298,7 +253,14 @@ class AaImgSrc extends AaSrc {
                 }
             }
         }
-        return matched ? this.#fillAllowedSize(width, height, w, h) : this.#fillAllowedSize(width, height, maxWidth, maxHeight)
+
+        return matched ? {width, height, ratio, imageWidth: w, imageHeight: h} : {
+            width,
+            height,
+            ratio,
+            imageWidth : maxWidth,
+            imageHeight: maxHeight
+        }
     }
 
     /**

@@ -111,9 +111,11 @@ class AaEditor {
         const fa = imgsrc.resize(MAX)
         node.setAttribute("src", fa.url)
         node.dataset.path = imgsrc.path
-        if (fa.height > 0 && fa.width > 0) {
-            node.setAttribute("height", String(fa.height))
+        if (fa.width > 0) {
             node.setAttribute("width", String(fa.width))
+        }
+        if (fa.height > 0) {
+            node.setAttribute("height", String(fa.height))
         }
     }
 
