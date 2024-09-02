@@ -111,12 +111,9 @@ class AaEditor {
         node.dataset.path = imgsrc.path
 
         const fa = imgsrc.fit(MAX)
-        loge(fa)
         node.setAttribute("src", fa.url)
         node.setAttribute("width", String(fa.width))
         node.setAttribute("height", String(fa.height))
-        node.dataset.width = String(fa.originalWidth)
-        node.dataset.height = String(fa.originalHeight)
     }
 
 
