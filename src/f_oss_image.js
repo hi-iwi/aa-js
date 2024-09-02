@@ -113,7 +113,7 @@ class AaImgSrc extends AaSrc {
 
         let dpr = AaEnv.devicePixelRatio()
         let sizePixelRatio = this.size ? this.width * this.height / this.size : 0
-        if (sizePixelRatio > 0) {
+        if (sizePixelRatio > 5) {
             dpr *= sizePixelRatio / 5  // 单纯使用DPR暂时尝试 比例 5
         }
         this.#cropDpr = dpr
