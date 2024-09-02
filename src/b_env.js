@@ -1,17 +1,16 @@
 class AaEnv {
     name = 'aa-environment'
 
+// JS 无法获取DPI。目前观察来看，DPR=1.25时，图片*2显示效果最好；太大的话，显示也不清晰。 1.25*1.6=2，因此取1.6倍。
     static devicePixelRatio() {
         return number(window, "devicePixelRatio", 1)
     }
 
     // same as $(document).height()
     static documentHeight() {
-        const body = document.body,
-              html = document.documentElement;
-
-        return Math.max(body.scrollHeight, body.offsetHeight,
-            html.clientHeight, html.scrollHeight, html.offsetHeight);
+        const body = document.body
+        const html = document.documentElement;
+        return Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
     }
 
     static isAppleTouch() {

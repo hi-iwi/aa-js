@@ -108,15 +108,15 @@ class AaEditor {
         if (!imgsrc) {
             return
         }
-        const fa = imgsrc.resize(MAX)
-        node.setAttribute("src", fa.url)
         node.dataset.path = imgsrc.path
-        if (fa.width > 0) {
-            node.setAttribute("width", String(fa.width))
-        }
-        if (fa.height > 0) {
-            node.setAttribute("height", String(fa.height))
-        }
+
+        const fa = imgsrc.fit(MAX)
+        loge(fa)
+        node.setAttribute("src", fa.url)
+        node.setAttribute("width", String(fa.width))
+        node.setAttribute("height", String(fa.height))
+        node.dataset.width = String(fa.originalWidth)
+        node.dataset.height = String(fa.originalHeight)
     }
 
 
@@ -430,7 +430,7 @@ class AaEditor {
                 }
                 path = srcObj.path
                 node.dataset.path = path
-                node.setAttribute('src', srcObj.resize(MAX).url)
+                node.setAttribute('src', srcObj.fit(MAX).url)
             }
         }
         if (!path) {

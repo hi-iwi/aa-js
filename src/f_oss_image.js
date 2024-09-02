@@ -1,5 +1,5 @@
 /** @typedef {{path:string, filetype:number, size:number, provider:number, allowed:?number[][], origin:string, width:number, crop_pattern:string, resize_pattern:string, height:number, thumbnail?:string, multiple_file?:string}} ImgSrcStruct */
-/** @typedef {{height:number, width:number, ratio:Decimal, imageHeight:number, imageWidth:number, originalHeight:number, originalWidth:number, url:string}} ImgResizedData */
+/** @typedef {{height:number, width:number, ratio:number, imageHeight:number, imageWidth:number, originalHeight:number, originalWidth:number, url:string}} ImageResizedData */
 
 class AaImgSrc extends AaSrc {
     name = 'aa-img-src'
@@ -25,6 +25,16 @@ class AaImgSrc extends AaSrc {
     #thumbnail
     /** @type {File} for upload */
     #multipleFile
+    /** @type {number} */
+    #cropDpr = 1
+    /** @type {number} */
+    #fitDpr = 1
+    /** @type {number} */
+    #ratio = 0
+
+    get ratio() {
+        return this.#ratio
+    }
 
     /**
      * @override
@@ -98,94 +108,122 @@ class AaImgSrc extends AaSrc {
 
         this.#thumbnail = thumbnail
         this.#multipleFile = multipleFile
+
+        this.#ratio = this.height ? this.width / this.height : 0
+
+        let dpr = AaEnv.devicePixelRatio()
+        let sizePixelRatio = this.size ? this.width * this.height / this.size : 0
+        if (sizePixelRatio > 0) {
+            dpr *= sizePixelRatio / 5  // 单纯使用DPR暂时尝试 比例 5
+        }
+        this.#cropDpr = dpr
+        this.#fitDpr = AaEnv.devicePixelRatio()
     }
 
-    /**
-     * Get Ratio of width/height
-     * @return {Decimal}
-     */
-    ratio() {
-        return this.height ? Decimal.divideReal(this.width, this.height) : decimal(0)
-    }
 
     /**
      * Crop image to the closest size after resizing by window.devicePixelRatio
      * @param {number} width
      * @param {number} height
-     * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
+     * @return {ImageResizedData} 返回struct是最合适的，方便直接并入组件 state
+     * @note 由于allowed限制，一般取不到完全完全一致的width/height，因此都是取近似尺寸
      */
     crop(width, height) {
         if (!this.isValid()) {
             throw new TypeError(`invalid AaImgSrc`)
         }
-        let r = this.#allowedSize(width, height)
-        if (!r.width || !r.height) {
-            log.error(`invalid crop size: ${width} * ${height}`)
+        const dpr = this.#cropDpr
+        const imageWidth = Math.ceil(dpr * width)
+        // 暂定1.5倍
+        if (this.origin && imageWidth * 1.5 > this.width) {
+            return {
+                height        : height,
+                imageHeight   : this.height,
+                imageWidth    : this.width,
+                originalHeight: this.height,
+                originalWidth : this.width,
+                url           : this.origin,
+                ratio         : this.#ratio,
+                width         : width,
+            }
         }
-        r.originalHeight = this.height
-        r.originalWidth = this.width
-        r.url = this.cropPattern.replaceAll({
-            "${WIDTH}" : r.imageWidth,
-            "${HEIGHT}": r.imageHeight,
+
+        const imageHeight = Math.ceil(height * dpr)
+        let d = this.#allowedSize(width, height, imageWidth, imageHeight)
+        let url = this.cropPattern.replaceAll({
+            "${WIDTH}" : d.imageWidth,
+            "${HEIGHT}": d.imageHeight,
         })
-        return r
+        return {
+            height        : d.height,
+            imageHeight   : d.imageHeight,
+            imageWidth    : d.imageWidth,
+            originalHeight: this.height,
+            originalWidth : this.width,
+            ratio         : d.ratio,
+            url           : url,
+            width         : d.width,
+        }
     }
 
     /**
-     * Resize image to the closest size after resizing by window.devicePixelRatio
-     * @param {number|MAX} [maxWidth]
-     * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
+     * Stretch the image fit to the maxWidth
+     * @param {number|MAX} maxWidth
+     * @return {ImageResizedData} 返回struct是最合适的，方便直接并入组件 state
+     * @note 由于allowed限制，一般取不到完全完全一致的width/height，因此都是取近似尺寸
      */
-    resize(maxWidth = MAX) {
+    fit(maxWidth = MAX) {
         if (!this.isValid()) {
             throw new TypeError(`invalid AaImgSrc`)
         }
-        if (maxWidth !== MAX && maxWidth) {
-
+        if (maxWidth && maxWidth !== MAX) {
+            maxWidth = maths.pixel(maxWidth)
         }
-        maxWidth = maths.pixel(maxWidth)
-        if (!maxWidth) {
+        if (!maxWidth || maxWidth === MAX) {
             maxWidth = AaEnv.maxWidth()
         }
-        const dpr = AaEnv.devicePixelRatio()
+        const dpr = this.#fitDpr
+        const ratio = this.#ratio
         let imageWidth = maxWidth * dpr
-        if (this.width > 0 && imageWidth > this.width) {
+        if (imageWidth > this.width) {
             imageWidth = this.width
             maxWidth = Math.floor(imageWidth / dpr)
         }
+        const height = Math.ceil(maxWidth / ratio)
+        const imageHeight = Math.ceil(height * dpr)
 
-        let r = this.#allowedSize(maxWidth)
-        if (!r.width) {
+        // 暂定1.5倍
+        if (this.origin && imageWidth * 1.5 > this.width) {
+            return {
+                height        : height,
+                imageHeight   : this.height,
+                imageWidth    : this.width,
+                originalHeight: this.height,
+                originalWidth : this.width,
+                url           : this.origin,
+                ratio         : ratio,
+                width         : maxWidth,
+            }
+        }
+
+        let d = this.#allowedSize(maxWidth, height, imageWidth, imageHeight)
+        if (!d.width) {
             log.error(`invalid resize max width: ${maxWidth}`)
         }
-        r.originalHeight = this.height
-        r.originalWidth = this.width
-        r.url = this.resizePattern.replaceAll("${MAXWIDTH}", r.imageWidth)
 
-        return r
-    }
-
-    /**
-     * Get the original image, return resized if original image not exists
-     * @return {?ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
-     */
-    getOriginal() {
-        if (!this.isValid()) {
-            throw new TypeError(`invalid AaImgSrc`)
+        let url = this.origin
+        if (!url || d.imageWidth !== this.width) {
+            url = this.resizePattern.replaceAll("${MAXWIDTH}", d.imageWidth)
         }
-        if (!this.origin) {
-            return this.resize(this.width)
-        }
-        const ratio = Decimal.divideReal(this.width, this.height)
         return {
-            height        : this.height,
-            width         : this.width,
-            imageHeight   : this.height,
-            imageWidth    : this.width,
-            ratio         : ratio,
+            height        : d.height,
+            imageHeight   : d.imageHeight,
+            imageWidth    : d.imageWidth,
             originalHeight: this.height,
             originalWidth : this.width,
-            url           : this.origin,
+            ratio         : d.ratio,
+            url           : url,
+            width         : d.width,
         }
     }
 
@@ -193,29 +231,13 @@ class AaImgSrc extends AaSrc {
     /**
      * Return the closest size
      * @param {number} width
-     * @param {number} [height]
-     * @return {{width:number, height:number,ratio:Decimal, imageWidth:number, imageHeight:number}}
+     * @param {number} height
+     * @param {number} imageWidth
+     * @param {number} imageHeight
+     * @return {{width:number, height:number,ratio:number, imageWidth:number, imageHeight:number}}
      */
-    #allowedSize(width, height = 0) {
-        const dpr = AaEnv.devicePixelRatio()
-        const ratio = this.ratio()
-        width = maths.pixel(width)
-        if (!width) {
-            width = AaEnv.maxWidth()
-        }
-        height = !height ? 0 : maths.pixel(height)
-        if (!height) {
-            height = ratio.clone().beDividedInt(width).toCeil()
-        }
-        let imageWidth = Math.ceil(width * dpr)  // width*dpr，最大不超过实际宽度
-        let imageHeight = Math.ceil(height * dpr)
-
-        if (this.width && imageWidth > this.width) {
-            imageWidth = this.width
-        }
-        if (this.height && imageHeight > this.height) {
-            imageHeight = this.height
-        }
+    #allowedSize(width, height, imageWidth, imageHeight) {
+        const ratio = this.#ratio
 
         const allowed = this.allowed
         if (len(allowed) === 0) {
@@ -263,6 +285,7 @@ class AaImgSrc extends AaSrc {
         }
     }
 
+
     /**
      * @override
      * @param {ImgSrcStruct} data
@@ -296,7 +319,7 @@ class AaImgSrc extends AaSrc {
 
     /**
      * @param {string} [url]
-     * @return {ImgResizedData} 返回struct是最合适的，方便直接并入组件 state
+     * @return {ImageResizedData} 返回struct是最合适的，方便直接并入组件 state
      */
     static zeroResizedData(url) {
         return {
@@ -304,7 +327,7 @@ class AaImgSrc extends AaSrc {
             width         : 0,
             imageHeight   : 0,
             imageWidth    : 0,
-            ratio         : decimal(0),
+            ratio         : 0,
             originalHeight: 0,
             originalWidth : 0,
             url           : string(url),
