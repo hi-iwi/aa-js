@@ -399,7 +399,7 @@ class AaStorageEngine {
     /**
      * @param {any} value
      * @param {StorageOptions} [options]
-     * @return {*}
+     * @return {string}
      */
     encodeValue(value, options) {
         let ok = true;
@@ -435,7 +435,7 @@ class AaStorageEngine {
         }
 
         if (!ok) {
-            return value
+            return string(value)
         }
         const persistent = bool(options, 'persistent')
         let expires = this.convertExpires(defval(options, 'expires'))
@@ -575,6 +575,11 @@ class AaStorageEngine {
         if (this.#encapsulate) {
             value = this.encodeValue(value, options)
         }
+        if (/data:image\/\w+;\s*base64/i.test(value) && not(options, "base64Image")) {
+            log.debug(`${this.name} setItem ${key} ignore ${value}`)
+            return
+        }
+
         const args = this.#withOptions && options ? [key, value, options] : [key, value]
         this.#storage.setItem(...args)
     }
