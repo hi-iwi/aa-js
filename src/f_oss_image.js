@@ -193,7 +193,7 @@ class AaImgSrc extends AaSrc {
         const imageHeight = Math.ceil(height * dpr)
 
         // 暂定1.5倍
-        if (this.origin && imageWidth * 1.5 > this.width) {
+        if (this.origin && this.size < 500 * math.KB && imageWidth * 1.5 > this.width) {
             return {
                 height        : height,
                 imageHeight   : this.height,
@@ -207,10 +207,6 @@ class AaImgSrc extends AaSrc {
         }
 
         let d = this.#allowedSize(maxWidth, height, imageWidth, imageHeight)
-        if (!d.width) {
-            log.error(`invalid resize max width: ${maxWidth}`)
-        }
-
         let url = this.origin
         if (!url || d.imageWidth !== this.width) {
             url = this.resizePattern.replaceAll("${MAXWIDTH}", d.imageWidth)
