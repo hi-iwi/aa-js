@@ -109,15 +109,10 @@ class AaImgSrc extends AaSrc {
         this.#thumbnail = thumbnail
         this.#multipleFile = multipleFile
 
-        this.#ratio = this.height ? this.width / this.height : 0
-
-        let dpr = AaEnv.devicePixelRatio()
-        let sizePixelRatio = this.size ? this.width * this.height / this.size : 0
-        if (sizePixelRatio > 5) {
-            dpr *= sizePixelRatio / 5  // 单纯使用DPR暂时尝试 比例 5
-        }
-        this.#cropDpr = dpr
-        this.#fitDpr = AaEnv.devicePixelRatio()
+        this.#ratio = this.height ? (this.width / this.height).toTrimmed(4) : 0
+        const dpr = AaEnv.softDPR()
+        this.#cropDpr = dpr * 1.6
+        this.#fitDpr = dpr
     }
 
 
@@ -180,7 +175,7 @@ class AaImgSrc extends AaSrc {
             maxWidth = maths.pixel(maxWidth)
         }
         if (!maxWidth || maxWidth === MAX) {
-            maxWidth = AaEnv.maxWidth()
+            maxWidth = AaEnv.mainWidth()
         }
         const dpr = this.#fitDpr
         const ratio = this.#ratio

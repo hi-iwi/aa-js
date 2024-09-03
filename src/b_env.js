@@ -1,9 +1,21 @@
 class AaEnv {
+    /** @readonly */
+    static MaxBodyWidth = 768
     name = 'aa-environment'
 
-// JS 无法获取DPI。目前观察来看，DPR=1.25时，图片*2显示效果最好；太大的话，显示也不清晰。 1.25*1.6=2，因此取1.6倍。
+    // JS 无法获取DPI。
+    /**
+     * @return {number}
+     */
     static devicePixelRatio() {
-        return number(window, "devicePixelRatio", 1)
+        return number(window, "devicePixelRatio", 1).toTrimmed(2)
+    }
+
+    static softDPR() {
+        const dpr = AaEnv.devicePixelRatio()
+        const mainWidth = AaEnv.mainWidth()
+        const r = (mainWidth / AaEnv.MaxBodyWidth) * dpr
+        return r.toTrimmed(2)
     }
 
     // same as $(document).height()
@@ -66,10 +78,15 @@ class AaEnv {
      *     // screen.width / screen.height  分辨率尺寸
      * @param {boolean} [inRatio]
      * @return {number}
+     * @note
+     *  12.1'       1280*800
+     *  13.3'       1024*600 / 1280*800
+     *  14.1'       1366*768
+     *  iPad        768*1024
+     *  iPad Pro    1024 * 1366
      */
-    static maxWidth(inRatio = false) {
-        let width = Number(document.querySelector('body').offsetWidth)
-        return inRatio ? width * AaEnv.devicePixelRatio() : width
+    static mainWidth() {
+        return Number(document.querySelector('body').offsetWidth).toTrimmed(2)
     }
 
 

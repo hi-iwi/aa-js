@@ -79,7 +79,7 @@ class maths {
         }
 
         if (isSettings || isRelative) {
-            relativeBase = !relativeBase ? AaEnv.maxWidth() : maths.pixel(relativeBase)
+            relativeBase = !relativeBase ? AaEnv.mainWidth() : maths.pixel(relativeBase)
             return isSettings ? maths.closestSetting(vv, '<=', relativeBase) : Math.floor(relativeBase * parseFloat(vv) / 100)
         }
         if (typeof vv !== "string") {
