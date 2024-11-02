@@ -10,7 +10,6 @@ class AaEditor {
         IMG    : ['alt', 'data-path', 'width', 'height'],
         TABLE  : [],
         TD     : ['data-row', 'nowrap'],
-        LI     : ['data-list'],
         PRE    : ['data-language'],
     }
     temporaryAttributeWhitelist = {
@@ -21,17 +20,11 @@ class AaEditor {
     classWhitelist = [/^e-/]
     styleWhitelist = ['background', 'background-color', 'color', 'zoom']
     textAlignWhitelist = ['center', 'right']  // justify 为默认；
-    inlineElements = ['B', 'DEL', 'EM', 'I', 'PRIVACY', 'S', 'SPAN', 'STRONG', 'SUB', 'SUP', 'U']
+    //inlineElements = ['B', 'DEL', 'EM', 'I', 'PRIVACY', 'S', 'SPAN', 'STRONG', 'SUB', 'SUP', 'U']
     emptyableElements = ['DD', 'DT', 'P', 'TD']
     srcElements = ['AUDIO', 'IMG', 'VIDEO']
 
-    encodeTemplate = {
-        // 不替换空格，否则看起来不方便
-        ">": "&#62;", '&gt;': '&#62;', "<": "&#60;", '&lt;': '&#60;', "'": "&#39;",   // 不要替换引号；否则会导致html标签难以读
-        '"': "&#34;", '&quot;': '&#34;',
-        // '&'     : '&#38;',   // 不要替换 &，& 本身是转义，如果替换会导致反复转义。
-        // '&amp;' : '&#38;',
-    }
+
     decodeTemplate = {
         "&#62;" : '>',
         '&gt;'  : '>',
@@ -76,12 +69,22 @@ class AaEditor {
                 return
             }
             switch (node.tagName) {
-                case 'A':
+                case "A":
                     node.setAttribute('target', '_blank')  // for user
                     break
-                case 'IMG':
+                case "IMG":
                     this.decodeImgPath(node, this.getSrcComposer(node.tagName, srcComposers))
                     break
+                case "LI":
+                    if (node.dataset.list === "unchecked") {
+                        // <span class="e-ui" contenteditable="false"></span>
+                        const checkbox = document.createElement("span")
+                        checkbox.classList.add("e-ui")
+                        checkbox.contentEditable = "true"
+                        node.insertBefore(checkbox, node.firstChild)
+                    }
+                    break
+
             }
 
             if (node.hasAttribute('data-privacy-key')) {
@@ -178,7 +181,7 @@ class AaEditor {
                             parent.parentNode.removeChild(parent)
                         }
                     } else {
-                        v = this.#encodeTextNode(v)
+                        // v = this.#encodeTextNode(v)
                         if (v !== node.nodeValue) {
                             node.nodeValue = v
                         }
@@ -436,16 +439,6 @@ class AaEditor {
             return null
         }
         return node
-    }
-
-
-    #encodeTextNode(s) {
-        for (const [k, v] of Object.entries(this.encodeTemplate)) {
-            if (s.indexOf(k) > -1) {
-                s = s.replaceAll(k, v)
-            }
-        }
-        return s
     }
 
 

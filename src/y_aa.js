@@ -120,7 +120,6 @@ class Aa {
         return a === b
     }
 
-    // imgSrc ===> aa.oss.imgSrc
 
     mselects(opts, cast, inherit = false) {
         return new AaMultiLevelSelects(...arguments)

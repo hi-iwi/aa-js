@@ -535,7 +535,7 @@ class map {
      * @return {[]}
      */
     static insertOnDuplicateUpdate(objects, item, condition, insertToHead = false) {
-        if (!item) {
+        if (!item || !condition) {
             return objects
         }
         if (len(objects) === 0) {
