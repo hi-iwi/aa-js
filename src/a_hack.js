@@ -2,7 +2,7 @@ class AaHack {
     name = "aa-hack"
 
     /**
-     * 根据类名实例化类
+     * 根据类名字符串实例化类
      * @param {string} className
      * @return {Class}
      * @throws {TypeError}
@@ -22,7 +22,7 @@ class AaHack {
     }
 
     /**
-     * Call the static method with its name
+     * 根据类名和方法名字符串调用静态方法
      * @param {string} className
      * @param {string} methodName
      * @param {string|number|boolean|*} args
@@ -31,11 +31,14 @@ class AaHack {
      */
     static callStaticMethod(className, methodName, ...args) {
         let c = AaHack.class(className)
+        if (typeof c[methodName] !== 'function') {
+            throw new TypeError(`Method ${className}.${methodName} is not a static function`);
+        }
         return c[methodName](...args)
     }
 
     /**
-     * Check a string is callable static method
+     * 检查字符串是否为可调用的静态方法
      * @param {string} className
      * @param {string} methodName
      * @return {boolean}
