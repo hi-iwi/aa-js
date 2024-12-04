@@ -1,7 +1,8 @@
 class AaHack {
+    name = "aa-hack"
 
     /**
-     * Instantiate a class with the class name
+     * 根据类名实例化类
      * @param {string} className
      * @return {Class}
      * @throws {TypeError}

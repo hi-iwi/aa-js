@@ -18,15 +18,15 @@ class AaLoggerStyle {
     }
 
     toString() {
-        let s = ''
+        let styles = []
         if (this.color) {
-            s += 'color:' + this.color + ';'
+            styles.push(`color:${this.color}`)
         }
         if (this.background) {
-            s += 'background:' + this.background + ';width:100%;'
+            styles.push(`background:${this.background};width:100%`)
         }
         if (this.fontWeight && this.fontWeight !== 400) {
-            s += 'font-weight:' + this.fontWeight + ';'
+            styles.push(`font-weight:${this.fontWeight}`)
         }
         return s
     }
@@ -40,11 +40,7 @@ class log {
     static _breakpointIncr = 0
 
     static alert(...args) {
-        let s = ''
-        for (let i = 0; i < args.length; i++) {
-            s += args[i] + ' '
-        }
-        log.alertHandler(s)
+        log.alertHandler(args.join(' '))
     }
 
     static breakpoint(...args) {

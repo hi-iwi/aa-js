@@ -16,8 +16,8 @@ class AaLock {
     }
 
     destroy() {
-        this.log('Destroy lock')
-        clearTimeout(this.#timer)
+        this.#log('Destroy lock')
+        this.#clearTimer()
     }
 
     /**
@@ -39,7 +39,7 @@ class AaLock {
             return false
         }
 
-        this.log('Lock')
+        this.#log('Lock')
         this.#lockAt = Date.now()  // BEGIN 事务开启
         timeout = number(timeout)
         if (timeout > 0) {
@@ -47,26 +47,16 @@ class AaLock {
         } else {
             timeout = this.#timeout
         }
-        clearTimeout(this.#timer)
-        this.#timer = setTimeout(() => {
-            this.log(`Lock timeout (${timeout}ms)`)
-            this.#lockAt = 0
-        }, timeout)
+        this.#setAutoUnlockTimer(timeout)
         return true
     }
 
-    log(msg) {
-        if (AaLock.debug) {
-            log.debug("#" + this.#id + " " + msg)
-        }
-    }
 
     unlock() {
-        this.log('Unlock')
-        clearTimeout(this.#timer)
+        this.#log('Unlock')
+        this.#clearTimer()
         this.#lockAt = 0
     }
-
 
     /**
      * Lock and return the opposite result to this.lock()
@@ -76,9 +66,67 @@ class AaLock {
     xlock(timeout) {
         return !this.lock(timeout)
     }
+    /**
+     * 获取锁的状态信息
+     * @returns {Object} 锁的状态信息
+     */
+    getStatus() {
+        return {
+            id: this.#id,
+            isLocked: this.isLocked(),
+            lockAt: this.#lockAt,
+            timeout: this.#timeout,
+            remainingTime: this.#lockAt > 0 ? Math.max(0, this.#lockAt + this.#timeout - Date.now()) : 0
+        };
+    }
 
+    /**
+     * 异步等待锁释放
+     * @param {number} [maxWaitTime=5000] 最大等待时间（毫秒）
+     * @returns {Promise<boolean>} 是否成功等待到锁释放
+     */
+    async waitForUnlock(maxWaitTime = 5000) {
+        const startTime = Date.now();
+
+        while (this.isLocked()) {
+            if (Date.now() - startTime > maxWaitTime) {
+                return false;
+            }
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        return true;
+    }
 
     static atomicId() {
         return ++_aaLockIncr_
     }
+    /**
+     * 清除定时器
+     * @private
+     */
+    #clearTimer() {
+        if (this.#timer) {
+            clearTimeout(this.#timer);
+            this.#timer = null;
+        }
+    }
+    #log(msg) {
+        if (AaLock.debug) {
+            log.debug("#" + this.#id + " " + msg)
+        }
+    }
+    /**
+     * 设置自动解锁定时器
+     * @private
+     * @param {number} timeout 超时时间
+     */
+    #setAutoUnlockTimer(timeout) {
+        this.#clearTimer();
+        this.#timer = setTimeout(() => {
+            this.#log(`Lock timeout (${timeout}ms)`);
+            this.#lockAt = 0;
+        }, timeout);
+    }
+
 }
