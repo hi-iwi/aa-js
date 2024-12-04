@@ -1,4 +1,5 @@
 class panic {
+    name = "aa-panic"
     /**
      * Throw Error when it's not a typed array
      * @param {*[]} arr
