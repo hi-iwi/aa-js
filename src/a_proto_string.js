@@ -1,227 +1,288 @@
 /**
- * Cut string around the first instance of separator
- * @param {string} separator
- * @return {[String,string,boolean]|[string,string,boolean]}
+ * String 原型扩展方法
  */
-String.prototype.cut = function (separator) {
-    separator = string(separator)
-    let i = this.indexOf(separator)
-    if (i >= 0) {
-        return [this.slice(0, i), this.slice(i + separator.length), true]
+
+
+/**
+ * 正则表达式相关方法
+ */
+Object.assign(String.prototype, {
+    /**
+     * 转换为正则表达式
+     * @param {string} [flags]
+     * @return {RegExp}
+     */
+    toRegExp(flags) {
+        return new RegExp(this.toRegSource(), flags);
+    },
+
+    /**
+     * 转换为正则表达式源字符串
+     * @return {string}
+     */
+    toRegSource() {
+        return this.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
-    return [this, "", false]
-}
-
-/**
- * Joins strings, inserting a blank string between each
- * @param {any} args
- * @return {string}
- */
-String.prototype.join = function (...args) {
-    return this.joinWith(' ', ...args)
-}
+});
 
 
 /**
- * Join strings if the condition is true
- * @param {boolean} condition
- * @param {any} args
+ * 切割字符串
+ * @param {string} separator 分隔符
+ * @return {[string, string, boolean]} [前半部分, 后半部分, 是否找到分隔符]
  */
-String.prototype.joinIf = function (condition, ...args) {
-    return condition ? this.join(...args) : this
+String.prototype.cut = function(separator) {
+    separator = String(separator);
+    const index = this.indexOf(separator);
+    return index >= 0
+        ? [this.slice(0, index), this.slice(index + separator.length), true]
+        : [this, "", false];
 }
 
 
 /**
- * Joins this string with other args together as a string, inserting a separator between each.
- * @param {string} separator
- * @param {any} args
- * @return {string}
+ * 字符串连接方法组
  */
-String.prototype.joinWith = function (separator, ...args) {
-    let s = this.trim()
-    for (let i = 0; i < args.length; i++) {
-        let v = args[i]
-        if (typeof v !== 'undefined' && v !== null && v !== '') {
-            s += s ? separator + v : v
-        }
-    }
-    return s
-}
+Object.assign(String.prototype, {
+    /**
+     * 使用空格连接字符串
+     * @param {...any} args
+     * @return {string}
+     */
+    join(...args) {
+        return this.joinWith(' ', ...args);
+    },
 
-String.prototype.joinWithIf = function (condition, separator, ...args) {
-    return condition ? this.joinWith(separator, ...args) : this
-}
+    /**
+     * 条件连接字符串
+     * @param {boolean} condition
+     * @param {...any} args
+     * @return {string}
+     */
+    joinIf(condition, ...args) {
+        return condition ? this.join(...args) : this;
+    },
 
-/**
- * Override String.prototype.replaceAll
- * @override
- * @param {string|RegExp|struct|(string|number|RegExp)[][]|(string|number|RegExp)[]} searchValue
- * @param {string|((match0: string, ...matches: any[])=>string)} [replaceValue]
- * @return {string}
- * @example
- *  replaceAll("I'm Aario. Hi, Aario!", "Aario", "Tom")  ==> I'm Tom. Hi Tom!
- *  replaceAll("I'm Aario. Hi, Aario!", {
- *      "Aario": "Tom",
- *      "Hi": "Hello",
- *  })  ====>  I'm Tom. Hello Tom!
- *  replaceAll("I'm Aario. Hi, Aario!", [["Aario", "Tom"]])
- */
-String.prototype.replaceAll = function (searchValue, replaceValue) {
-    let s = this
-    let cuts = []  // keep replace sequence
-    if (Array.isArray(searchValue)) {
-        cuts = searchValue.length > 0 && Array.isArray(searchValue[0]) ? searchValue : [searchValue]
-    } else if (typeof searchValue === 'object') {
-        for (const [a, b] of Object.entries(searchValue)) {
-            cuts.push([a, b])
-        }
-    } else {
-        cuts.push([searchValue, replaceValue])
-    }
-    cuts.map(cut => {
-        let search = cut[0]
-        let to = cut[1]
-        if (search instanceof RegExp) {
-            if (search.flags.indexOf('g') < 0) {
-                throw new TypeError(`replaceAll must be called with a global RegExp (with g flag)`)
+    /**
+     * 使用指定分隔符连接字符串
+     * @param {string} separator
+     * @param {...any} args
+     * @return {string}
+     */
+    joinWith(separator, ...args) {
+        let result = this.trim();
+        for (const arg of args) {
+            if (arg != null && arg !== '') {
+                result += result ? separator + arg : arg;
             }
-            s = s.replace(search, to)
-        } else {
-            s = s.split(search).join(to)  // replaceValue can be a function only if search is a RegExp
         }
-    })
-    return s
-}
-/**
- * Replace if the string ends with `oldCut`
- * @param {string} searchValue
- * @param {string} replaceValue
- * @return {string}
- */
-String.prototype.replaceEnd = function (searchValue, replaceValue) {
-    let s = this
-    return s.endsWith(searchValue) ? s.replaceLastMatched(searchValue, replaceValue) : s
-}
-String.prototype.replaceFirstMatched = function (searchValue, replaceValue) {
-    let s = this
-    const first = s.indexOf(searchValue);
-    return first < 0 ? s : s.slice(0, first) + replaceValue + s.slice(first + searchValue.length)
-}
-String.prototype.replaceLastMatched = function (searchValue, replaceValue) {
-    let s = this
-    const last = s.lastIndexOf(searchValue);
-    return last < 0 ? s : s.slice(0, last) + replaceValue + s.slice(last + searchValue.length)
-}
-String.prototype.replaceStart = function (searchValue, replaceValue) {
-    let s = this
-    return s.startsWith(searchValue) ? s.replace(searchValue, replaceValue) : s
-}
-/**
- * @return {RegExp}
- */
-String.prototype.toRegExp = function (flags) {
-    return new RegExp(this.toRegSource(), flags)
-}
-/**
- * @return {string}
- */
-String.prototype.toRegSource = function () {
-    return this.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-}
-/**
- * Split a string, then trim each segments and remove all empty string segments
- * @param {string|RegExp} separator
- * @param {number} [limit]
- * @return {string[]}
- * @example
- *  `color:#ff000; ; background:#fff`.splitTrim(';')  ===> ["color:#ff0000", "background:#fff"]
- */
-String.prototype.splitTrim = function (separator, limit) {
-    let s = this
-    if (!s) {
-        return []
+        return result;
+    },
+
+    /**
+     * 条件使用指定分隔符连接字符串
+     * @param {boolean} condition
+     * @param {string} separator
+     * @param {...any} args
+     * @return {string}
+     */
+    joinWithIf(condition, separator, ...args) {
+        return condition ? this.joinWith(separator, ...args) : this;
     }
-    let arr = []
-    s.split(separator, limit).map(v => {
-        v = v.trim()
-        if (v) {
-            arr.push(v)
+});
+
+/**
+ * 字符串替换方法组
+ */
+Object.assign(String.prototype, {
+    /**
+     * 增强的替换所有方法
+     * @param {string|RegExp|Object|(string|number|RegExp)[][]|(string|number|RegExp)[]} searchValue
+     * @param {string|((match: string, ...args: any[]) => string)} [replaceValue]
+     * @return {string}
+     * @example
+     *  replaceAll("I'm Aario. Hi, Aario!", "Aario", "Tom")  ==> I'm Tom. Hi Tom!
+     *  replaceAll("I'm Aario. Hi, Aario!", {
+     *      "Aario": "Tom",
+     *      "Hi": "Hello",
+     *  })  ====>  I'm Tom. Hello Tom!
+     *  replaceAll("I'm Aario. Hi, Aario!", [["Aario", "Tom"]])
+     */
+    replaceAll(searchValue, replaceValue) {
+        let result = this;
+        const replacements = this.#normalizeReplacements(searchValue, replaceValue);
+
+        for (const [search, replace] of replacements) {
+            if (search instanceof RegExp) {
+                if (!search.flags.includes('g')) {
+                    throw new TypeError('replaceAll must be called with a global RegExp');
+                }
+                result = result.replace(search, replace);
+            } else {
+                result = result.split(search).join(replace);
+            }
         }
-    })
-    return arr
-}
+        return result;
+    },
+
+    /**
+     * 替换结尾匹配的字符串
+     * @param {string} searchValue
+     * @param {string} replaceValue
+     * @return {string}
+     */
+    replaceEnd(searchValue, replaceValue) {
+        return this.endsWith(searchValue)
+            ? this.replaceLastMatched(searchValue, replaceValue)
+            : this;
+    },
+
+    /**
+     * 替换第一个匹配的字符串
+     * @param {string} searchValue
+     * @param {string} replaceValue
+     * @return {string}
+     */
+    replaceFirstMatched(searchValue, replaceValue) {
+        const index = this.indexOf(searchValue);
+        return index < 0
+            ? this
+            : this.slice(0, index) + replaceValue + this.slice(index + searchValue.length);
+    },
+
+    /**
+     * 替换最后一个匹配的字符串
+     * @param {string} searchValue
+     * @param {string} replaceValue
+     * @return {string}
+     */
+    replaceLastMatched(searchValue, replaceValue) {
+        const index = this.lastIndexOf(searchValue);
+        return index < 0
+            ? this
+            : this.slice(0, index) + replaceValue + this.slice(index + searchValue.length);
+    },
+
+    /**
+     * 替换开头匹配的字符串
+     * @param {string} searchValue
+     * @param {string} replaceValue
+     * @return {string}
+     */
+    replaceStart(searchValue, replaceValue) {
+        return this.startsWith(searchValue)
+            ? this.replace(searchValue, replaceValue)
+            : this;
+    }
+});
+
 
 /**
- * Repeat `n` times to trim the suffix `cut` from the string `s`, if n<1, trim unlimited
- * @override
- * @param {string|number} [cut]
- * @param {number} [n]
- * @return {string}
+ * 字符串修剪方法组
  */
-String.prototype.trimEnd = function (cut = ' ', n) {
-    let s = this
-    if (typeof cut === 'number' && typeof n === 'undefined') {
-        n = cut
-        cut = ' '
-    }
-    s = string(s)
-    const length = s.length
-    const step = cut.length
-    if (!s || length < step) {
-        return s
-    }
-    if (!n) {
-        n = length
-    }
-    let i = length
-    let x = s.substring(i - step, i)
+Object.assign(String.prototype, {
+    /**
+     * 分割并修剪
+     * @param {string|RegExp} separator
+     * @param {number} [limit]
+     * @return {string[]}
+     */
+    splitTrim(separator, limit) {
+        return this ? this.split(separator, limit)
+            .map(v => v.trim())
+            .filter(Boolean) : [];
+    },
 
-    while (x === cut && i > 0 && n > 0) {
-        n--
-        i -= step
-        x = s.substring(i - step, i)
+    /**
+     * 修剪指定次数的后缀
+     * @param {string|number} [cut=' ']
+     * @param {number} [n]
+     * @return {string}
+     */
+    trimEnd(cut = ' ', n) {
+        if (typeof cut === 'number') {
+            [cut, n] = [' ', cut];
+        }
+
+        let result = this;
+        const cutLength = cut.length;
+
+        if (!result || result.length < cutLength) {
+            return result;
+        }
+
+        n = n || result.length;
+        let endIndex = result.length;
+
+        while (n > 0 && endIndex >= cutLength &&
+        result.substring(endIndex - cutLength, endIndex) === cut) {
+            n--;
+            endIndex -= cutLength;
+        }
+
+        return endIndex < 1 ? '' : result.substring(0, endIndex);
+    },
+
+    /**
+     * 修剪指定次数的前缀
+     * @param {string|number} [cut=' ']
+     * @param {number} [n]
+     * @return {string}
+     */
+    trimStart(cut = ' ', n) {
+        if (typeof cut === 'number') {
+            [cut, n] = [' ', cut];
+        }
+
+        let result = this;
+        const cutLength = cut.length;
+
+        if (!result || result.length < cutLength) {
+            return result;
+        }
+
+        n = n || result.length;
+        let startIndex = 0;
+
+        while (n > 0 && startIndex <= result.length - cutLength &&
+        result.substring(startIndex, startIndex + cutLength) === cut) {
+            n--;
+            startIndex += cutLength;
+        }
+
+        return startIndex > result.length - 1 ? '' : result.substring(startIndex);
+    },
+
+    /**
+     * 修剪指定次数的前缀和后缀
+     * @param {string|number} [cut=' ']
+     * @param {number} [n]
+     * @return {string}
+     */
+    trim(cut = ' ', n) {
+        return this.trimStart(cut, n).trimEnd(cut, n);
     }
-    return i < 1 ? '' : s.substring(0, i)
-}
-/**
- * Repeat `n` times to trim the prefix `cut` from the string `s`, if n<1, trim unlimited
- * @override
- * @param {string|number} [cut]
- * @param {number} [n]
- * @return {string}
- */
-String.prototype.trimStart = function (cut = ' ', n) {
-    let s = this
-    if (typeof cut === 'number' && typeof n === 'undefined') {
-        n = cut
-        cut = ' '
-    }
-    const length = s.length
-    const step = cut.length
-    if (!s || length < step) {
-        return s
-    }
-    if (!n) {
-        n = length
-    }
-    let i = 0
-    let x = s.substring(i, i + step)
-    while (x === cut && i < length && n > 0) {
-        n--
-        i += step
-        x = s.substring(i, i + step)
-    }
-    return i > length - 1 ? '' : s.substring(i)
-}
+});
 
 /**
- * Repeat `n` times to trim the prefix and suffix `cut` from the string `s`, if n<1, trim unlimited
- * @override
- * @param {string|number} [cut]
- * @param {number} [n]
- * @return {string}
+ * 私有辅助方法
  */
-String.prototype.trim = function (cut = ' ', n) {
-    return this.trimStart(cut, n).trimEnd(cut, n)
-}
+Object.assign(String.prototype, {
+    /**
+     * 标准化替换参数
+     * @private
+     */
+    #normalizeReplacements(searchValue, replaceValue) {
+        if (Array.isArray(searchValue)) {
+            return searchValue.length > 0 && Array.isArray(searchValue[0])
+                ? searchValue
+                : [searchValue];
+        }
+
+        if (typeof searchValue === 'object' && !(searchValue instanceof RegExp)) {
+            return Object.entries(searchValue);
+        }
+
+        return [[searchValue, replaceValue]];
+    }
+});

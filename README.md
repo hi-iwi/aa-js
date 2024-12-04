@@ -4,7 +4,7 @@ A Javascript SDK of AaGo
 
 这里要依赖于抽象，而不具体实现。实现尽量通过外部注入。
 
-[code style guide](https://github.com/hi-iwi/aa-js/blob/main/code_style_guide.md)
+[code style guide](https://github.com/aarioai/aa-js/blob/main/code_style_guide.md)
 
 ## Entry
 

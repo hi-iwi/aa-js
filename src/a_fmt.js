@@ -1,20 +1,27 @@
 // 基础static class
 class fmt {
     name = 'aa-fmt'
+    static #CHINESE_NUMBERS = Object.freeze({
+        default: ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'],
+        financial: ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖']
+    });
+
+    static #UNITS = Object.freeze({
+        default: ['个', '万', '亿', '万亿', '兆'],
+        suffix: ['', '十', '百', '千'],
+        financial: {
+            suffix: ['', '拾', '佰', '仟']
+        }
+    });
 
     /**
-     * Exclude undefined arguments at the tail
-     * @param {any} args
-     * @note some functions like new Date().setFullYear(2025, undefined)  will return invalid date!
-     * @return {any[]}
+     * 优化参数处理，移除尾部的 undefined 参数
+     * @param {any[]} args 
+     * @returns {any[]}
      */
     static args(...args) {
-        for (let i = args.length - 1; i > -1; i--) {
-            if (typeof args[i] !== 'undefined') {
-                return [...args.slice(0, i + 1)]
-            }
-        }
-        return []
+        const lastDefinedIndex = args.findLastIndex(arg => arg !== undefined);
+        return lastDefinedIndex === -1 ? [] : args.slice(0, lastDefinedIndex + 1);
     }
 
     /**
@@ -33,25 +40,19 @@ class fmt {
     }
 
     /**
-     * Format string with specified formats
-     * @param {string} format
-     *  %s string
-     * @param args
-     * @return {string}
+     * 字符串格式化
+     * @param {string} format 
+     * @param  {...any} args 
+     * @returns {string}
      */
     static sprintf(format, ...args) {
-        let matches = [...format.matchAll(/%s/g)]
-        if (matches.length !== args.length) {
-            log.error(`fmt.sprintf("${format}", ${args})  invalid number of arguments, expected ${matches.length}, but get ${args.length}.`)
+        const matches = format.match(/%s/g)?.length ?? 0;
+
+        if (matches !== args.length) {
+            log.error(`fmt.sprintf("${format}", ${args}) invalid number of arguments, expected ${matches}, but got ${args.length}.`);
         }
 
-        for (let i = 0; i < matches.length; i++) {
-            if (args.length - 1 < i) {
-                break
-            }
-            format = format.replace(matches[i][0], args[i])
-        }
-        return format
+        return format.replace(/%s/g, () => args.shift());
     }
 
     /**
@@ -70,92 +71,33 @@ class fmt {
     }
 
     /**
-     * Convert  UPPER_UNDERSCORE_CASE/snake_case/PascalCase/kebab-case to  camelCase
+     * 转换为驼峰命名  convert UPPER_UNDERSCORE_CASE/snake_case/PascalCase/kebab-case to  camelCase
      * @param {string } s
      * @return {string}
      */
     static toCamelCase(s) {
-        return s.toLowerCase().replace(/[^a-z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
+        return s.toLowerCase().replace(/[^a-z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
     }
-
-
-    // 将阿拉伯数字，转为小写中文
-
     /**
-     * Convert Arabic numerals to Chinese numerals
-     * @param {number|string} num
-     * @param {boolean} financial convert to financial numerals (`capital` numerals)
-     * @return {string}
-     */
-    static toChineseNumber(num, financial = false) {
-        num = float64(num)
-        let hanziNum = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九']
-
-        let units = ['个', '万', '亿', '万亿', '兆']
-        let suffix = ['', '十', '百', '千']
-        if (financial) {
-            hanziNum = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖']
-            // 万之后，不用大写
-            units = ['个', '万', '亿', '万亿', '兆']
-            suffix = ['', '拾', '佰', '仟']
-        }
-        let s = string(num)
-        if (s.indexOf(".") > -1) {
-            const a = s.split(".")
-            let d = a[1]
-            let ds = ''
-            for (let i = 0; i < d.length; i++) {
-                ds += hanziNum[d[i]]
-            }
-            return fmt.toChineseNumber(a[0]) + "点" + ds
-        }
-        if (num === 0) {
-            return '零'
-        }
-
-        if (!(/^\d+$/.test(s))) {
-            throw new Error('Not a number')
-        }
-        if (s.length > 20) {
-            throw new Error('Number is too large')
-        }
-        let digitList = s.split('')
-        digitList.reverse()
-        let splitNumList = []
-        let l = digitList.splice(0, 4)
-        while (l.length) {
-            splitNumList.push(l)
-            l = digitList.splice(0, 4)
-        }
-        let hanzi = ''
-        splitNumList.forEach((arr, i) => {
-            let rst = ''
-            arr.forEach((digit, j) => {
-                rst = hanziNum[digit] + suffix[j] + rst
-            })
-            rst += units[i % 6]
-            hanzi = rst + hanzi
-        })
-        suffix.forEach(item => (hanzi = hanzi.replaceAll('零' + item, '零')))
-        for (let i = units.length - 1; i >= 0; --i) {
-            let val = units[i]
-            hanzi = hanzi.replace(new RegExp('(零+)' + val, 'g'), (match, $1) => ($1.length === 4 ? '' : val))
-        }
-        hanzi = hanzi.replace(/零+/g, '零')
-        hanzi = hanzi.replaceAll("个", '')
-        hanzi = hanzi.replaceStart("一十", '十')
-        return hanzi
+        * 转换为Pascal命名
+        * @param {string} s
+        * @return {string}
+        */
+    static toPascalCase(s) {
+        return this.toCamelCase(s).replace(/^[a-z]/, c => c.toUpperCase());
     }
 
     /**
+     * 转换为下划线命名  convert UPPER_UNDERSCORE_CASE/PascalCase/camelCase/kebab-case to lower-case snake case(underscore_case)
      * @param {string} s
      * @return {string}
      */
-    static toPascalCase(s) {
-        s = fmt.toCamelCase(s)
-        return s[0].toUpperCase() + s.substring(1)
+    static toSnakeCase(s) {
+        s = s.replaceAll('-', '_')  // kebab-case
+        const isPascal = s && (s[0] >= 'A' && s[0] <= 'Z')
+        s = s.replace(/_?([A-Z]+)/g,  (_, y) => "_" + y.toLowerCase())
+        return isPascal ? s.trimStart('_', 1) : s
     }
-
     /**
      * Convert to sentence-case
      * @param {string} s
@@ -168,19 +110,99 @@ class fmt {
         }
         return !s ? "" : s[0].toUpperCase() + s.substring(1)
     }
+    /**
+     * 将数字转换为中文数字
+     * @param {number|string} num 
+     * @param {boolean} financial 
+     * @returns {string}
+     */
+    static toChineseNumber(num, financial = false) {
+        // 参数验证和特殊情况处理
+        if (num === 0) return '零';
+        const numStr = String(num);
+        
+        if (numStr.includes('.')) {
+            const [integer, decimal] = numStr.split('.');
+            const decimalChinese = Array.from(decimal)
+                .map(d => this.#CHINESE_NUMBERS[financial ? 'financial' : 'default'][d])
+                .join('');
+            return `${this.toChineseNumber(integer, financial)}点${decimalChinese}`;
+        }
+
+        if (!/^\d+$/.test(numStr)) {
+            throw new Error('Not a number');
+        }
+        if (numStr.length > 20) {
+            throw new Error('Number is too large');
+        }
+
+        // 获取配置
+        const numbers = this.#CHINESE_NUMBERS[financial ? 'financial' : 'default'];
+        const units = this.#UNITS.default;
+        const suffix = financial ? this.#UNITS.financial.suffix : this.#UNITS.suffix;
+
+        // 数字分组处理
+        const groups = this.#splitNumberIntoGroups(numStr);
+        
+        // 转换为中文
+        let result = this.#convertGroupsToChinese(groups, numbers, units, suffix);
+        
+        // 后处理
+        result = this.#postProcessChineseNumber(result, units);
+        
+        return result;
+    }
 
     /**
-     * Convert UPPER_UNDERSCORE_CASE/PascalCase/camelCase/kebab-case to lower-case snake case(underscore_case)
-     * @param {string} s
-     * @return {string}
+     * 将数字分组（每4位一组）
+     * @private
      */
-    static toSnakeCase(s) {
-        s = s.replaceAll('-', '_')  // kebab-case
-        let isPascal = s && (s[0] >= 'A' && s[0] <= 'Z')
-
-        s = s.replace(/_?([A-Z]+)/g, function (x, y) {
-            return "_" + y.toLowerCase()
-        })
-        return isPascal ? s.trimStart('_', 1) : s
+    static #splitNumberIntoGroups(numStr) {
+        const digits = numStr.split('').reverse();
+        const groups = [];
+        while (digits.length) {
+            groups.push(digits.splice(0, 4));
+        }
+        return groups;
     }
+
+    /**
+     * 将分组转换为中文
+     * @private
+     */
+    static #convertGroupsToChinese(groups, numbers, units, suffix) {
+        return groups.map((group, groupIndex) => {
+            const groupChinese = group.map((digit, digitIndex) => 
+                numbers[digit] + suffix[digitIndex]
+            ).reverse().join('');
+            return groupChinese + units[groupIndex % 6];
+        }).reverse().join('');
+    }
+
+    /**
+     * 中文数字后处理（处理零的显示等）
+     * @private
+     */
+    static #postProcessChineseNumber(result, units) {
+        // 处理连续的零
+        result = result.replace(/零+/g, '零')
+            .replace(/零+$/, '')
+            .replace(/^一十/, '十')
+            .replace(/个$/, '');
+
+        // 处理单位
+        for (let i = units.length - 1; i >= 0; i--) {
+            const unit = units[i];
+            result = result.replace(
+                new RegExp(`(零+)${unit}`, 'g'), 
+                (_, zeros) => zeros.length === 4 ? '' : unit
+            );
+        }
+
+        return result;
+    }
+
+
+
+
 }
