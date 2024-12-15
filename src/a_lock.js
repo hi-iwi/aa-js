@@ -16,7 +16,7 @@ class AaLock {
     }
 
     destroy() {
-        this.#log('Destroy lock')
+        this.log('Destroy lock')
         this.#clearTimer()
     }
 
@@ -39,7 +39,7 @@ class AaLock {
             return false
         }
 
-        this.#log('Lock')
+        this.log('Lock')
         this.#lockAt = Date.now()  // BEGIN 事务开启
         timeout = number(timeout)
         if (timeout > 0) {
@@ -53,7 +53,7 @@ class AaLock {
 
 
     unlock() {
-        this.#log('Unlock')
+        this.log('Unlock')
         this.#clearTimer()
         this.#lockAt = 0
     }
@@ -111,7 +111,7 @@ class AaLock {
             this.#timer = null;
         }
     }
-    #log(msg) {
+    log(msg) {
         if (AaLock.debug) {
             log.debug("#" + this.#id + " " + msg)
         }
@@ -124,7 +124,7 @@ class AaLock {
     #setAutoUnlockTimer(timeout) {
         this.#clearTimer();
         this.#timer = setTimeout(() => {
-            this.#log(`Lock timeout (${timeout}ms)`);
+            this.log(`Lock timeout (${timeout}ms)`);
             this.#lockAt = 0;
         }, timeout);
     }

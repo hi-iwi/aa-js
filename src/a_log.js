@@ -1,9 +1,18 @@
+/**
+ * @typedef {Object} LoggerStyleOptions
+ * @property {string} [color] - CSS color value
+ * @property {string} [background] - CSS background value
+ * @property {number} [fontWeight] - CSS font-weight value
+ */
 class AaLoggerStyle {
     name = 'aa-logger-style'
 
-    color
-    fontWeight
-    background
+    /** @type {string} */
+    #color;
+    /** @type {string} */
+    #background;
+    /** @type {number} */
+    #fontWeight;
 
     /**
      *
@@ -28,7 +37,7 @@ class AaLoggerStyle {
         if (this.fontWeight && this.fontWeight !== 400) {
             styles.push(`font-weight:${this.fontWeight}`)
         }
-        return s
+        return styles.join(";")
     }
 }
 
@@ -165,12 +174,7 @@ function loge(...args) {
 
         // AError extends Error
         if (err instanceof AError) {
-            if (err.noMatched()) {
-                log.debug(err.toString())
-            } else {
-                log.error(err.toString())
-            }
-            return
+            return err.noMatched() ?  log.debug(err.toString()) : log.error(err.toString())
         }
 
         if (err instanceof Error) {
