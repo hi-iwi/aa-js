@@ -46,13 +46,13 @@ class fmt {
      * @returns {string}
      */
     static sprintf(format, ...args) {
-        const matches = format.match(/%s/g)?.length ?? 0;
+        const matches = format.match(/%s/ig)?.length ?? 0;
 
         if (matches !== args.length) {
             log.error(`fmt.sprintf("${format}", ${args}) invalid number of arguments, expected ${matches}, but got ${args.length}.`);
         }
 
-        return format.replace(/%s/g, () => args.shift());
+        return format.replace(/%s/ig, () => args.shift());
     }
 
     /**

@@ -110,7 +110,7 @@ Object.assign(String.prototype, {
      */
     replaceAll(searchValue, replaceValue) {
         let result = this;
-        const replacements = this.#normalizeReplacements(searchValue, replaceValue);
+        const replacements = this.normalizeReplacements(searchValue, replaceValue);
 
         for (const [search, replace] of replacements) {
             if (search instanceof RegExp) {
@@ -272,7 +272,7 @@ Object.assign(String.prototype, {
      * 标准化替换参数
      * @private
      */
-    #normalizeReplacements(searchValue, replaceValue) {
+    normalizeReplacements(searchValue, replaceValue) {
         if (Array.isArray(searchValue)) {
             return searchValue.length > 0 && Array.isArray(searchValue[0])
                 ? searchValue
