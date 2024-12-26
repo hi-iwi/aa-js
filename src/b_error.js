@@ -241,7 +241,10 @@ class AError extends Error {
         this.#dict = dict
     }
 
-
+    isRawMessage(){
+        const rawMsg = AErrorEnum.code2Msg(this.code, 'en')
+        return !this.message || this.message === rawMsg
+    }
     getMsg(lang = 'zh-CN') {
         let dict = AErrorEnum.getDict(lang)
         if (this.#dict) {

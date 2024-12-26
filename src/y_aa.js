@@ -6,6 +6,7 @@ class Aa {
     hack = AaHack
     paths = AaPath
     uri = AaURI
+    crypto = AaCrypto
     validator = AaValidator
 
     /** @type {AaRegistry} */

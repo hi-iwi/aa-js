@@ -195,32 +195,28 @@ Object.assign(String.prototype, {
 
     /**
      * 修剪指定次数的后缀
-     * @param {string|number} [cut=' ']
-     * @param {number} [n]
+     * @param {string} [cut=' ']
+     * @param {number} [cutLen=0]
      * @return {string}
      */
-    trimEnd(cut = ' ', n) {
-        if (typeof cut === 'number') {
-            [cut, n] = [' ', cut];
-        }
-
-        let result = this;
+    trimEnd(cut = ' ', cutLen=0) {
+        let s = this;
         const cutLength = cut.length;
 
-        if (!result || result.length < cutLength) {
-            return result;
+        if (!s || s.length < cutLength) {
+            return s;
         }
 
-        n = n || result.length;
-        let endIndex = result.length;
+        cutLen = cutLen || s.length;
+        let endIndex = s.length;
 
-        while (n > 0 && endIndex >= cutLength &&
-        result.substring(endIndex - cutLength, endIndex) === cut) {
-            n--;
+        while (cutLen > 0 && endIndex >= cutLength &&
+        s.substring(endIndex - cutLength, endIndex) === cut) {
+            cutLen--;
             endIndex -= cutLength;
         }
 
-        return endIndex < 1 ? '' : result.substring(0, endIndex);
+        return endIndex < 1 ? '' : s.substring(0, endIndex);
     },
 
     /**
