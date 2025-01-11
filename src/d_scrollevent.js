@@ -11,7 +11,7 @@ class AaScrollEvent {
 
     listen() {
         document.addEventListener('scroll', e => {
-            aa.scrollEvent.fire(window.scrollY)
+            window.requestAnimationFrame(aa.scrollEvent.fire.bind(this))
         })
     }
 
@@ -41,20 +41,20 @@ class AaScrollEvent {
     /**
      * Register a scroll event
      * @param name
-     * @param {?{function(scrollTop, prevScrollTop, autoScroll:bool)}} [condition]
+     * @param {?{function(scrollTop, prevScrollTop, autoScroll:bool)}} [ignore]  满足条件，则跳过
      * @param {function(scrollTop, prevScrollTop, autoScroll:bool)} trigger
      * @param {boolean} [pause]
      */
-    register(name, condition, trigger, pause) {
+    register(name, ignore, trigger, pause) {
         const events = this.#events
         if (events.get(name)) {
             log.error(`register scroll event ${name} repeatedly`)
             return
         }
         this.#events.set(name, {
-            condition: condition,
-            trigger  : trigger,
-            pause    : bool(pause)
+            ignore : ignore,
+            trigger: trigger,
+            pause  : bool(pause)
         })
     }
 
@@ -92,7 +92,8 @@ class AaScrollEvent {
         return Math.abs(scrollTop - prevScrollTop) < 5
     }
 
-    fire(scrollTop) {
+    fire(timestamp) {
+        let scrollTop = window.scrollY
         let prevScrollTop = this.prevScrollTop
         this.onAutoScrolling = Math.abs(scrollTop - prevScrollTop) > 10   // 每次滑动大于10px，就应该是自动滑动，或者快速滑动
         const isAuto = this.isAuto(scrollTop, prevScrollTop)
@@ -102,7 +103,7 @@ class AaScrollEvent {
             if (event.pause) {
                 return CONTINUE
             }
-            if (event.condition && event.condition(scrollTop, prevScrollTop, isAuto)) {
+            if (event.ignore && event.ignore(scrollTop, prevScrollTop, isAuto)) {
                 return CONTINUE
             }
             event.trigger(scrollTop, prevScrollTop, isAuto)

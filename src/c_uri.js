@@ -475,9 +475,15 @@ class AaURI {
         return [s, newQueries, ok]
     }
 
-    static go(url) {
+    static go(url, target="_self") {
         if (!sessionStorage || !sessionStorage.getItem(aparam.DebugUrl)) {
-            location.href = url
+            if (target==="_self" || !target){
+                location.href = url
+            } else{
+                let link = window.open(url, target)
+                link.opener= null
+            }
+
             return
         }
         console.info(`[debug] location.href='${url}'`)
